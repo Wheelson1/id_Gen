@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dynamic ID Generator</title>
+    <style>
+        canvas {
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="idFront" width="1011" height="639"></canvas>
+    <canvas id="idBack" width="1011" height="639"></canvas>
+
+<script>
+    // --- SETUP & CONTEXT ---
+    const frontCanvas = document.getElementById('idFront');
+    const ctxFront = frontCanvas.getContext('2d');
+    
+    const backCanvas = document.getElementById('idBack');
+    const ctxBack = backCanvas.getContext('2d');
+
+    // --- DATA OBJECT (Replace with your dynamic variables) ---
+    const studentData = {
+        surname: "[SURNAME]",
+        givenNames: "[GIVEN NAMES]",
+        dob: "[DD MMM YYYY]",
+        sex: "[M/F]",
+        nin: "[XXXX XXX XXXX]",
+        issueDate: "[DD MMM YYYY]",
+        photoUrl: "placeholder_photo.jpg" // Replace with actual image source
+    };
+
+    // --- DRAW FRONT OF ID ---
+    function drawFront() {
+        // 1. Background (Solid placeholder - replace with drawImage for your vector background)
+        ctxFront.fillStyle = "#e6f5e9"; 
+        ctxFront.fillRect(0, 0, frontCanvas.width, frontCanvas.height);
+
+        // 2. Header Typography
+        ctxFront.fillStyle = "#006600";
+        ctxFront.font = "bold 36px Arial";
+        ctxFront.fillText("FEDERAL REPUBLIC OF NIGERIA", 220, 80);
+        
+        ctxFront.fillStyle = "#000000";
+        ctxFront.font = "bold 28px Arial";
+        ctxFront.fillText("DIGITAL NIN SLIP", 220, 120);
+
+        // 3. Labels & Data Placement
+        ctxFront.font = "18px Arial";
+        ctxFront.fillStyle = "#555";
+        
+        // Surname
+        ctxFront.fillText("SURNAME/NOM", 380, 180);
+        ctxFront.fillStyle = "#000";
+        ctxFront.font = "bold 22px Arial";
+        ctxFront.fillText(studentData.surname, 380, 215);
+
+        // Given Names
+        ctxFront.fillStyle = "#555";
+        ctxFront.font = "18px Arial";
+        ctxFront.fillText("GIVEN NAMES/PRENOMS", 380, 275);
+        ctxFront.fillStyle = "#000";
+        ctxFront.font = "bold 22px Arial";
+        ctxFront.fillText(studentData.givenNames, 380, 310);
+
+        // Row: DOB & Sex
+        ctxFront.fillStyle = "#555";
+        ctxFront.font = "18px Arial";
+        ctxFront.fillText("DATE OF BIRTH", 380, 370);
+        ctxFront.fillText("SEX/SEXE", 650, 370);
+        
+        ctxFront.fillStyle = "#000";
+        ctxFront.font = "bold 22px Arial";
+        ctxFront.fillText(studentData.dob, 380, 405);
+        ctxFront.fillText(studentData.sex, 650, 405);
+
+        // NIN Label & Number
+        ctxFront.fillStyle = "#000";
+        ctxFront.font = "bold 24px Arial";
+        ctxFront.fillText("National Identification Number (NIN)", 240, 500);
+        
+        ctxFront.font = "bold 52px Arial";
+        ctxFront.letterSpacing = "5px";
+        ctxFront.fillText(studentData.nin, 240, 570);
+
+        // Issue Date
+        ctxFront.font = "bold 20px Arial";
+        ctxFront.fillText("ISSUE DATE", 850, 470);
+        ctxFront.fillText(studentData.issueDate, 830, 505);
+
+        // 4. Photo Placeholder Logic
+        const img = new Image();
+        img.onload = function() {
+            ctxFront.drawImage(img, 50, 150, 250, 320); // x, y, width, height
+        };
+        img.src = studentData.photoUrl; 
+
+        // 5. QR Code Placeholder Area
+        ctxFront.fillStyle = "#000";
+        ctxFront.fillRect(780, 50, 180, 180);
+        // Note: Wire up your QR data builder here to draw directly onto these coordinates
+    }
+
+    // --- DRAW BACK OF ID (Upside Down) ---
+    function drawBack() {
+        ctxBack.fillStyle = "#ffffff";
+        ctxBack.fillRect(0, 0, backCanvas.width, backCanvas.height);
+
+        // Save context state to rotate
+        ctxBack.save();
+        
+        // Translate to center, rotate 180 degrees, translate back
+        ctxBack.translate(backCanvas.width / 2, backCanvas.height / 2);
+        ctxBack.rotate(Math.PI);
+        ctxBack.translate(-backCanvas.width / 2, -backCanvas.height / 2);
+
+        // Draw rotated text
+        ctxBack.fillStyle = "#000";
+        ctxBack.textAlign = "center";
+        
+        ctxBack.font = "bold 48px Arial";
+        ctxBack.fillText("DISCLAIMER", backCanvas.width / 2, 120);
+
+        ctxBack.font = "italic 24px Georgia";
+        ctxBack.fillText("Trust, but verify", backCanvas.width / 2, 180);
+
+        ctxBack.font = "24px Arial";
+        ctxBack.fillText("Kindly ensure each time this ID is presented, that you verify the credentials", backCanvas.width / 2, 250);
+        ctxBack.fillText("using a Government-APPROVED verification resource.", backCanvas.width / 2, 290);
+        
+        ctxBack.font = "bold 42px Arial";
+        ctxBack.fillText("CAUTION!", backCanvas.width / 2, 430);
+
+        // Restore context so subsequent drawings aren't rotated
+        ctxBack.restore();
+    }
+
+    // Initialize the drawing functions
+    drawFront();
+    drawBack();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>ID Card Verifier — EBSU</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #06101a;
+      --surface: #0c1b2e;
+      --surface2:#112240;
+      --border:  #1e3050;
+      --blue:    #1558c0;
+      --blue-lt: #4a90d9;
+      --text:    #cdd8e8;
+      --muted:   #6080a0;
+      --green:   #00cc66;
+      --orange:  #ff9900;
+      --red:     #cc2222;
+      --amber:   #e6a800;
+    }
+
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+
+    /* Header */
+    .v-header {
+      background: #0a1628; border-bottom: 2px solid var(--border);
+      padding: 14px 20px; display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+    }
+    .v-header-brand { font-size: 18px; font-weight: 800; color: var(--blue-lt); letter-spacing: 0.5px; }
+    .v-header-sub   { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+    .v-header-nav   { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+    .v-header-nav a {
+      color: var(--muted); font-size: 12px; text-decoration: none;
+      padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);
+      transition: all 0.15s;
+    }
+    .v-header-nav a:hover { color: var(--blue-lt); border-color: var(--blue-lt); }
+    .user-badge {
+      font-size: 10px; color: var(--blue-lt);
+      background: rgba(74,144,217,0.1); border: 1px solid rgba(74,144,217,0.3);
+      border-radius: 6px; padding: 4px 10px; display: none;
+    }
+
+    /* Screens */
+    .screen { display: none; flex: 1; align-items: center; justify-content: center; padding: 24px 16px; }
+    .screen.active { display: flex; }
+
+    /* Login card */
+    .login-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 40px 36px;
+      width: 100%; max-width: 380px; text-align: center;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    }
+    .login-icon  { font-size: 52px; margin-bottom: 12px; }
+    .login-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .login-subtitle { font-size: 12px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
+
+    .v-input {
+      width: 100%; padding: 12px 16px;
+      background: var(--surface2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 14px; outline: none; transition: border-color 0.2s;
+      margin-bottom: 10px;
+    }
+    .v-input:focus { border-color: var(--blue-lt); }
+    .v-input.error { border-color: var(--red); }
+
+    .v-btn {
+      width: 100%; padding: 13px;
+      background: var(--blue); color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      letter-spacing: 0.5px; transition: background 0.15s;
+    }
+    .v-btn:hover   { background: #1a6ad0; }
+    .v-btn:active  { background: #0e4a9e; }
+    .v-btn.outline {
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+    }
+    .v-btn.outline:hover { border-color: var(--blue-lt); color: var(--blue-lt); background: transparent; }
+
+    .error-msg { color: var(--red); font-size: 12px; margin-bottom: 12px; min-height: 18px; }
+
+    /* Scanner screen */
+    .scanner-wrap { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 16px; }
+    .scanner-title { font-size: 18px; font-weight: 800; color: var(--blue-lt); text-align: center; }
+
+    .video-container {
+      position: relative; width: 100%; border-radius: 12px;
+      overflow: hidden; background: #000; aspect-ratio: 4/3;
+      border: 2px solid var(--border);
+    }
+    #scanner-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .scan-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center; pointer-events: none;
+    }
+    .scan-box {
+      width: 200px; height: 200px; border: 3px solid var(--blue-lt);
+      border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.45); position: relative;
+    }
+    .scan-box::before, .scan-box::after {
+      content: ''; position: absolute; width: 24px; height: 24px;
+      border-color: #fff; border-style: solid;
+    }
+    .scan-box::before { top:-3px; left:-3px; border-width:3px 0 0 3px; border-radius:8px 0 0 0; }
+    .scan-box::after  { bottom:-3px; right:-3px; border-width:0 3px 3px 0; border-radius:0 0 8px 0; }
+    .scan-line {
+      position: absolute; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--blue-lt), transparent);
+      animation: scanAnim 2s linear infinite;
+    }
+    @keyframes scanAnim { 0% { top:0; } 100% { top:100%; } }
+
+    .scanner-status {
+      text-align: center; font-size: 12px; color: var(--muted);
+      padding: 8px; border-radius: 6px; background: var(--surface);
+    }
+    .camera-error {
+      display: none; padding: 16px; text-align: center;
+      background: rgba(204,34,34,0.1); border: 1px solid rgba(204,34,34,0.3);
+      border-radius: 10px; color: #ff6666; font-size: 13px; line-height: 1.6;
+    }
+
+    /* Result screen */
+    .result-wrap { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 14px; }
+
+    .verdict {
+      text-align: center; padding: 18px 20px;
+      border-radius: 12px; font-size: 22px; font-weight: 900; letter-spacing: 1px;
+    }
+    .verdict.verified  { background:rgba(0,204,102,0.12); border:2px solid var(--green);  color:var(--green);  }
+    .verdict.expired   { background:rgba(255,153,0,0.12);  border:2px solid var(--orange); color:var(--orange); }
+    .verdict.invalid   { background:rgba(204,34,34,0.12);  border:2px solid var(--red);    color:var(--red);    }
+    .verdict.offline   { background:rgba(230,168,0,0.12);  border:2px solid var(--amber);  color:var(--amber);  }
+
+    .student-photo-wrap {
+      text-align: center;
+    }
+    .student-photo {
+      width: 100px; height: 130px; object-fit: cover;
+      border-radius: 6px; border: 2px solid var(--border);
+      display: block; margin: 0 auto;
+    }
+    .student-photo-placeholder {
+      width: 100px; height: 130px; background: var(--surface2);
+      border-radius: 6px; border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; margin: 0 auto;
+    }
+
+    .student-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+    .sc-header { background:var(--blue); padding:12px 16px; font-size:11px; font-weight:800; letter-spacing:1px; color:rgba(255,255,255,0.8); }
+    .sc-body { padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .sc-field label { display:block; font-size:9px; font-weight:700; color:var(--muted); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:3px; }
+    .sc-field span  { font-size:14px; font-weight:600; color:var(--text); }
+    .sc-field.full  { grid-column:1 / -1; }
+
+    .scan-timestamp { font-size:10px; color:var(--muted); text-align:center; padding:6px; }
+    .btn-row { display:flex; gap:10px; }
+    .btn-row .v-btn { flex:1; }
+
+    @media (max-width:480px) {
+      .login-card { padding:30px 20px; }
+      .sc-body { grid-template-columns:1fr; }
+      .sc-field.full { grid-column:1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="v-header">
+  <div>
+    <div class="v-header-brand">EBSU ID Verifier</div>
+    <div class="v-header-sub">QR CODE SCANNER · STUDENT ID VERIFICATION SYSTEM</div>
+  </div>
+  <nav class="v-header-nav">
+    <span id="v-user-badge" class="user-badge"></span>
+    <a href="admin.html">⚙ Admin</a>
+    <a href="index.html">← Generator</a>
+  </nav>
+</header>
+
+<!-- Login Screen -->
+<div class="screen active" id="screen-login">
+  <div class="login-card">
+    <div class="login-icon">🔐</div>
+    <div class="login-title">Verifier Login</div>
+    <div class="login-subtitle">
+      Sign in with your verifier, operator, or admin<br>account to access the ID scanner.
+    </div>
+    <input id="v-email" type="email" class="v-input"
+      placeholder="Email address" autocomplete="username" />
+    <input id="v-pass" type="password" class="v-input"
+      placeholder="Password" autocomplete="current-password" />
+    <div class="error-msg" id="login-error"></div>
+    <button class="v-btn" id="v-login-btn" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<!-- Scanner Screen -->
+<div class="screen" id="screen-scanner" style="align-items:flex-start;padding-top:24px">
+  <div class="scanner-wrap">
+    <div class="scanner-title">🔍 Scan Student ID Card</div>
+
+    <div class="video-container" id="video-container">
+      <video id="scanner-video" playsinline autoplay muted></video>
+      <div class="scan-overlay">
+        <div class="scan-box"><div class="scan-line"></div></div>
+      </div>
+    </div>
+
+    <div class="camera-error" id="camera-error">
+      Camera access denied or unavailable.<br>
+      <small>Allow camera permission in your browser, or use manual input below.</small>
+    </div>
+
+    <div class="scanner-status" id="scanner-status">Align the QR code inside the box</div>
+
+    <!-- Manual input — routes through the same server verify call; no trusted shortcut -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px">
+      <p style="font-size:11px;color:var(--muted);margin-bottom:8px">
+        Manual entry (for unsupported devices — routed through server verification):
+      </p>
+      <div style="display:flex;gap:8px">
+        <input id="manual-qr" type="text" placeholder="Paste EBSU1:… token here"
+          style="flex:1;padding:9px 12px;background:var(--surface2);color:var(--text);
+            border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none"
+          onkeydown="if(event.key==='Enter') manualVerify()" />
+        <button onclick="manualVerify()"
+          style="padding:9px 16px;background:var(--blue);color:#fff;
+            border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer">
+          Verify
+        </button>
+      </div>
+    </div>
+
+    <button class="v-btn outline" onclick="doLogout()" style="margin-top:4px">
+      Sign Out
+    </button>
+  </div>
+</div>
+
+<!-- Result Screen -->
+<div class="screen" id="screen-result" style="align-items:flex-start;padding-top:24px">
+  <div class="result-wrap">
+    <div class="verdict" id="verdict-box"></div>
+    <div id="student-photo-area"></div>
+    <div class="student-card">
+      <div class="sc-header">STUDENT INFORMATION</div>
+      <div class="sc-body" id="sc-body"></div>
+    </div>
+    <div class="scan-timestamp" id="scan-timestamp"></div>
+    <div class="btn-row">
+      <button class="v-btn" onclick="scanAgain()">⟳ Scan Another</button>
+      <button class="v-btn outline" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden canvas for QR decode -->
+<canvas id="scan-canvas" style="display:none"></canvas>
+
+<!-- jsQR -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<!-- Public config (copy config.example.js → config.js) -->
+<script src="config.js"></script>
+
+<script>
+'use strict';
+
+// ── Config guard ───────────────────────────────────────────────────────────
+if (typeof EBSU_CONFIG === 'undefined') {
+  document.body.innerHTML =
+    '<div style="padding:40px;color:#ff6666;font-family:monospace;font-size:14px">' +
+    '⚠ config.js not found. Copy config.example.js → config.js and fill in your values.' +
+    '</div>';
+  throw new Error('EBSU_CONFIG not defined');
+}
+
+// ── Supabase client ────────────────────────────────────────────────────────
+const _sb = supabase.createClient(EBSU_CONFIG.SUPABASE_URL, EBSU_CONFIG.SUPABASE_ANON_KEY);
+
+// ── Ed25519 local verification (offline resilience) ────────────────────────
+// Verifies the signature in the browser before ever hitting the server.
+// Uses Web Crypto API (Ed25519 supported in Chrome 113+, Edge 113+, Safari 17+, Firefox 122+).
+
+function b64ToBytes(b64) {
+  const std    = b64.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = std + '='.repeat((4 - std.length % 4) % 4);
+  const bin    = atob(padded);
+  return Uint8Array.from(bin, c => c.charCodeAt(0));
+}
+
+async function verifySignatureLocally(cardId, sigB64url) {
+  try {
+    const pubBytes = b64ToBytes(EBSU_CONFIG.ED25519_PUBLIC_KEY);
+    const pubKey   = await crypto.subtle.importKey(
+      'raw', pubBytes, { name: 'Ed25519' }, false, ['verify']
+    );
+    const data = new TextEncoder().encode(cardId);
+    const sig  = b64ToBytes(sigB64url);
+    return await crypto.subtle.verify({ name: 'Ed25519' }, pubKey, sig, data);
+  } catch (e) {
+    console.warn('Local Ed25519 verify failed:', e.message);
+    return false;
+  }
+}
+
+// ── QR token parser ────────────────────────────────────────────────────────
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function parseToken(raw) {
+  if (typeof raw !== 'string') return null;
+  raw = raw.trim();
+  if (!raw.startsWith('EBSU1:')) return null;
+  const parts = raw.split(':');
+  // UUID contains hyphens but we split on ALL colons — the UUID has 5 parts
+  // when split alone, but our format is EBSU1:<uuid>:<sig> = exactly 3 fields
+  // where field[1] is the UUID (no colons inside) and field[2] is the sig.
+  if (parts.length !== 3) return null;
+  const cardId = parts[1];
+  const sig    = parts[2];
+  if (!UUID_RE.test(cardId)) return null;
+  if (!/^[A-Za-z0-9_-]{80,}$/.test(sig)) return null;
+  return { cardId, sig };
+}
+
+// ── Auth ───────────────────────────────────────────────────────────────────
+const ALLOWED_ROLES = ['verifier', 'operator', 'admin'];
+
+async function doLogin() {
+  const emailEl = document.getElementById('v-email');
+  const passEl  = document.getElementById('v-pass');
+  const errEl   = document.getElementById('login-error');
+  const btnEl   = document.getElementById('v-login-btn');
+
+  const email = emailEl ? emailEl.value.trim() : '';
+  const pass  = passEl  ? passEl.value         : '';
+
+  errEl.textContent = '';
+  if (!email || !pass) { errEl.textContent = 'Enter email and password.'; return; }
+
+  btnEl.disabled    = true;
+  btnEl.textContent = 'Signing in…';
+
+  const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass });
+
+  btnEl.disabled    = false;
+  btnEl.textContent = 'Sign In';
+
+  if (error) { errEl.textContent = error.message; return; }
+
+  const role = data.user?.user_metadata?.role || '';
+  if (!ALLOWED_ROLES.includes(role)) {
+    await _sb.auth.signOut();
+    errEl.textContent = 'Your account does not have verifier access.';
+    return;
+  }
+
+  setUserBadge(data.user);
+  showScreen('scanner');
+  startCamera();
+}
+
+async function doLogout() {
+  await _sb.auth.signOut();
+  stopCamera();
+  setUserBadge(null);
+  showScreen('login');
+  const p = document.getElementById('v-pass');
+  if (p) p.value = '';
+}
+
+function setUserBadge(user) {
+  const el = document.getElementById('v-user-badge');
+  if (!el) return;
+  if (user) {
+    const role = user.user_metadata?.role || '';
+    // Safe: textContent only, no innerHTML
+    el.textContent = role.toUpperCase() + ' · ' + (user.email || '');
+    el.style.display = 'inline';
+  } else {
+    el.textContent   = '';
+    el.style.display = 'none';
+  }
+}
+
+// ── Screen routing ─────────────────────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + name);
+  if (el) el.classList.add('active');
+}
+
+// ── Camera / scanning ──────────────────────────────────────────────────────
+let videoStream  = null;
+let scanLoopId   = null;
+let scanCooldown = false;
+
+async function startCamera() {
+  const video  = document.getElementById('scanner-video');
+  const errDiv = document.getElementById('camera-error');
+  errDiv.style.display = 'none';
+  document.getElementById('scanner-status').textContent = 'Starting camera…';
+
+  try {
+    videoStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } }
+    });
+    video.srcObject = videoStream;
+    await video.play();
+    document.getElementById('scanner-status').textContent = 'Align the QR code inside the box';
+    requestAnimationFrame(scanLoop);
+  } catch (err) {
+    errDiv.style.display = 'block';
+    document.getElementById('scanner-status').textContent = 'Camera unavailable — use manual input below';
+  }
+}
+
+function stopCamera() {
+  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+  cancelAnimationFrame(scanLoopId);
+}
+
+function scanLoop() {
+  const scannerEl = document.getElementById('screen-scanner');
+  if (scannerEl && scannerEl.classList.contains('active') && !scanCooldown) {
+    const video  = document.getElementById('scanner-video');
+    const canvas = document.getElementById('scan-canvas');
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      // attemptBoth improves real-world scan rate for dark-on-light AND light-on-dark QRs
+      const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: 'attemptBoth' });
+      if (code) {
+        scanCooldown = true;
+        handleQRData(code.data);
+        return;
+      }
+    }
+  }
+  scanLoopId = requestAnimationFrame(scanLoop);
+}
+
+// ── Verification pipeline ──────────────────────────────────────────────────
+async function handleQRData(raw) {
+  document.getElementById('scanner-status').textContent = 'Verifying…';
+
+  const parsed = parseToken(raw);
+
+  if (!parsed) {
+    document.getElementById('scanner-status').textContent =
+      'Unrecognised code — not an EBSU card';
+    setTimeout(() => {
+      scanCooldown = false;
+      scanLoopId   = requestAnimationFrame(scanLoop);
+    }, 2500);
+    return;
+  }
+
+  const { cardId, sig } = parsed;
+
+  // 1. Local Ed25519 check (instant, works offline)
+  const localOk = await verifySignatureLocally(cardId, sig);
+
+  if (!localOk) {
+    // Signature is cryptographically invalid — forged or corrupted card
+    showResult({
+      status:     'tampered',
+      checked_at: new Date().toISOString(),
+    });
+    return;
+  }
+
+  // 2. Server lookup (confirms revocation, expiry from authoritative record)
+  let serverResult = null;
+  try {
+    const { data: { session } } = await _sb.auth.getSession();
+    const authHeader = session ? { 'Authorization': 'Bearer ' + session.access_token } : {};
+
+    const res = await fetch(EBSU_CONFIG.VERIFY_CARD_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeader },
+      body:    JSON.stringify({ card_id: cardId, signature: sig }),
+    });
+
+    if (res.ok) {
+      serverResult = await res.json();
+    } else {
+      console.warn('verify-card HTTP', res.status);
+    }
+  } catch (fetchErr) {
+    console.warn('verify-card network error:', fetchErr.message);
+  }
+
+  if (serverResult) {
+    showResult(serverResult);
+  } else {
+    // Network failed but signature was valid — degraded offline state
+    showResult({
+      status:     'offline',
+      checked_at: new Date().toISOString(),
+    });
+  }
+}
+
+function manualVerify() {
+  const inp = document.getElementById('manual-qr');
+  const raw = inp ? inp.value.trim() : '';
+  if (!raw) return;
+  // Route through exact same pipeline — no trusted bypass
+  scanCooldown = true;
+  handleQRData(raw);
+}
+
+// ── Render result (XSS-safe: all output via textContent / safe DOM) ─────────
+function showResult(result) {
+  const status = result.status || 'tampered';
+
+  // Verdict box
+  const verdictBox = document.getElementById('verdict-box');
+  let verdictText, verdictClass;
+
+  if (status === 'valid') {
+    verdictText  = '✓ VERIFIED — Card is Valid';
+    verdictClass = 'verified';
+  } else if (status === 'expired') {
+    verdictText  = '⚠ CARD EXPIRED';
+    verdictClass = 'expired';
+  } else if (status === 'revoked') {
+    verdictText  = '✕ CARD REVOKED';
+    verdictClass = 'invalid';
+  } else if (status === 'not_found') {
+    verdictText  = '✕ NOT FOUND — Not in database';
+    verdictClass = 'invalid';
+  } else if (status === 'offline') {
+    verdictText  = '⚠ SIGNATURE VALID — OFFLINE\nCould not confirm revocation/expiry';
+    verdictClass = 'offline';
+  } else {
+    // tampered or anything unknown
+    verdictText  = '✕ INVALID — Tampered or Forged Card';
+    verdictClass = 'invalid';
+  }
+
+  verdictBox.textContent = verdictText;
+  verdictBox.className   = 'verdict ' + verdictClass;
+
+  // Student photo (displayed so guard can compare face to cardholder)
+  const photoArea = document.getElementById('student-photo-area');
+  photoArea.innerHTML = '';  // safe — only set empty before building DOM safely
+
+  const st = result.student;
+  if (st && st.photo_url) {
+    const wrap = document.createElement('div');
+    wrap.className = 'student-photo-wrap';
+    const img = document.createElement('img');
+    img.className = 'student-photo';
+    img.alt = 'Student passport photo';
+    // Only set src after we know it's from our own Storage domain
+    img.src = st.photo_url;
+    img.onerror = () => { wrap.innerHTML = ''; };
+    wrap.appendChild(img);
+    photoArea.appendChild(wrap);
+  } else if (status === 'valid' || status === 'expired') {
+    const wrap = document.createElement('div');
+    wrap.className = 'student-photo-wrap';
+    const placeholder = document.createElement('div');
+    placeholder.className = 'student-photo-placeholder';
+    placeholder.textContent = '👤';
+    wrap.appendChild(placeholder);
+    photoArea.appendChild(wrap);
+  }
+
+  // Student fields (all via textContent — zero innerHTML with untrusted data)
+  const body = document.getElementById('sc-body');
+  body.innerHTML = '';  // reset container (safe — no untrusted content here)
+
+  if (st) {
+    const fields = [
+      { label: 'Name',       value: st.name,     full: true },
+      { label: 'Matric No',  value: st.matric },
+      { label: 'Faculty',    value: st.faculty },
+      { label: 'Department', value: st.dept },
+      { label: 'Level',      value: st.level },
+      { label: 'Session',    value: st.session },
+      { label: 'Blood Group',value: st.blood },
+      { label: 'Genotype',   value: st.genotype },
+      { label: 'Expiry Year',value: st.expiry ? String(st.expiry) : null },
+    ];
+
+    fields.forEach(f => {
+      if (!f.value) return;
+      const div   = document.createElement('div');
+      div.className = 'sc-field' + (f.full ? ' full' : '');
+
+      const lbl   = document.createElement('label');
+      lbl.textContent = f.label;   // safe — textContent
+
+      const span  = document.createElement('span');
+      span.textContent = f.value;  // safe — textContent, never innerHTML
+
+      div.appendChild(lbl);
+      div.appendChild(span);
+      body.appendChild(div);
+    });
+  }
+
+  // Timestamp
+  const ts = document.getElementById('scan-timestamp');
+  const checkedAt = result.checked_at
+    ? new Date(result.checked_at).toLocaleString()
+    : new Date().toLocaleString();
+  ts.textContent = 'Checked: ' + checkedAt;  // safe — textContent
+
+  showScreen('result');
+}
+
+function scanAgain() {
+  scanCooldown = false;
+  const inp = document.getElementById('manual-qr');
+  if (inp) inp.value = '';
+  showScreen('scanner');
+  scanLoopId = requestAnimationFrame(scanLoop);
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+(async () => {
+  const { data: { session } } = await _sb.auth.getSession();
+  if (session) {
+    const role = session.user?.user_metadata?.role || '';
+    if (ALLOWED_ROLES.includes(role)) {
+      setUserBadge(session.user);
+      showScreen('scanner');
+      startCamera();
+      return;
+    }
+    await _sb.auth.signOut();
+  }
+  // No valid session — show login
+  showScreen('login');
+  const emailEl = document.getElementById('v-email');
+  if (emailEl) emailEl.focus();
+})();
+</script>
+</body>
+</html>

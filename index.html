@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student ID Card Generator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ── QUICK-CHOICE MODAL ───────────────────────────────────────── -->
+<div id="qc-modal" role="dialog" aria-modal="true" aria-label="Accept or Crop Image">
+  <div class="qc-content">
+    <p class="qc-title" id="qc-title">Image Uploaded</p>
+    <div class="qc-preview-wrap">
+      <img id="qc-preview" class="qc-preview-img" alt="Uploaded image preview" />
+    </div>
+    <p id="qc-dims" class="qc-dims"></p>
+    <p id="qc-hint" class="qc-hint"></p>
+    <div class="qc-actions">
+      <button class="btn-qc-accept"  onclick="acceptCrop()">✓ Accept</button>
+      <button class="btn-qc-crop"    onclick="doCrop()">✂ Crop</button>
+      <button class="btn-crop-cancel" onclick="cancelQuickCrop()">✕ Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CROPPER OVERLAY ─────────────────────────────────────────── -->
+<div id="cropper-overlay" role="dialog" aria-modal="true" aria-label="Image Cropper">
+  <p class="cropper-hint">Drag to select area → Apply Crop</p>
+  <div class="cropper-canvas-wrapper">
+    <canvas id="crop-canvas"></canvas>
+  </div>
+  <div class="cropper-actions">
+    <button class="btn-crop-apply" onclick="applyCrop()">✓ Apply Crop</button>
+    <button class="btn-crop-cancel" onclick="cancelCrop()">✕ Cancel</button>
+  </div>
+</div>
+
+<!-- ── STATUS TOAST ────────────────────────────────────────────── -->
+<div id="status-toast" role="status" aria-live="polite">
+  <div class="toast-inner">
+    <div class="toast-spinner" aria-hidden="true"></div>
+    <span id="status-text">Processing…</span>
+  </div>
+</div>
+
+<!-- ── AUTH GATE OVERLAY ────────────────────────────────────────
+     Shown until operator/admin signs in with Supabase Auth.
+     Positioned fixed so it covers the entire generator UI.
+────────────────────────────────────────────────────────────── -->
+<div id="auth-gate" role="dialog" aria-modal="true" aria-label="Operator Login" style="
+  display:flex; position:fixed; inset:0; z-index:9000;
+  align-items:center; justify-content:center;
+  background:rgba(4,10,20,0.97);
+">
+  <div style="
+    background:#0c1b2e; border:1px solid #1e3050; border-radius:16px;
+    padding:40px 36px; width:100%; max-width:380px; text-align:center;
+    box-shadow:0 12px 48px rgba(0,0,0,0.7);
+  ">
+    <div style="font-size:48px;margin-bottom:12px">🪪</div>
+    <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:4px">ID Card Generator</div>
+    <div style="font-size:12px;color:#6080a0;margin-bottom:28px;line-height:1.6">
+      Sign in with your operator or admin account<br>to issue student ID cards.
+    </div>
+    <input id="ag-email" type="email" placeholder="Email address"
+      autocomplete="username"
+      style="width:100%;padding:11px 14px;margin-bottom:10px;
+        background:#112240;color:#cdd8e8;border:1px solid #1e3050;
+        border-radius:8px;font-size:14px;outline:none;box-sizing:border-box" />
+    <input id="ag-pass" type="password" placeholder="Password"
+      autocomplete="current-password"
+      style="width:100%;padding:11px 14px;margin-bottom:12px;
+        background:#112240;color:#cdd8e8;border:1px solid #1e3050;
+        border-radius:8px;font-size:14px;outline:none;box-sizing:border-box" />
+    <div id="ag-error" style="
+      display:none;color:#ff6666;font-size:12px;margin-bottom:10px;
+    "></div>
+    <button id="ag-login-btn" style="
+      width:100%;padding:13px;background:#1558c0;color:#fff;
+      border:none;border-radius:8px;font-size:14px;font-weight:700;
+      cursor:pointer;letter-spacing:0.5px;
+    ">Sign In</button>
+    <div style="margin-top:16px;font-size:11px;color:#3a5070">
+      <a href="verify.html" style="color:#3a5070">Verifier (guards)</a>
+      &nbsp;·&nbsp;
+      <a href="admin.html" style="color:#3a5070">Admin Panel</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── APP HEADER ──────────────────────────────────────────────── -->
+<header class="app-header">
+  <div class="app-header-brand">
+    <img
+      id="header-logo"
+      class="app-header-logo"
+      src=""
+      alt="University Crest"
+    />
+    <div>
+      <div class="app-header-title">Student ID Card Generator</div>
+      <div class="app-header-subtitle">EXACT CDR TEMPLATE · QR-CODED · SIGNED · DOWNLOAD PNG</div>
+    </div>
+  </div>
+  <nav class="app-header-nav" aria-label="Page navigation">
+    <button id="tab-form"    class="tab active"   onclick="showPage('form')">📝 Form</button>
+    <button id="tab-preview" class="tab inactive" onclick="showPage('preview')">🪪 Preview &amp; Download</button>
+    <a href="admin.html" class="tab inactive admin-tab">⚙ Admin</a>
+    <span id="auth-user-badge" style="
+      display:none;font-size:10px;color:#4a90d9;
+      background:rgba(74,144,217,0.1);border:1px solid rgba(74,144,217,0.3);
+      border-radius:6px;padding:4px 10px;letter-spacing:0.5px;
+    "></span>
+    <button id="auth-logout-btn" style="
+      display:none;padding:5px 12px;background:transparent;
+      border:1px solid #3a5070;color:#6080a0;border-radius:6px;
+      font-size:11px;cursor:pointer;
+    ">Sign Out</button>
+  </nav>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FORM PAGE
+     ═══════════════════════════════════════════════════════════════ -->
+<main id="page-form" class="page-form">
+
+  <!-- Institution settings -->
+  <section class="section" aria-labelledby="institution-heading">
+    <h2 id="institution-heading" class="section-title">🏫 INSTITUTION SETTINGS</h2>
+
+    <div class="grid-32 mb-14">
+      <div>
+        <label class="label" for="schoolName">School Name</label>
+        <input id="schoolName" type="text" value="EBONYI STATE UNIVERSITY, ABAKALIKI" />
+      </div>
+      <div>
+        <label class="label" for="expiry">Expiry Year</label>
+        <select id="expiry">
+          <option>2025</option>
+          <option>2026</option>
+          <option>2027</option>
+          <option>2028</option>
+          <option selected>2029</option>
+          <option>2030</option>
+          <option>2031</option>
+          <option>2032</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Custom Crest (optional)</label>
+        <button class="btn-blue full-width" onclick="pickLogo()">⬆ Upload Crest/Logo</button>
+      </div>
+    </div>
+
+    <!-- Colour customisation -->
+    <div class="section-divider">
+      <p class="section-subtitle">🎨 CARD COLOUR SETTINGS</p>
+
+      <div class="color-grid">
+
+        <!-- Header Background -->
+        <div class="color-swatch">
+          <label class="label mb-14" for="c-headerBg">Header Background</label>
+          <div class="color-picker-row">
+            <input type="color" id="c-headerBg" value="#1558c0"
+              onchange="updateColor('headerBg', this.value)"
+              aria-label="Header background colour picker" />
+            <input type="text" id="ct-headerBg" value="#1558C0"
+              class="color-text-input"
+              oninput="syncColorText('headerBg', this.value)"
+              aria-label="Header background hex value" />
+          </div>
+          <div id="prev-headerBg" class="color-preview-bar" style="background:#1558c0">
+            <span id="prevTxt-headerBg" class="color-preview-text" style="color:#ffffff">SCHOOL NAME</span>
+          </div>
+        </div>
+
+        <!-- Header Text -->
+        <div class="color-swatch">
+          <label class="label mb-14" for="c-headerText">Header Text</label>
+          <div class="color-picker-row">
+            <input type="color" id="c-headerText" value="#ffffff"
+              onchange="updateColor('headerText', this.value)"
+              aria-label="Header text colour picker" />
+            <input type="text" id="ct-headerText" value="#FFFFFF"
+              class="color-text-input"
+              oninput="syncColorText('headerText', this.value)"
+              aria-label="Header text hex value" />
+          </div>
+          <div id="prev-headerText" class="color-preview-bar" style="background:#1558c0">
+            <span id="prevTxt-headerText" class="color-preview-text" style="color:#ffffff">SCHOOL NAME</span>
+          </div>
+        </div>
+
+        <!-- Body Background -->
+        <div class="color-swatch">
+          <label class="label mb-14" for="c-bodyBg">Body Background</label>
+          <div class="color-picker-row">
+            <input type="color" id="c-bodyBg" value="#ffffff"
+              onchange="updateColor('bodyBg', this.value)"
+              aria-label="Body background colour picker" />
+            <input type="text" id="ct-bodyBg" value="#FFFFFF"
+              class="color-text-input"
+              oninput="syncColorText('bodyBg', this.value)"
+              aria-label="Body background hex value" />
+          </div>
+          <div id="prev-bodyBg" class="color-preview-bar" style="background:#ffffff;border:1px solid #ddd">
+            <span class="color-preview-text" style="color:#333">card body</span>
+          </div>
+        </div>
+
+        <!-- Border Colour -->
+        <div class="color-swatch">
+          <label class="label mb-14" for="c-borderColor">Border Colour</label>
+          <div class="color-picker-row">
+            <input type="color" id="c-borderColor" value="#6ab0e0"
+              onchange="updateColor('borderColor', this.value)"
+              aria-label="Border colour picker" />
+            <input type="text" id="ct-borderColor" value="#6AB0E0"
+              class="color-text-input"
+              oninput="syncColorText('borderColor', this.value)"
+              aria-label="Border colour hex value" />
+          </div>
+          <div id="prev-borderColor" class="color-preview-bar" style="border:3px solid #6ab0e0"></div>
+        </div>
+
+        <!-- Title Colour -->
+        <div class="color-swatch">
+          <label class="label mb-14" for="c-titleColor">Card Title</label>
+          <div class="color-picker-row">
+            <input type="color" id="c-titleColor" value="#cc0000"
+              onchange="updateColor('titleColor', this.value)"
+              aria-label="Title colour picker" />
+            <input type="text" id="ct-titleColor" value="#CC0000"
+              class="color-text-input"
+              oninput="syncColorText('titleColor', this.value)"
+              aria-label="Title colour hex value" />
+          </div>
+          <div class="color-preview-bar">
+            <span id="prevTxt-titleColor" class="color-preview-text" style="color:#cc0000">STUDENT IDENTITY CARD</span>
+          </div>
+        </div>
+
+        <!-- Matric Label -->
+        <div class="color-swatch">
+          <label class="label mb-14" for="c-matricLabel">Matric Label</label>
+          <div class="color-picker-row">
+            <input type="color" id="c-matricLabel" value="#1a3a9a"
+              onchange="updateColor('matricLabel', this.value)"
+              aria-label="Matric label colour picker" />
+            <input type="text" id="ct-matricLabel" value="#1A3A9A"
+              class="color-text-input"
+              oninput="syncColorText('matricLabel', this.value)"
+              aria-label="Matric label colour hex value" />
+          </div>
+          <div class="color-preview-bar">
+            <span id="prevTxt-matricLabel" class="color-preview-text" style="color:#1a3a9a">MATRIC NUMBER</span>
+          </div>
+        </div>
+
+        <!-- Label Colour -->
+        <div class="color-swatch">
+          <label class="label mb-14" for="c-labelColor">Field Labels</label>
+          <div class="color-picker-row">
+            <input type="color" id="c-labelColor" value="#000000"
+              onchange="updateColor('labelColor', this.value)"
+              aria-label="Field label colour picker" />
+            <input type="text" id="ct-labelColor" value="#000000"
+              class="color-text-input"
+              oninput="syncColorText('labelColor', this.value)"
+              aria-label="Field label colour hex value" />
+          </div>
+          <div class="color-preview-bar">
+            <span id="prevTxt-labelColor" class="color-preview-text" style="color:#000">Name: Faculty:</span>
+          </div>
+        </div>
+
+        <!-- Value Colour -->
+        <div class="color-swatch">
+          <label class="label mb-14" for="c-valueColor">Field Values</label>
+          <div class="color-picker-row">
+            <input type="color" id="c-valueColor" value="#222222"
+              onchange="updateColor('valueColor', this.value)"
+              aria-label="Field value colour picker" />
+            <input type="text" id="ct-valueColor" value="#222222"
+              class="color-text-input"
+              oninput="syncColorText('valueColor', this.value)"
+              aria-label="Field value colour hex value" />
+          </div>
+          <div class="color-preview-bar">
+            <span id="prevTxt-valueColor"  class="color-preview-text" style="color:#222">John Doe</span>
+            <span id="prevTxt-valueColor2" class="color-preview-text" style="color:#222"> · Sciences</span>
+          </div>
+        </div>
+
+        <!-- Photo Background -->
+        <div class="color-swatch">
+          <label class="label mb-14" for="c-photoBackground">Photo Background</label>
+          <div class="color-picker-row">
+            <input type="color" id="c-photoBackground" value="#aa1111"
+              onchange="updateColor('photoBackground', this.value)"
+              aria-label="Photo background colour picker" />
+            <input type="text" id="ct-photoBackground" value="#AA1111"
+              class="color-text-input"
+              oninput="syncColorText('photoBackground', this.value)"
+              aria-label="Photo background colour hex value" />
+          </div>
+          <div id="prev-photoBackground" class="color-preview-bar" style="background:#aa1111;height:26px;border-radius:4px"></div>
+        </div>
+
+      </div><!-- /.color-grid -->
+
+      <!-- Theme presets -->
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span class="label" style="margin:0">Quick Themes:</span>
+        <button class="btn-blue"    onclick="applyTheme('ebsu')">🔵 EBSU Blue</button>
+        <button class="btn-blue"    onclick="applyTheme('green')"   style="background:#1a7a3a">🟢 Green</button>
+        <button class="btn-red"     onclick="applyTheme('maroon')"  style="background:#8b0000">🔴 Maroon</button>
+        <button class="btn-outline" onclick="applyTheme('purple')"  style="color:#9a6acc;border-color:#9a6acc">🟣 Purple</button>
+        <button class="btn-outline" onclick="applyTheme('gold')"    style="color:#b8860b;border-color:#b8860b">🟡 Gold</button>
+        <button class="btn-outline" onclick="applyTheme('classic')">⬛ Classic</button>
+      </div>
+    </div><!-- /.section-divider -->
+    <!-- ═══════════════════════════════════════════════════════════
+     LIVE CARD ADJUSTER — paste this inside your <body>, anywhere
+     visible (e.g. below your existing colour panel).
+     It reads/writes CardConfig and calls renderPreview() live.
+════════════════════════════════════════════════════════════ -->
+<div id="card-adjuster" style="
+  background:#111827;
+  border:1px solid #2d3748;
+  border-radius:10px;
+  padding:16px;
+  margin:12px 0;
+  color:#e2e8f0;
+  font-family:Arial,sans-serif;
+  font-size:12px;
+">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-weight:700;font-size:13px;color:#63b3ed">⚙ Live Card Adjuster</span>
+    <button onclick="document.getElementById('adj-body').style.display=document.getElementById('adj-body').style.display==='none'?'grid':'none'"
+      style="background:#2d3748;border:none;color:#e2e8f0;padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px">
+      Toggle
+    </button>
+  </div>
+
+  <div id="adj-body" style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;">
+
+    <!-- Card size -->
+    <label>Card Width
+      <input type="range" min="400" max="650" step="5"
+        oninput="CardConfig.cardWidth=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="500"><span>500</span>
+    </label>
+    <label>Card Height
+      <input type="range" min="280" max="480" step="5"
+        oninput="CardConfig.cardHeight=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="370"><span>370</span>
+    </label>
+
+    <!-- Header -->
+    <label>Header Height
+      <input type="range" min="30" max="80" step="1"
+        oninput="CardConfig.headerHeight=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="52"><span>52</span>
+    </label>
+    <label>School Font
+      <input type="range" min="8" max="22" step="1"
+        oninput="CardConfig.schoolFontSize=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="15"><span>15</span>
+    </label>
+
+    <!-- Title / Matric -->
+    <label>Title Font
+      <input type="range" min="8" max="24" step="1"
+        oninput="CardConfig.titleFontSize=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="16"><span>16</span>
+    </label>
+    <label>Matric Font
+      <input type="range" min="6" max="16" step="0.5"
+        oninput="CardConfig.matricFontSize=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="9"><span>9</span>
+    </label>
+
+    <!-- Photo -->
+    <label>Photo Width
+      <input type="range" min="80" max="180" step="2"
+        oninput="CardConfig.photoW=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="118"><span>118</span>
+    </label>
+    <label>Photo Height
+      <input type="range" min="120" max="280" step="2"
+        oninput="CardConfig.photoH=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="205"><span>205</span>
+    </label>
+
+    <!-- Right column -->
+    <label>Right Col Width
+      <input type="range" min="60" max="130" step="2"
+        oninput="CardConfig.rightColWidth=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="95"><span>95</span>
+    </label>
+    <label>Crest Height
+      <input type="range" min="40" max="120" step="2"
+        oninput="CardConfig.crestHeight=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="75"><span>75</span>
+    </label>
+
+    <!-- Fields -->
+    <label>Field Font
+      <input type="range" min="6" max="16" step="0.5"
+        oninput="CardConfig.labelFontSize=+this.value;CardConfig.valueFontSize=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="9.5"><span>9.5</span>
+    </label>
+    <label>Field Spacing
+      <input type="range" min="14" max="55" step="1"
+        oninput="CardConfig.fieldSpacing=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="32"><span>32</span>
+    </label>
+
+    <!-- Value indent -->
+    <label>Value Indent
+      <input type="range" min="40" max="120" step="2"
+        oninput="CardConfig.valueIndent=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="75"><span>75</span>
+    </label>
+
+    <!-- Blood -->
+    <label>Blood Font
+      <input type="range" min="6" max="16" step="0.5"
+        oninput="CardConfig.bloodFontSize=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="10"><span>10</span>
+    </label>
+    <label>Blood Gap (below photo)
+      <input type="range" min="2" max="30" step="1"
+        oninput="CardConfig.bloodGap=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="10"><span>10</span>
+    </label>
+    <label>Blood Line Spacing
+      <input type="range" min="10" max="30" step="1"
+        oninput="CardConfig.bloodSpacing=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="18"><span>18</span>
+    </label>
+
+    <!-- Watermark -->
+    <label>Watermark Alpha
+      <input type="range" min="0" max="0.5" step="0.01"
+        oninput="CardConfig.watermarkAlpha=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="0.15"><span>0.15</span>
+    </label>
+    <label>Watermark Size
+      <input type="range" min="80" max="320" step="5"
+        oninput="CardConfig.watermarkSize=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
+        value="200"><span>200</span>
+    </label>
+
+  </div><!-- end adj-body -->
+
+  <div style="margin-top:10px;display:flex;gap:8px">
+    <button onclick="resetCardConfig()" style="
+      flex:1;background:#e53e3e;border:none;color:#fff;
+      padding:6px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700
+    ">Reset Defaults</button>
+    <button onclick="logCardConfig()" style="
+      flex:1;background:#2b6cb0;border:none;color:#fff;
+      padding:6px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700
+    ">Log Config</button>
+  </div>
+</div>
+
+<style>
+#card-adjuster label {
+  display:flex;flex-direction:column;gap:2px;color:#a0aec0;font-size:11px;
+}
+#card-adjuster input[type=range] {
+  width:100%;accent-color:#63b3ed;
+}
+#card-adjuster label span {
+  text-align:right;color:#63b3ed;font-weight:700;font-size:11px;
+}
+</style>
+
+<script>
+// Global object read by adjuster sliders (drawCard does not consume it;
+// values here are display-only helpers for the Live Adjuster UI).
+var CardConfig = {};
+
+// Reset all sliders back to default
+function resetCardConfig() {
+  const defaults = {
+    cardWidth:500,cardHeight:370,headerHeight:52,schoolFontSize:15,
+    titleFontSize:16,matricFontSize:9,photoX:8,photoY:4,photoW:118,photoH:205,
+    rightColWidth:95,rightColGap:10,crestHeight:75,qrGap:8,sigGap:8,sigHeight:38,
+    fieldStartY:20,fieldSpacing:32,labelFontSize:9.5,valueFontSize:9.5,
+    labelIndent:8,valueIndent:75,bloodFontSize:10,bloodGap:10,bloodSpacing:18,
+    bloodIndent:8,bloodValueX:80,watermarkX:130,watermarkY:85,watermarkSize:200,
+    watermarkAlpha:0.15,sigLabelFontSize:9
+  };
+  Object.assign(CardConfig, defaults);
+  // Reset all range inputs
+  document.querySelectorAll('#card-adjuster input[type=range]').forEach(inp => {
+    const key = inp.getAttribute('oninput').match(/CardConfig\.(\w+)/)?.[1];
+    if (key && defaults[key] !== undefined) {
+      inp.value = defaults[key];
+      inp.nextElementSibling.textContent = defaults[key];
+    }
+  });
+  UI.renderPreview();
+}
+
+// Print current config to console (so you can copy final values into canvas.js)
+function logCardConfig() {
+  console.log('Current CardConfig:', JSON.stringify(CardConfig, null, 2));
+  UI.showToast('Config logged to browser console (F12)', 2500);
+}
+</script>
+  </section>
+
+  <!-- Student details -->
+  <section class="section" aria-labelledby="student-heading">
+    <div class="student-tabs-row">
+      <h2 id="student-heading" class="section-title" style="margin:0">👤 STUDENT DETAILS</h2>
+      <div id="student-tabs" role="tablist" aria-label="Student tabs"></div>
+    </div>
+
+    <div class="grid-3 mb-14">
+      <div>
+        <label class="label" for="f-name">Full Name</label>
+        <input id="f-name" type="text" placeholder="Full Name" autocomplete="name" />
+      </div>
+      <div>
+        <label class="label" for="f-matric">Matric Number</label>
+        <input id="f-matric" type="text" placeholder="e.g. EBSU/2025/0001" />
+      </div>
+      <div>
+        <label class="label" for="f-faculty">Faculty</label>
+        <select id="f-faculty" onchange="cascadeDept()">
+          <option value="">— Select Faculty —</option>
+          <option>Science</option>
+          <option>Agricultural and Natural Resource Management</option>
+          <option>Health Science and Technology</option>
+          <option>Social Sciences and Humanities</option>
+          <option>Basic Medical Sciences</option>
+          <option>Clinical Medicine</option>
+          <option>Education</option>
+          <option>Management Sciences</option>
+          <option>Law</option>
+        </select>
+      </div>
+      <div>
+        <label class="label" for="f-dept">Department</label>
+        <select id="f-dept">
+          <option value="">— Select Faculty first —</option>
+        </select>
+      </div>
+      <div>
+        <label class="label" for="f-level">Level</label>
+        <select id="f-level">
+          <option>100 Level</option>
+          <option>200 Level</option>
+          <option>300 Level</option>
+          <option>400 Level</option>
+          <option>500 Level</option>
+          <option>600 Level</option>
+          <option>Postgraduate</option>
+        </select>
+      </div>
+      <div>
+        <label class="label" for="f-session">Session</label>
+        <select id="f-session">
+          <option>2023/2024</option>
+          <option selected>2024/2025</option>
+          <option>2025/2026</option>
+          <option>2026/2027</option>
+        </select>
+      </div>
+      <div>
+        <label class="label" for="f-blood">Blood Group</label>
+        <select id="f-blood">
+          <option>A+</option><option>A-</option>
+          <option>B+</option><option>B-</option>
+          <option selected>O+</option><option>O-</option>
+          <option>AB+</option><option>AB-</option>
+        </select>
+      </div>
+      <div>
+        <label class="label" for="f-genotype">Genotype</label>
+        <select id="f-genotype">
+          <option selected>AA</option>
+          <option>AS</option>
+          <option>AC</option>
+          <option>SS</option>
+          <option>SC</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Photo & Signature -->
+    <div class="grid-2 section-divider">
+      <div>
+        <label class="label mb-14">Passport Photo (3:4 ratio)</label>
+        <div class="upload-area">
+          <div id="photo-preview" aria-label="Photo preview">
+            <span class="preview-placeholder">👤</span>
+          </div>
+          <div class="upload-controls">
+            <button class="btn-blue" onclick="pickFile('photo', 0.75)">⬆ Upload &amp; Crop</button>
+            <button id="rm-photo" class="btn-dark" style="display:none" onclick="removeImg('photo')">✕ Remove</button>
+            <span class="upload-hint">Red background preferred<br>3:4 ratio enforced</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label class="label mb-14">Student Signature</label>
+        <div class="upload-area">
+          <div id="sig-preview" aria-label="Signature preview">
+            <span class="sig-placeholder">Signature</span>
+          </div>
+          <div class="upload-controls">
+            <button class="btn-blue" onclick="pickFile('sig', 3)">⬆ Upload &amp; Crop</button>
+            <button id="rm-sig" class="btn-dark" style="display:none" onclick="removeImg('sig')">✕ Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Generate button -->
+  <div class="generate-row">
+    <button class="btn-generate" onclick="generate()">
+      🪪 GENERATE ID CARD
+    </button>
+  </div>
+
+</main><!-- /#page-form -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PREVIEW PAGE
+     ═══════════════════════════════════════════════════════════════ -->
+<main id="page-preview" class="page-preview" hidden>
+
+  <div class="preview-toolbar">
+    <span class="preview-toolbar-label">LAYOUT:</span>
+    <button id="ly-single"      class="layout-btn on"  onclick="setLayout('single')">🪪 Single (Front)</button>
+    <button id="ly-single-back" class="layout-btn off" onclick="setLayout('single-back')">🪪 Single (Back)</button>
+    <button id="ly-double"      class="layout-btn off" onclick="setLayout('double')">🃏 Front + Back</button>
+    <button id="ly-batch"       class="layout-btn off" onclick="setLayout('batch')">📋 Batch All</button>
+
+    <div class="preview-toolbar-actions">
+      <button class="btn-ghost"   onclick="showPage('form')">✏️ Edit</button>
+      <button class="btn-blue"    onclick="doPrint()">🖨 Print</button>
+      <button class="btn-red"     onclick="downloadCard()">⬇ Download PNG</button>
+    </div>
+  </div>
+
+  <div id="cards-container" aria-live="polite" aria-label="Generated ID cards"></div>
+
+</main><!-- /#page-preview -->
+
+
+<!-- ── SCRIPTS (order matters) ─────────────────────────────────── -->
+<!-- Public config (copy config.example.js → config.js and fill in values) -->
+<script src="config.js"></script>
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets.js"></script>
+<script src="qr.js"></script>
+<script src="state.js"></script>
+<script src="canvas.js"></script>
+<script src="cropper.js"></script>
+<script src="ui.js"></script>
+<script src="main.js"></script>
+
+<!-- ── Auth initialisation + login gate ──────────────────────────
+     Runs after all modules are loaded.  Hides the generator behind
+     a Supabase email+password login for operator/admin roles.
+──────────────────────────────────────────────────────────────── -->
+<script>
+(function () {
+  // Initialise Supabase client — exposed as window.ebsuSupabase so ui.js
+  // can call auth.getSession() inside generate().
+  let _client = null;
+  if (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.SUPABASE_URL) {
+    _client = supabase.createClient(EBSU_CONFIG.SUPABASE_URL, EBSU_CONFIG.SUPABASE_ANON_KEY);
+  }
+  window.ebsuSupabase = _client;
+
+  // ── Auth gate overlay ─────────────────────────────────────────
+  const gate       = document.getElementById('auth-gate');
+  const emailInp   = document.getElementById('ag-email');
+  const passInp    = document.getElementById('ag-pass');
+  const loginBtn   = document.getElementById('ag-login-btn');
+  const errorEl    = document.getElementById('ag-error');
+  const userBadge  = document.getElementById('auth-user-badge');
+  const logoutBtn  = document.getElementById('auth-logout-btn');
+
+  function showGate()  { if (gate) gate.style.display = 'flex'; }
+  function hideGate()  { if (gate) gate.style.display = 'none';  }
+
+  function setError(msg) {
+    if (errorEl) { errorEl.textContent = msg; errorEl.style.display = msg ? 'block' : 'none'; }
+  }
+
+  function setUserBadge(user) {
+    if (!userBadge) return;
+    if (user) {
+      const role  = user.user_metadata?.role || 'unknown';
+      const email = user.email || '';
+      userBadge.textContent = role.toUpperCase() + ' · ' + email;
+      userBadge.style.display = 'inline';
+      if (logoutBtn) logoutBtn.style.display = 'inline-block';
+    } else {
+      userBadge.style.display = 'none';
+      if (logoutBtn) logoutBtn.style.display = 'none';
+    }
+  }
+
+  async function doLogin() {
+    if (!_client) { setError('config.js not loaded — copy config.example.js first.'); return; }
+    const email = emailInp ? emailInp.value.trim() : '';
+    const pass  = passInp  ? passInp.value         : '';
+    if (!email || !pass)  { setError('Enter your email and password.'); return; }
+
+    setError('');
+    if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Signing in…'; }
+
+    const { data, error } = await _client.auth.signInWithPassword({ email, password: pass });
+
+    if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Sign In'; }
+
+    if (error) { setError(error.message); return; }
+
+    const role = data.user?.user_metadata?.role || '';
+    if (!['operator', 'admin'].includes(role)) {
+      await _client.auth.signOut();
+      setError('Your account does not have operator or admin access.');
+      return;
+    }
+
+    setUserBadge(data.user);
+    hideGate();
+  }
+
+  async function doLogout() {
+    if (_client) await _client.auth.signOut();
+    setUserBadge(null);
+    showGate();
+    if (passInp) passInp.value = '';
+  }
+
+  // ── Cascading faculty → department dropdowns ──────────────────
+  const EBSU_DEPTS = {
+    'Science': [
+      'Applied Biology',
+      'Applied Microbiology and Brewing',
+      'Biochemistry',
+      'Biotechnology',
+      'Computer Science',
+      'Geology and Exploration Geophysics',
+      'Industrial Chemistry',
+      'Industrial Mathematics and Statistics',
+      'Industrial Physics',
+    ],
+    'Agricultural and Natural Resource Management': [
+      'Agricultural Economics and Extension',
+      'Animal Science',
+      'Fishery and Aqua-Culture',
+      'Food Science and Technology',
+      'Soil Science and Environmental Management',
+    ],
+    'Health Science and Technology': [
+      'Medical Laboratory Science',
+      'Nursing Science',
+    ],
+    'Social Sciences and Humanities': [
+      'Economics',
+      'English Language and Literature',
+      'History and International Relations',
+      'Language and Linguistics',
+      'Library and Information Science',
+      'Mass Communication',
+      'Philosophy and Religion',
+      'Political Science',
+      'Psychology',
+      'Social Works',
+      'Sociology and Anthropology',
+    ],
+    'Basic Medical Sciences': [
+      'Anatomy',
+      'Medicine and Surgery',
+      'Physiology',
+    ],
+    'Clinical Medicine': [
+      'Community Medicine',
+      'Internal Medicine',
+      'Pharmacology',
+      'Surgery',
+    ],
+    'Education': [
+      'Arts and Social Science Education',
+      'Business Education',
+      'Educational Foundations',
+      'Guidance and Counselling',
+      'Home Economics Education',
+      'Human Kinetics and Health Education',
+      'Science Education',
+      'Technology and Vocational Education',
+    ],
+    'Management Sciences': [
+      'Accountancy',
+      'Banking and Finance',
+      'Business Management',
+      'Marketing',
+      'Public Administration',
+    ],
+    'Law': [
+      'Business Law',
+      'Civil Law',
+      'International Law and Jurisprudence',
+      'Private and Property Law',
+      'Public Law',
+    ],
+  };
+
+  window.cascadeDept = function () {
+    const fac  = document.getElementById('f-faculty').value;
+    const dept = document.getElementById('f-dept');
+    dept.innerHTML = '';
+    if (!fac || !EBSU_DEPTS[fac]) {
+      dept.innerHTML = '<option value="">— Select Faculty first —</option>';
+      return;
+    }
+    dept.innerHTML = '<option value="">— Select Department —</option>';
+    EBSU_DEPTS[fac].forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d;
+      dept.appendChild(opt);
+    });
+  };
+
+  // Wire buttons
+  if (loginBtn) loginBtn.addEventListener('click', doLogin);
+  if (logoutBtn) logoutBtn.addEventListener('click', doLogout);
+  if (passInp) passInp.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+  // Check existing session on load
+  (async () => {
+    if (!_client) { showGate(); return; }
+
+    const { data: { session } } = await _client.auth.getSession();
+    if (session) {
+      const role = session.user?.user_metadata?.role || '';
+      if (['operator', 'admin'].includes(role)) {
+        setUserBadge(session.user);
+        hideGate();
+        return;
+      }
+      // Session exists but wrong role — sign out
+      await _client.auth.signOut();
+    }
+    showGate();
+    if (emailInp) emailInp.focus();
+  })();
+
+  // Set header logo after assets.js loaded
+  document.getElementById('header-logo').src = CREST_SMALL;
+})();
+</script>
+
+</body>
+</html>
