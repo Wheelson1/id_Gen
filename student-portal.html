@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EBSU Student Portal</title>
+  <link rel="stylesheet" href="styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .portal-container { max-width: 500px; margin: 40px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .portal-header { text-align: center; margin-bottom: 20px; color: #1558c0; }
+    .auth-section, .dashboard-section { display: none; }
+    .active-section { display: block; }
+    .btn-full { width: 100%; padding: 12px; font-size: 16px; font-weight: bold; margin-top: 10px; }
+    #otp-step { display: none; }
+    .card-wrapper { margin-top: 20px; text-align: center; }
+    .action-btn { margin-top: 10px; width: 100%; }
+    .btn-danger { background-color: #cc0000; color: white; border: none; }
+    .btn-danger:hover { background-color: #aa0000; }
+    #video-container { display: none; margin-top: 10px; text-align: center; position: relative; }
+    #video-container video, #video-container canvas { max-width: 100%; border-radius: 8px; }
+    #video-container canvas { position: absolute; top: 0; left: 0; }
+    .status-msg { margin-top: 10px; padding: 10px; border-radius: 4px; display: none; }
+    .status-success { background: #d4edda; color: #155724; }
+    .status-error { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Notification -->
+  <div id="status-toast" class="toast" style="display:none;position:fixed;top:20px;right:20px;background:#fff;border-left:4px solid #1558c0;padding:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);z-index:9999;">
+    <span id="status-text"></span>
+  </div>
+
+  <div class="portal-container">
+    <div class="portal-header">
+      <h2>🎓 EBSU Digital ID Portal</h2>
+      <p>Access and manage your student ID card securely.</p>
+    </div>
+
+    <!-- AUTHENTICATION -->
+    <div id="auth-section" class="auth-section active-section">
+      <div id="matric-step">
+        <label class="label" for="portal-matric">Registration Number (Matric)</label>
+        <input id="portal-matric" type="text" class="input" placeholder="EBSU/2024/123456" />
+        <button id="btn-request-otp" class="btn-primary btn-full">Send Login Code</button>
+      </div>
+
+      <div id="otp-step">
+        <p id="otp-message" style="color: #555; margin-bottom: 10px; font-size: 14px;"></p>
+        <label class="label" for="portal-otp">6-Digit OTP Code</label>
+        <input id="portal-otp" type="text" class="input" placeholder="123456" />
+        <button id="btn-verify-otp" class="btn-primary btn-full">Verify & Log In</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-section" class="dashboard-section">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
+        <h3 style="margin:0;">Welcome, <span id="dash-name"></span></h3>
+        <button id="btn-logout" class="btn-outline" style="padding: 5px 10px;">Logout</button>
+      </div>
+
+      <div class="card-wrapper" id="portal-card-container">
+        <!-- Live ID Card Canvas goes here -->
+      </div>
+
+      <p style="text-align:center; font-size:12px; color:#666; margin-top:5px;">
+        QR code regenerates automatically to prevent screenshots.
+      </p>
+
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;" />
+
+      <h4>Manage Passport Photo</h4>
+      <p style="font-size: 13px; color: #555; margin-bottom:10px;">Update your ID card photo. AI Facial Recognition will ensure the new photo matches your official school records.</p>
+      
+      <input type="file" id="photo-upload" accept="image/*" style="display:none;" />
+      <button class="btn-outline action-btn" onclick="document.getElementById('photo-upload').click()">Upload New Photo</button>
+      
+      <div id="photo-status" class="status-msg"></div>
+
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;" />
+
+      <h4>Card Security</h4>
+      <button id="btn-report-lost" class="btn-danger action-btn">🚨 Report Card as Lost/Stolen</button>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <!-- Face API for Facial Recognition -->
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <!-- Required App Scripts -->
+  <script src="config.js"></script>
+  <script src="qr.js"></script>
+  <script src="assets.js"></script>
+  <script src="canvas.js"></script>
+  <script src="student-portal.js"></script>
+
+</body>
+</html>

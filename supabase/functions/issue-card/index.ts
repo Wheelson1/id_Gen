@@ -12,6 +12,7 @@
  * {
  *   name:      string   (required)
  *   matric:    string   (required, must match EBSU format)
+ *   email?:    string   (optional)
  *   expiry:    number   (required, integer, currentYear..currentYear+10)
  *   faculty?:  string
  *   dept?:     string
@@ -85,6 +86,7 @@ Deno.serve(async (req: Request) => {
 
     const name   = typeof body.name   === 'string' ? body.name.trim()   : '';
     const matric = typeof body.matric === 'string' ? body.matric.trim() : '';
+    const email  = typeof body.email  === 'string' ? body.email.trim()  : null;
 
     if (!name)              errors.push('name is required');
     if (!matric)            errors.push('matric is required');
@@ -160,11 +162,22 @@ Deno.serve(async (req: Request) => {
     const photoUrl = await uploadImage(body.photo_b64, 'student-photos',    cardId);
     const sigUrl   = await uploadImage(body.sig_b64,   'student-signatures', `${cardId}_sig`);
 
-    // ── 5. Upsert student record ─────────────────────────────────
+    // ── 5. Sign card_id with Ed25519 ─────────────────────────────
+    const privateKeyB64 = Deno.env.get('ED25519_PRIVATE_KEY');
+    if (!privateKeyB64) {
+      return json({ error: 'Server configuration error — missing signing key' }, 500, headers);
+    }
+
+    const signature = await signCardId(cardId, privateKeyB64);
+    const qrString  = buildQRToken(cardId, signature);
+
+    // ── 6. Upsert student record ─────────────────────────────────
     const studentRow = {
       id:        cardId,
       matric,
       name,
+      email,
+      card_signature: signature,
       faculty:   typeof body.faculty  === 'string' ? body.faculty.trim()  : null,
       dept:      typeof body.dept     === 'string' ? body.dept.trim()     : null,
       level:     typeof body.level    === 'string' ? body.level.trim()    : null,
@@ -186,15 +199,6 @@ Deno.serve(async (req: Request) => {
       console.error('DB upsert error:', upsertErr.message);
       return json({ error: 'Database error — could not save student record' }, 500, headers);
     }
-
-    // ── 6. Sign card_id with Ed25519 ─────────────────────────────
-    const privateKeyB64 = Deno.env.get('ED25519_PRIVATE_KEY');
-    if (!privateKeyB64) {
-      return json({ error: 'Server configuration error — missing signing key' }, 500, headers);
-    }
-
-    const signature = await signCardId(cardId, privateKeyB64);
-    const qrString  = buildQRToken(cardId, signature);
 
     // ── 7. Return ────────────────────────────────────────────────
     return json({ card_id: cardId, signature, qr_string: qrString }, 200, headers);

@@ -84,6 +84,7 @@ const UI = (() => {
     const st = AppState.currentStudent();
     st.name     = document.getElementById('f-name').value;
     st.matric   = document.getElementById('f-matric').value;
+    st.email    = document.getElementById('f-email').value;
     st.faculty  = document.getElementById('f-faculty').value;
     st.dept     = document.getElementById('f-dept').value;
     st.level    = document.getElementById('f-level').value;
@@ -96,6 +97,7 @@ const UI = (() => {
     const st = AppState.currentStudent();
     document.getElementById('f-name').value    = st.name    || '';
     document.getElementById('f-matric').value  = st.matric  || '';
+    document.getElementById('f-email').value   = st.email   || '';
     document.getElementById('f-faculty').value = st.faculty || '';
     document.getElementById('f-dept').value    = st.dept    || '';
     document.getElementById('f-level').value   = st.level   || '100 Level';
@@ -240,6 +242,7 @@ const UI = (() => {
       const payload = {
         name:     st.name,
         matric:   st.matric,
+        email:    st.email    || '',
         faculty:  st.faculty  || '',
         dept:     st.dept     || '',
         level:    st.level    || '',
