@@ -22,6 +22,10 @@
     .status-msg { margin-top: 10px; padding: 10px; border-radius: 4px; display: none; }
     .status-success { background: #d4edda; color: #155724; }
     .status-error { background: #f8d7da; color: #721c24; }
+    .skeleton-card { width: 100%; height: 250px; background: linear-gradient(135deg, #eee, #f9f9f9); border-radius: 8px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; filter: blur(4px); transition: filter 0.3s; margin-bottom: 15px; }
+    .activity-feed { background: #f9f9f9; padding: 15px; border-radius: 8px; max-height: 200px; overflow-y: auto; font-size: 12px; }
+    .activity-item { border-left: 3px solid #1558c0; padding-left: 10px; margin-bottom: 10px; }
+    .activity-time { color: #888; font-size: 10px; }
   </style>
 </head>
 <body>
@@ -40,9 +44,15 @@
     <!-- AUTHENTICATION -->
     <div id="auth-section" class="auth-section active-section">
       <div id="matric-step">
+        <div class="skeleton-card" id="skeleton-preview">
+          <div style="text-align:center;">
+            <div style="font-size:40px;">🪪</div>
+            <p><strong>Digital ID Locked</strong></p>
+          </div>
+        </div>
         <label class="label" for="portal-matric">Registration Number (Matric)</label>
         <input id="portal-matric" type="text" class="input" placeholder="EBSU/2024/123456" />
-        <button id="btn-request-otp" class="btn-primary btn-full">Send Login Code</button>
+        <button id="btn-request-otp" class="btn-primary btn-full">Unlock Digital ID</button>
       </div>
 
       <div id="otp-step">
@@ -70,6 +80,15 @@
 
       <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;" />
 
+      <h4>Campus Footprint (Identity Log)</h4>
+      <p style="font-size: 13px; color: #555; margin-bottom:10px;">Your living record of campus activities.</p>
+      <div id="activity-feed" class="activity-feed">
+        <!-- Activities will load here -->
+        <p style="color:#aaa; text-align:center; margin-top: 20px;">No recent activity</p>
+      </div>
+
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;" />
+
       <h4>Manage Passport Photo</h4>
       <p style="font-size: 13px; color: #555; margin-bottom:10px;">Update your ID card photo. AI Facial Recognition will ensure the new photo matches your official school records.</p>
       
@@ -81,6 +100,10 @@
       <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;" />
 
       <h4>Card Security</h4>
+      <div id="paystack-mock" style="display:none; background:#eaffea; padding:15px; border:1px solid #4caf50; border-radius:8px; margin-bottom:10px;">
+        <h4 style="margin-top:0;color:#2e7d32">Checkout: ₦2,000 Replacement Fee</h4>
+        <button id="btn-pay-now" class="btn-primary btn-full" style="background:#4caf50;">Pay with Paystack</button>
+      </div>
       <button id="btn-report-lost" class="btn-danger action-btn">🚨 Report Card as Lost/Stolen</button>
     </div>
 

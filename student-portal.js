@@ -33,6 +33,40 @@ function showStatus(elId, msg, isError) {
   el.style.display = 'block';
 }
 
+// ── SENSORY FEEDBACK (Law 5) ──────────────────────────────────
+function playSwoosh() {
+  // A subtle base64 UI swoosh sound
+  const swoosh = new Audio('data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq');
+  swoosh.volume = 0.5;
+  swoosh.play().catch(e => {});
+}
+
+function playSnap() {
+  const snap = new Audio('data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq');
+  snap.volume = 0.3;
+  snap.play().catch(e => {});
+}
+
+function triggerHaptic(pattern) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+// ── ZERO FRICTION GUEST MODE (Law 1 & 2) ──────────────────────
+matricInput.addEventListener('input', () => {
+  const val = matricInput.value.trim();
+  const skeleton = document.getElementById('skeleton-preview');
+  if (/^EBSU\/\d{4}\/\d{6,8}$/i.test(val)) {
+    // Predictive intent: User typed a valid matric. We subtly animate the skeleton.
+    skeleton.style.filter = 'blur(1px)';
+    skeleton.style.border = '2px solid #1558c0';
+    triggerHaptic(10);
+  } else {
+    skeleton.style.filter = 'blur(4px)';
+    skeleton.style.border = '2px dashed #ccc';
+  }
+});
+
+
 // ── AUTHENTICATION ─────────────────────────────────────────────
 
 document.getElementById('btn-request-otp').addEventListener('click', async () => {
@@ -90,6 +124,8 @@ document.getElementById('btn-verify-otp').addEventListener('click', async () => 
     if (error) throw error;
     
     // Logged in!
+    triggerHaptic([15, 30, 15]);
+    playSwoosh();
     checkSession();
   } catch (err) {
     showToast(err.message, true);
@@ -138,12 +174,44 @@ async function loadDashboard() {
     document.getElementById('dash-name').textContent = student.name.split(' ')[0];
     
     renderLiveCard();
+    playSnap();
+    loadActivityLog();
     // Refresh QR every 30 seconds
     if (qrTimer) clearInterval(qrTimer);
-    qrTimer = setInterval(renderLiveCard, 30000);
+    qrTimer = setInterval(() => {
+      renderLiveCard();
+      playSnap();
+      triggerHaptic(5);
+    }, 30000);
 
   } catch (err) {
     console.error(err);
+  }
+}
+
+async function loadActivityLog() {
+  try {
+    const { data, error } = await ebsuSupabase
+      .from('activity_log')
+      .select('*')
+      .order('timestamp', { ascending: false })
+      .limit(10);
+    
+    if (error) throw error;
+    const feed = document.getElementById('activity-feed');
+    if (data && data.length > 0) {
+      feed.innerHTML = data.map(log => `
+        <div class="activity-item">
+          <strong>${log.action}</strong>
+          <div>${log.location || 'Campus'}</div>
+          <div class="activity-time">${new Date(log.timestamp).toLocaleString()}</div>
+        </div>
+      `).join('');
+    } else {
+      feed.innerHTML = '<p style="color:#aaa; text-align:center; margin-top: 20px;">No recent activity</p>';
+    }
+  } catch (err) {
+    console.error('Error loading activity:', err);
   }
 }
 
@@ -180,7 +248,8 @@ function renderLiveCard() {
 }
 
 document.getElementById('btn-report-lost').addEventListener('click', async () => {
-  if (!confirm("Are you sure? This will instantly revoke your current ID card. You will need to visit Admin to get a replacement.")) return;
+  triggerHaptic([50, 50, 50]);
+  if (!confirm("Are you sure? This will instantly revoke your current ID card. You will need to pay a ₦2,000 replacement fee.")) return;
   
   try {
     const { error } = await ebsuSupabase
@@ -189,12 +258,29 @@ document.getElementById('btn-report-lost').addEventListener('click', async () =>
       .eq('id', currentStudent.id);
     
     if (error) throw error;
-    showToast('Card successfully revoked. It can no longer be scanned at the gate.');
+    showToast('Card successfully revoked. It can no longer be scanned at the gate.', true);
     currentStudent.status = 'revoked';
-    renderLiveCard(); // Will draw with revoked state if handled, or just stop
+    renderLiveCard();
+    
+    // Show Monetization UI (Law 6)
+    document.getElementById('btn-report-lost').style.display = 'none';
+    document.getElementById('paystack-mock').style.display = 'block';
   } catch (err) {
     showToast(err.message, true);
   }
+});
+
+document.getElementById('btn-pay-now').addEventListener('click', () => {
+  triggerHaptic(15);
+  const btn = document.getElementById('btn-pay-now');
+  btn.textContent = 'Processing Payment via Paystack...';
+  setTimeout(() => {
+    btn.textContent = 'Payment Successful! See Admin for pickup.';
+    btn.style.background = '#155724';
+    btn.disabled = true;
+    triggerHaptic([15, 30, 15]);
+    playSwoosh();
+  }, 2000);
 });
 
 // ── FACIAL RECOGNITION (face-api.js) ──────────────────────────

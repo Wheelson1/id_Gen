@@ -64,6 +64,7 @@ ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
 -- defence-in-depth second layer for any direct DB access that may be
 -- added later.
 
+DROP POLICY IF EXISTS "operators_insert" ON public.students;
 CREATE POLICY "operators_insert" ON public.students
   FOR INSERT
   TO authenticated
@@ -71,6 +72,7 @@ CREATE POLICY "operators_insert" ON public.students
     (auth.jwt() -> 'user_metadata' ->> 'role') IN ('operator', 'admin')
   );
 
+DROP POLICY IF EXISTS "operators_update" ON public.students;
 CREATE POLICY "operators_update" ON public.students
   FOR UPDATE
   TO authenticated
@@ -82,6 +84,7 @@ CREATE POLICY "operators_update" ON public.students
   );
 
 -- Admins can delete (used for data-correction only, not revocation)
+DROP POLICY IF EXISTS "admins_delete" ON public.students;
 CREATE POLICY "admins_delete" ON public.students
   FOR DELETE
   TO authenticated
@@ -102,9 +105,11 @@ INSERT INTO storage.buckets (id, name, public)
   ON CONFLICT (id) DO NOTHING;
 
 -- Public read (verifier needs to display photos)
+DROP POLICY IF EXISTS "public_read_photos" ON storage.objects;
 CREATE POLICY "public_read_photos" ON storage.objects
   FOR SELECT USING (bucket_id = 'student-photos');
 
+DROP POLICY IF EXISTS "public_read_sigs" ON storage.objects;
 CREATE POLICY "public_read_sigs" ON storage.objects
   FOR SELECT USING (bucket_id = 'student-signatures');
 

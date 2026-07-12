@@ -105,8 +105,6 @@
     </div>
   </div>
   <nav class="app-header-nav" aria-label="Page navigation">
-    <button id="tab-form"    class="tab active"   onclick="showPage('form')">📝 Form</button>
-    <button id="tab-preview" class="tab inactive" onclick="showPage('preview')">🪪 Preview &amp; Download</button>
     <a href="admin.html" class="tab inactive admin-tab">⚙ Admin</a>
     <span id="auth-user-badge" style="
       display:none;font-size:10px;color:#4a90d9;
@@ -122,7 +120,12 @@
 </header>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     FORM PAGE
+     SPLIT LAYOUT CONTAINER
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="app-split-layout">
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FORM SECTION
      ═══════════════════════════════════════════════════════════════ -->
 <main id="page-form" class="page-form">
 
@@ -641,10 +644,12 @@ function logCardConfig() {
 </main><!-- /#page-form -->
 
 
+</main><!-- /#page-form -->
+
 <!-- ═══════════════════════════════════════════════════════════════
-     PREVIEW PAGE
+     PREVIEW SECTION
      ═══════════════════════════════════════════════════════════════ -->
-<main id="page-preview" class="page-preview" hidden>
+<main id="page-preview" class="page-preview">
 
   <div class="preview-toolbar">
     <span class="preview-toolbar-label">LAYOUT:</span>
@@ -663,6 +668,7 @@ function logCardConfig() {
   <div id="cards-container" aria-live="polite" aria-label="Generated ID cards"></div>
 
 </main><!-- /#page-preview -->
+</div><!-- /.app-split-layout -->
 
 
 <!-- ── SCRIPTS (order matters) ─────────────────────────────────── -->
@@ -677,6 +683,21 @@ function logCardConfig() {
 <script src="cropper.js"></script>
 <script src="ui.js"></script>
 <script src="main.js"></script>
+
+<!-- Real-time Flow State Binding -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const inputs = document.querySelectorAll('#page-form input, #page-form select');
+  inputs.forEach(input => {
+    input.addEventListener('input', () => {
+      if (typeof UI !== 'undefined' && UI.saveCurrentFields && UI.renderPreview) {
+        UI.saveCurrentFields();
+        UI.renderPreview();
+      }
+    });
+  });
+});
+</script>
 
 <!-- ── Auth initialisation + login gate ──────────────────────────
      Runs after all modules are loaded.  Hides the generator behind
