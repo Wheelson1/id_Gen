@@ -134,6 +134,9 @@ button {
   max-width: 960px;
   margin: 0 auto;
   padding: 22px 16px;
+  position: sticky;
+  top: 20px;
+}
 }
 
 /* Section card */

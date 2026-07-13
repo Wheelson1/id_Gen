@@ -26,10 +26,9 @@ const UI = (() => {
   // ── PAGE NAVIGATION ──────────────────────────────────────────
   function showPage(pg) {
     AppState.setPage(pg);
-    document.getElementById('page-form').hidden    = (pg !== 'form');
-    document.getElementById('page-preview').hidden = (pg !== 'preview');
-    document.getElementById('tab-form').className    = 'tab ' + (pg === 'form'    ? 'active' : 'inactive');
-    document.getElementById('tab-preview').className = 'tab ' + (pg === 'preview' ? 'active' : 'inactive');
+    // In the new split layout, both pages are visible side-by-side.
+    // Toggling 'hidden' or tab classes is no longer needed.
+    // If on mobile, you could add logic to scroll here.
   }
 
   // ── STUDENT TABS ─────────────────────────────────────────────
