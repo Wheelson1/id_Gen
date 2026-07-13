@@ -9,6 +9,7 @@ const ALLOWED_ORIGINS: string[] = [
   // Add your production domain here, e.g.:
   // 'https://id.ebsu.edu.ng',
   'https://ebsu-id-card.vercel.app',
+  'https://wheelson1.github.io',
 
   // During development / local file serving, file:// origins are null.
   // The cybercafé opens index.html directly from disk, so we allow null.
