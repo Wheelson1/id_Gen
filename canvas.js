@@ -83,6 +83,8 @@ function drawCard(canvas, st, scale) {
   canvas.width = W; canvas.height = H;
 
   const c   = canvas.getContext('2d');
+  c.imageSmoothingEnabled = true;
+  c.imageSmoothingQuality = 'high';
   const S   = n => Math.round(n * scale);
   const col = AppState.get('colors') || {};
 
@@ -274,6 +276,8 @@ function drawBackCard(canvas, st, scale) {
   canvas.width = W; canvas.height = H;
 
   const c = canvas.getContext('2d');
+  c.imageSmoothingEnabled = true;
+  c.imageSmoothingQuality = 'high';
   const S = n => Math.round(n * scale);
 
   c.fillStyle = '#fff';

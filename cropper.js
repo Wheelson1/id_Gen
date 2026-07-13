@@ -49,6 +49,8 @@ const Cropper = (() => {
     canvas.width  = state.img.naturalWidth;
     canvas.height = state.img.naturalHeight;
     const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(state.img, 0, 0);
 
     if (state.box) {
@@ -136,7 +138,10 @@ const Cropper = (() => {
     const off = document.createElement('canvas');
     off.width  = b.w;
     off.height = b.h;
-    off.getContext('2d').drawImage(state.img, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h);
+    const ctx = off.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(state.img, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h);
     const url = off.toDataURL('image/png');
 
     _saveToStudent(state.field, url);

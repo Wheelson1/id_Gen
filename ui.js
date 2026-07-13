@@ -41,8 +41,18 @@ const UI = (() => {
     students.forEach((st, i) => {
       const btn = document.createElement('button');
       btn.className = 'stab';
-      btn.style.background = i === active ? '#cc0000' : '#162030';
-      btn.textContent = st.name ? st.name.split(' ')[0] : 'Student ' + (i + 1);
+      
+      const isPresco = ['Health Science and Technology', 'Basic Medical Sciences', 'Clinical Medicine'].includes(st.faculty);
+      const label = st.name ? st.name.split(' ')[0] : 'Student ' + (i + 1);
+
+      btn.style.background = i === active ? (isPresco ? '#b8860b' : '#cc0000') : '#162030';
+      
+      if (isPresco) {
+        btn.innerHTML = `<span style="color:#ffd700;margin-right:4px;">★</span>${label}`;
+        btn.style.border = i === active ? '1px solid #ffd700' : '1px solid #b8860b';
+      } else {
+        btn.textContent = label;
+      }
       btn.addEventListener('click', () => {
         saveCurrentFields();
         AppState.switchStudent(i);
@@ -62,6 +72,28 @@ const UI = (() => {
       renderTabs();
     });
     container.appendChild(addBtn);
+
+    const sortBtn = document.createElement('button');
+    sortBtn.className = 'btn-outline';
+    sortBtn.style.color = '#b8860b';
+    sortBtn.style.borderColor = '#b8860b';
+    sortBtn.innerHTML = '★ Sort Presco First';
+    sortBtn.title = 'Prioritize Presco Campus Students';
+    sortBtn.addEventListener('click', () => {
+      saveCurrentFields();
+      const st = AppState.get('students');
+      const prescoFaculties = ['Health Science and Technology', 'Basic Medical Sciences', 'Clinical Medicine'];
+      st.sort((a, b) => {
+        const aIsPresco = prescoFaculties.includes(a.faculty) ? 1 : 0;
+        const bIsPresco = prescoFaculties.includes(b.faculty) ? 1 : 0;
+        return bIsPresco - aIsPresco;
+      });
+      AppState.switchStudent(0);
+      loadFields();
+      renderTabs();
+      showToast('Students sorted by Presco Priority', 2000);
+    });
+    container.appendChild(sortBtn);
 
     if (students.length > 1) {
       const rmBtn = document.createElement('button');

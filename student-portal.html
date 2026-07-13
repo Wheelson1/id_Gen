@@ -53,8 +53,25 @@
         <label class="label" for="portal-matric">Registration Number (Matric)</label>
         <input id="portal-matric" type="text" class="input" placeholder="EBSU/2024/123456" />
         <button id="btn-request-otp" class="btn-primary btn-full">Unlock Digital ID</button>
+        <div style="margin-top:15px; text-align:center;">
+          <a href="#" id="btn-grace-protocol" style="font-size:12px; color:#1558c0; text-decoration:none; font-weight:bold;">Lost Email Access? Use Grace Protocol</a>
+        </div>
       </div>
 
+      <div id="grace-step" style="display:none;">
+        <h3 style="margin-bottom:10px;">Email Grace Protocol</h3>
+        <p style="font-size:13px; color:#555; margin-bottom:15px; line-height:1.5;">
+          If you lost access to your official portal email, bind a new alternative email. This will undergo identity verification.
+        </p>
+        <label class="label" for="grace-matric">Registration Number</label>
+        <input id="grace-matric" type="text" class="input" placeholder="EBSU/2024/123456" />
+        
+        <label class="label" for="grace-email">New Alternative Email</label>
+        <input id="grace-email" type="email" class="input" placeholder="your.name@gmail.com" />
+        
+        <button id="btn-submit-grace" class="btn-primary btn-full" style="background:#cc0000; border:none; color:white;">Initiate Verification</button>
+        <button id="btn-cancel-grace" class="btn-outline btn-full" style="margin-top:10px;">Cancel</button>
+      </div>
       <div id="otp-step">
         <p id="otp-message" style="color: #555; margin-bottom: 10px; font-size: 14px;"></p>
         <label class="label" for="portal-otp">6-Digit OTP Code</label>

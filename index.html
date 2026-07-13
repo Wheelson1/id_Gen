@@ -80,12 +80,34 @@
     <button id="ag-login-btn" style="
       width:100%;padding:13px;background:#1558c0;color:#fff;
       border:none;border-radius:8px;font-size:14px;font-weight:700;
-      cursor:pointer;letter-spacing:0.5px;
+      cursor:pointer;letter-spacing:0.5px;margin-bottom:8px;
     ">Sign In</button>
-    <div style="margin-top:16px;font-size:11px;color:#3a5070">
-      <a href="verify.html" style="color:#3a5070">Verifier (guards)</a>
-      &nbsp;·&nbsp;
-      <a href="admin.html" style="color:#3a5070">Admin Panel</a>
+    <button id="ag-signup-btn" style="
+      width:100%;padding:13px;background:transparent;color:#1558c0;
+      border:1px solid #1558c0;border-radius:8px;font-size:14px;font-weight:700;
+      cursor:pointer;letter-spacing:0.5px;margin-bottom:16px;
+    ">Create Account</button>
+
+    <div style="display:flex;align-items:center;margin-bottom:16px;">
+      <div style="flex:1;height:1px;background:#1e3050;"></div>
+      <div style="color:#6080a0;font-size:12px;margin:0 10px;font-weight:bold;">OR</div>
+      <div style="flex:1;height:1px;background:#1e3050;"></div>
+    </div>
+
+    <button id="ag-google-btn" style="
+      width:100%;padding:13px;background:#ffffff;color:#000;
+      border:none;border-radius:8px;font-size:14px;font-weight:700;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      gap:8px;
+    ">
+      <img src="https://www.google.com/favicon.ico" alt="G" style="width:16px;height:16px;">
+      Continue with Google
+    </button>
+
+    <div style="margin-top:20px;font-size:11px;color:#3a5070">
+      <a href="verify.html" style="color:#3a5070;text-decoration:none;">Verifier (guards)</a>
+      &nbsp;•&nbsp;
+      <a href="admin.html" style="color:#3a5070;text-decoration:none;">Admin Panel</a>
     </div>
   </div>
 </div>
@@ -747,23 +769,67 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!email || !pass)  { setError('Enter your email and password.'); return; }
 
     setError('');
-    if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Signing in…'; }
+    if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Signing in...'; }
 
-    const { data, error } = await _client.auth.signInWithPassword({ email, password: pass });
-
-    if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Sign In'; }
-
-    if (error) { setError(error.message); return; }
-
-    const role = data.user?.user_metadata?.role || '';
-    if (!['operator', 'admin'].includes(role)) {
-      await _client.auth.signOut();
-      setError('Your account does not have operator or admin access.');
-      return;
+    try {
+      const { data, error } = await _client.auth.signInWithPassword({ email, password: pass });
+      if (error) throw error;
+      
+      const role = data.user?.user_metadata?.role || '';
+      if (!['operator', 'admin'].includes(role)) {
+        await _client.auth.signOut();
+        throw new Error('Your account does not have operator or admin access.');
+      }
+      
+      setUserBadge(data.user);
+      hideGate();
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Sign In'; }
     }
+  }
 
-    setUserBadge(data.user);
-    hideGate();
+  async function doSignUp() {
+    if (!_client) { setError('config.js not loaded'); return; }
+    const email = emailInp ? emailInp.value.trim() : '';
+    const pass  = passInp  ? passInp.value         : '';
+    if (!email || !pass)  { setError('Enter your email and password.'); return; }
+
+    setError('');
+    const signupBtn = document.getElementById('ag-signup-btn');
+    if (signupBtn) { signupBtn.disabled = true; signupBtn.textContent = 'Creating...'; }
+
+    try {
+      const { error } = await _client.auth.signUp({ email, password: pass });
+      if (error) throw error;
+      setError('Account created! An admin must grant you operator access before you can login.');
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      if (signupBtn) { signupBtn.disabled = false; signupBtn.textContent = 'Create Account'; }
+    }
+  }
+
+  async function doGoogleAuth() {
+    if (!_client) { setError('config.js not loaded'); return; }
+    setError('');
+    const googleBtn = document.getElementById('ag-google-btn');
+    if (googleBtn) { googleBtn.disabled = true; googleBtn.textContent = 'Redirecting...'; }
+
+    try {
+      const { error } = await _client.auth.signInWithOAuth({ provider: 'google' });
+      if (error) throw error;
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+      if (googleBtn) { 
+        googleBtn.disabled = false; 
+        googleBtn.innerHTML = '<img src="https://www.google.com/favicon.ico" alt="G" style="width:16px;height:16px;"> Continue with Google';
+      }
+    }
   }
 
   async function doLogout() {
@@ -866,6 +932,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Wire buttons
   if (loginBtn) loginBtn.addEventListener('click', doLogin);
+  const signupBtn = document.getElementById('ag-signup-btn');
+  if (signupBtn) signupBtn.addEventListener('click', doSignUp);
+  const googleBtn = document.getElementById('ag-google-btn');
+  if (googleBtn) googleBtn.addEventListener('click', doGoogleAuth);
   if (logoutBtn) logoutBtn.addEventListener('click', doLogout);
   if (passInp) passInp.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 

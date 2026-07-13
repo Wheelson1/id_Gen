@@ -102,10 +102,56 @@ document.getElementById('btn-request-otp').addEventListener('click', async () =>
   } catch (err) {
     showToast(err.message, true);
   } finally {
-    reqBtn.textContent = 'Send Login Code';
+    const reqBtn = document.getElementById('btn-request-otp');
+    reqBtn.textContent = 'Unlock Digital ID';
     reqBtn.disabled = false;
   }
 });
+
+// Grace Protocol Logic
+const graceBtn = document.getElementById('btn-grace-protocol');
+if (graceBtn) {
+  graceBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    matricStep.style.display = 'none';
+    document.getElementById('grace-step').style.display = 'block';
+  });
+}
+
+const cancelGraceBtn = document.getElementById('btn-cancel-grace');
+if (cancelGraceBtn) {
+  cancelGraceBtn.addEventListener('click', () => {
+    document.getElementById('grace-step').style.display = 'none';
+    matricStep.style.display = 'block';
+  });
+}
+
+const submitGraceBtn = document.getElementById('btn-submit-grace');
+if (submitGraceBtn) {
+  submitGraceBtn.addEventListener('click', async () => {
+    const gMatric = document.getElementById('grace-matric').value.trim();
+    const gEmail = document.getElementById('grace-email').value.trim();
+    if (!gMatric || !gEmail) return showToast('Enter both Matric and Alternative Email', true);
+    
+    submitGraceBtn.textContent = 'Verifying...';
+    submitGraceBtn.disabled = true;
+
+    try {
+      // For this prototype, simulate grace protocol backend request
+      await new Promise(r => setTimeout(r, 1500));
+      showToast('Grace protocol initiated. You will receive instructions at your new email.', 0);
+      setTimeout(() => {
+        document.getElementById('grace-step').style.display = 'none';
+        matricStep.style.display = 'block';
+      }, 3000);
+    } catch (err) {
+      showToast('Error initiating grace protocol', true);
+    } finally {
+      submitGraceBtn.textContent = 'Initiate Verification';
+      submitGraceBtn.disabled = false;
+    }
+  });
+}
 
 document.getElementById('btn-verify-otp').addEventListener('click', async () => {
   const token = otpInput.value.trim();
