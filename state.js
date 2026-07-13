@@ -5,10 +5,10 @@
 const AppState = (() => {
   function newStudent() {
     return {
-      name: '', matric: '', faculty: '', dept: '',
+      name: 'Wilson Somtochukwu Nnaji', matric: '09035005623', faculty: 'Science', dept: 'Computer Science',
       level: '100 Level', session: '2024/2025',
-      blood: 'O+', genotype: 'AA',
-      photo: null, sig: null,
+      blood: 'A+', genotype: 'AA',
+      photo: null, sig: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="50"><text x="10" y="40" font-family="cursive" font-size="40" fill="black">WSN</text></svg>',
       // Set by the issue-card Edge Function after a successful card issuance.
       // cardId  = UUID stored in the database (the card's unique identifier)
       // qrString = opaque token "EBSU1:<cardId>:<ed25519Sig>" encoded in the QR
