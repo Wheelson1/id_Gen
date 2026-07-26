@@ -909,7 +909,11 @@ document.addEventListener('DOMContentLoaded', () => {
       checkGoogleLink();
     } catch (err) {
       console.error(err);
-      setError(err.message);
+      if (err.message && err.message.toLowerCase().includes('failed to fetch')) {
+        setError('Network Connection Error: Unable to reach the Supabase backend. Please check your internet connection or verify your Supabase URL in config.js.');
+      } else {
+        setError(err.message);
+      }
     } finally {
       if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Sign In'; }
     }
