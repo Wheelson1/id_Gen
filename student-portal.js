@@ -260,12 +260,18 @@ async function loadDashboard() {
       });
     }
 
-    // Privacy shield - blur sensitive data until email verified
-    if (currentStudent && !currentStudent.is_email_verified) {
+    // Privacy shield - blur sensitive data until email verified ONLY after 3 logins
+    const userEmail = currentStudent ? `${currentStudent.jamb_no}@ebsu.edu.ng` : '';
+    const loginKey = `ebsu_login_count_${userEmail}`;
+    const loginCount = parseInt(localStorage.getItem(loginKey) || '1', 10);
+
+    if (currentStudent && !currentStudent.is_email_verified && loginCount > 3) {
       document.querySelectorAll('.student-name, .student-photo, .student-dept, .student-detail').forEach(el => {
         el.classList.add('privacy-blurred');
       });
       showToast('Link your Google account to unlock full profile access', false);
+    } else if (currentStudent && !currentStudent.is_email_verified && loginCount <= 3) {
+      showToast(`Login ${loginCount}/3: Free access active. Link your Google account before login 4 to avoid access restrictions.`, false);
     }
 
     renderLiveCard();

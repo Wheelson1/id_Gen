@@ -93,9 +93,9 @@
     <div style="font-size:48px;margin-bottom:12px">🪪</div>
     <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:4px">ID Card Generator</div>
     <div style="font-size:12px;color:#6080a0;margin-bottom:28px;line-height:1.6">
-      Sign in with your JAMB Registration Number.
+      Sign in with your JAMB Reg No. or School Reg No.
     </div>
-    <input id="ag-email" type="text" placeholder="Username (JAMB Reg No.)"
+    <input id="ag-email" type="text" placeholder="JAMB Reg No. or School Reg No."
       autocomplete="username"
       style="width:100%;padding:11px 14px;margin-bottom:10px;
         background:#112240;color:#cdd8e8;border:1px solid #1e3050;
@@ -805,10 +805,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function isValidJAMB(value) {
+  function isValidIdentifier(value) {
     const cleanValue = value.trim();
-    if (cleanValue.length < 10 || cleanValue.length > 12) return false;
-    return /^\d{8,10}[A-Za-z]{0,2}$/.test(cleanValue);
+    if (cleanValue.length < 5 || cleanValue.length > 30) return false;
+    // Allow digits, letters, slashes (/), hyphens (-), underscores (_), dots (.), or email @
+    return /^[A-Za-z0-9/\-_@\.]+$/.test(cleanValue);
   }
 
   function checkRateLimit() {
@@ -825,13 +826,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function doLogin() {
     if (!_client) { setError('config.js not loaded — copy config.example.js first.'); return; }
-    let username = emailInp ? emailInp.value.trim() : '';
-    const pass  = passInp  ? passInp.value         : '';
-    if (!username || !pass)  { setError('Enter your JAMB Reg No and password.'); return; }
+    let rawInput = emailInp ? emailInp.value.trim() : '';
+    const pass = passInp ? passInp.value : '';
+    if (!rawInput || !pass) { setError('Enter your JAMB Reg No or School Reg No and password.'); return; }
 
-    // Validate JAMB format (unless it's an email for backwards compat)
-    if (!username.includes('@') && !isValidJAMB(username)) {
-      setError('Invalid JAMB Registration Number format.');
+    // Validate identifier format
+    if (!isValidIdentifier(rawInput)) {
+      setError('Invalid Registration Number or Email format.');
       return;
     }
 
@@ -841,36 +842,59 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const currentYear = new Date().getFullYear();
-
-    // If username doesn't look like an email, assume it's JAMB Reg No and append domain for Supabase Auth
-    if (!username.includes('@')) {
-      username = `${username}@ebsu.edu.ng`;
-    }
-
     setError('');
     if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Signing in...'; }
 
     try {
-      let { data, error } = await _client.auth.signInWithPassword({ email: username, password: pass });
+      let authEmail = rawInput;
+
+      // If user input is not already an email, search database by jamb_no OR school_reg_no
+      if (!rawInput.includes('@')) {
+        const { data: studentRecord } = await _client
+          .from('students')
+          .select('jamb_no, school_reg_no, linked_email')
+          .or(`jamb_no.eq.${rawInput},school_reg_no.eq.${rawInput}`)
+          .maybeSingle();
+
+        if (studentRecord && studentRecord.jamb_no) {
+          authEmail = `${studentRecord.jamb_no}@ebsu.edu.ng`;
+        } else {
+          // Fallback to sanitizing input as email
+          authEmail = `${rawInput.replace(/[^a-zA-Z0-9]/g, '_')}@ebsu.edu.ng`;
+        }
+      }
+
+      let { data, error } = await _client.auth.signInWithPassword({ email: authEmail, password: pass });
       
       if (error && error.message.includes('Invalid login credentials')) {
-        const jambNo = emailInp.value.trim();
-        const { data: student } = await _client.from('students').select('*').eq('jamb_no', jambNo).single();
+        const { data: student } = await _client
+          .from('students')
+          .select('*')
+          .or(`jamb_no.eq.${rawInput},school_reg_no.eq.${rawInput}`)
+          .maybeSingle();
         
         if (student) {
-          setError('Account not activated. Please use the Edge Function or check with Admin to setup your auth account.');
+          setError('Account credentials invalid or pending setup. Check with Admin if auth is active.');
         } else {
-          setError('This JAMB Registration Number is not in our database. Please ensure you are a registered student of EBSU.');
+          setError('This Registration Number is not in our database. Please ensure you are a registered student of EBSU.');
         }
         return;
       } else if (error) {
         throw error;
       }
+
+      // Record / increment login count for 3-times free access rule
+      const loginKey = `ebsu_login_count_${authEmail}`;
+      let loginCount = parseInt(localStorage.getItem(loginKey) || '0', 10);
+      loginCount += 1;
+      localStorage.setItem(loginKey, loginCount.toString());
       
       // Check fees paid status
-      const jambNo = emailInp.value.trim();
-      const { data: student } = await _client.from('students').select('fees_paid').eq('jamb_no', jambNo).single();
+      const { data: student } = await _client
+        .from('students')
+        .select('fees_paid')
+        .or(`jamb_no.eq.${rawInput},school_reg_no.eq.${rawInput}`)
+        .maybeSingle();
       
       if (student && student.fees_paid === false) {
         const banner = document.createElement('div');
@@ -895,19 +919,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const { data: { session } } = await _client.auth.getSession();
     if (!session) return;
     
-    // Check if Google is linked
+    const authEmail = session.user.email || '';
+    const loginKey = `ebsu_login_count_${authEmail}`;
+    const loginCount = parseInt(localStorage.getItem(loginKey) || '1', 10);
+
     const isGoogleLinked = session.user.app_metadata?.providers?.includes('google');
     const layoutContainer = document.querySelector('.app-split-layout');
     
-    if (!isGoogleLinked) {
-      hideGate();
-      document.getElementById('link-google-gate').style.display = 'flex';
-      if (layoutContainer) layoutContainer.classList.add('privacy-blurred');
-    } else {
+    // First 3 logins: FREE ACCESS without forced Google email linking requirement!
+    if (loginCount <= 3) {
       document.getElementById('link-google-gate').style.display = 'none';
       setUserBadge(session.user);
       hideGate();
       if (layoutContainer) layoutContainer.classList.remove('privacy-blurred');
+    } else {
+      // 4th login onwards: Force Google account linking to authenticate
+      if (!isGoogleLinked) {
+        hideGate();
+        document.getElementById('link-google-gate').style.display = 'flex';
+        if (layoutContainer) layoutContainer.classList.add('privacy-blurred');
+      } else {
+        document.getElementById('link-google-gate').style.display = 'none';
+        setUserBadge(session.user);
+        hideGate();
+        if (layoutContainer) layoutContainer.classList.remove('privacy-blurred');
+      }
     }
   }
 
