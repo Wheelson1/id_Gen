@@ -26,9 +26,67 @@
     .activity-feed { background: #f9f9f9; padding: 15px; border-radius: 8px; max-height: 200px; overflow-y: auto; font-size: 12px; }
     .activity-item { border-left: 3px solid #1558c0; padding-left: 10px; margin-bottom: 10px; }
     .activity-time { color: #888; font-size: 10px; }
+    .privacy-blurred {
+      filter: blur(8px);
+      pointer-events: none;
+      user-select: none;
+      transition: filter 0.5s ease;
+    }
+    .privacy-blurred.unlocked {
+      filter: none;
+      pointer-events: auto;
+      user-select: auto;
+    }
+    .fee-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #cc3300, #990000);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: 0.3px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      animation: slideDown 0.4s ease;
+    }
+    .fee-banner a {
+      color: #ffcc00;
+      text-decoration: underline;
+      margin-left: 8px;
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
+    .session-warning {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9998;
+      padding: 12px 20px;
+      background: rgba(20, 40, 70, 0.95);
+      border: 1px solid #1e3050;
+      border-radius: 10px;
+      color: #ccddf0;
+      font-size: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
+
+  <div id="fee-banner" class="fee-banner" style="display:none">
+    ⚠️ Fee Payment Required: Your school fees have not been confirmed. ID Card features are limited until fees are cleared.
+  </div>
 
   <!-- Toast Notification -->
   <div id="status-toast" class="toast" style="display:none;position:fixed;top:20px;right:20px;background:#fff;border-left:4px solid #1558c0;padding:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);z-index:9999;">

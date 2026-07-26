@@ -11,9 +11,8 @@ const ALLOWED_ORIGINS: string[] = [
   'https://ebsu-id-card.vercel.app',
   'https://wheelson1.github.io',
 
-  // During development / local file serving, file:// origins are null.
-  // The cybercafé opens index.html directly from disk, so we allow null.
-  'null',
+  // Note: 'null' origin should only be re-added for local disk-based development (e.g. file://).
+  // It is a security risk in production.
 
   // Allow localhost variants for development
   'http://localhost',
@@ -24,7 +23,7 @@ export function corsHeaders(requestOrigin: string | null): Record<string, string
   const origin =
     requestOrigin && ALLOWED_ORIGINS.includes(requestOrigin)
       ? requestOrigin
-      : ALLOWED_ORIGINS[0] ?? '*';
+      : ALLOWED_ORIGINS[0];
 
   return {
     'Access-Control-Allow-Origin':  origin,
@@ -32,6 +31,7 @@ export function corsHeaders(requestOrigin: string | null): Record<string, string
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 }
+
 
 /** Respond to CORS preflight (OPTIONS) requests. */
 export function handleOptions(req: Request): Response | null {

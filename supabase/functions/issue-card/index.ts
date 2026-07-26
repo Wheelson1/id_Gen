@@ -162,6 +162,26 @@ Deno.serve(async (req: Request) => {
     const photoUrl = await uploadImage(body.photo_b64, 'student-photos',    cardId);
     const sigUrl   = await uploadImage(body.sig_b64,   'student-signatures', `${cardId}_sig`);
 
+    // ── FEE PAYMENT ENFORCEMENT ─────────────────────────────────
+    // Query the students table to check if fees are paid
+    const { data: studentRecord, error: studentErr } = await supabaseAdmin
+      .from('students')
+      .select('fees_paid, status')
+      .eq('matric', matric)
+      .maybeSingle();
+
+    if (studentErr) {
+      return json({ error: 'Failed to verify fee payment status' }, 500, headers);
+    }
+
+    if (!studentRecord?.fees_paid) {
+      return json({ error: 'ID Card generation blocked: School fees have not been confirmed. Please complete fee payment on your school portal first.' }, 403, headers);
+    }
+
+    if (studentRecord?.status === 'suspended' || studentRecord?.status === 'revoked') {
+      return json({ error: `ID Card generation blocked: Your account status is '${studentRecord.status}'. Contact the admin office.` }, 403, headers);
+    }
+
     // ── 5. Sign card_id with Ed25519 ─────────────────────────────
     const privateKeyB64 = Deno.env.get('ED25519_PRIVATE_KEY');
     if (!privateKeyB64) {
@@ -186,6 +206,7 @@ Deno.serve(async (req: Request) => {
       genotype:  typeof body.genotype === 'string' ? body.genotype.trim() : null,
       expiry,
       status:    'active',
+      is_email_verified: user.app_metadata?.providers?.includes('google') || false,
       issued_by: user.id,
       ...(photoUrl && { photo_url: photoUrl }),
       ...(sigUrl   && { sig_url:   sigUrl   }),

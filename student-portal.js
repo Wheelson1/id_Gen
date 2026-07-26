@@ -8,6 +8,34 @@ let currentStudent = null;
 let activeEmail = null;
 let qrTimer = null;
 
+// Session timeout - auto logout after 30 minutes of inactivity
+let sessionTimer = null;
+let warningTimer = null;
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+const WARNING_TIMEOUT_MS = 28 * 60 * 1000; // 28 minutes
+
+function resetSessionTimer() {
+  if (sessionTimer) clearTimeout(sessionTimer);
+  if (warningTimer) clearTimeout(warningTimer);
+  
+  warningTimer = setTimeout(() => {
+    showToast('Warning: Your session will expire in 2 minutes due to inactivity.', true);
+  }, WARNING_TIMEOUT_MS);
+
+  sessionTimer = setTimeout(async () => {
+    showToast('Session expired due to inactivity. Logging out...', true);
+    await ebsuSupabase.auth.signOut();
+    setTimeout(() => { window.location.reload(); }, 2000);
+  }, SESSION_TIMEOUT_MS);
+}
+
+// Reset timer on user activity
+['click', 'keydown', 'mousemove', 'scroll', 'touchstart'].forEach(evt => {
+  document.addEventListener(evt, resetSessionTimer, { passive: true });
+});
+// Need to defer initial call since showToast is defined later, or just rely on first interaction
+setTimeout(resetSessionTimer, 100);
+
 // UI Elements
 const authSec = document.getElementById('auth-section');
 const dashSec = document.getElementById('dashboard-section');
@@ -219,6 +247,27 @@ async function loadDashboard() {
     currentStudent = student;
     document.getElementById('dash-name').textContent = student.name.split(' ')[0];
     
+    // Check fee payment status
+    if (currentStudent && !currentStudent.fees_paid) {
+      const banner = document.getElementById('fee-banner');
+      if (banner) banner.style.display = 'block';
+      // Disable any ID generation buttons
+      document.querySelectorAll('.btn-generate, #btn-generate-id').forEach(btn => {
+        btn.disabled = true;
+        btn.title = 'Fee payment required';
+        btn.style.opacity = '0.4';
+        btn.style.cursor = 'not-allowed';
+      });
+    }
+
+    // Privacy shield - blur sensitive data until email verified
+    if (currentStudent && !currentStudent.is_email_verified) {
+      document.querySelectorAll('.student-name, .student-photo, .student-dept, .student-detail').forEach(el => {
+        el.classList.add('privacy-blurred');
+      });
+      showToast('Link your Google account to unlock full profile access', false);
+    }
+
     renderLiveCard();
     playSnap();
     loadActivityLog();

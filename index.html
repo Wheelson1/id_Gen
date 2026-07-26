@@ -5,6 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Student ID Card Generator</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    .privacy-blurred {
+      filter: blur(8px);
+      pointer-events: none;
+      user-select: none;
+    }
+    .privacy-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 8999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(4, 10, 20, 0.85);
+    }
+    .fee-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 8998;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #cc3300, #990000);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: 0.3px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    }
+  </style>
 </head>
 <body>
 
@@ -774,11 +805,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function isValidJAMB(value) {
+    const cleanValue = value.trim();
+    if (cleanValue.length < 10 || cleanValue.length > 12) return false;
+    return /^\d{8,10}[A-Za-z]{0,2}$/.test(cleanValue);
+  }
+
+  function checkRateLimit() {
+    const now = Date.now();
+    let attempts = JSON.parse(localStorage.getItem('loginAttempts') || '[]');
+    attempts = attempts.filter(time => now - time < 60000); // keep only attempts in last 60s
+    if (attempts.length >= 5) {
+      return false;
+    }
+    attempts.push(now);
+    localStorage.setItem('loginAttempts', JSON.stringify(attempts));
+    return true;
+  }
+
   async function doLogin() {
     if (!_client) { setError('config.js not loaded — copy config.example.js first.'); return; }
     let username = emailInp ? emailInp.value.trim() : '';
     const pass  = passInp  ? passInp.value         : '';
     if (!username || !pass)  { setError('Enter your JAMB Reg No and password.'); return; }
+
+    // Validate JAMB format (unless it's an email for backwards compat)
+    if (!username.includes('@') && !isValidJAMB(username)) {
+      setError('Invalid JAMB Registration Number format.');
+      return;
+    }
+
+    // Rate limit
+    if (!checkRateLimit()) {
+      setError('Too many login attempts. Please wait 60 seconds.');
+      return;
+    }
+
+    const currentYear = new Date().getFullYear();
 
     // If username doesn't look like an email, assume it's JAMB Reg No and append domain for Supabase Auth
     if (!username.includes('@')) {
@@ -792,17 +855,31 @@ document.addEventListener('DOMContentLoaded', () => {
       let { data, error } = await _client.auth.signInWithPassword({ email: username, password: pass });
       
       if (error && error.message.includes('Invalid login credentials')) {
-        // Since "username and password is the same until changed", if login fails, maybe they don't exist yet.
-        // Auto-create account if this is a newly admitted student (prototype logic).
-        const { error: signUpErr } = await _client.auth.signUp({ email: username, password: pass, options: { data: { role: 'operator' } } });
-        if (signUpErr) throw error; // Original login error if signup fails
+        const jambNo = emailInp.value.trim();
+        const { data: student } = await _client.from('students').select('*').eq('jamb_no', jambNo).single();
         
-        // After signup, login again (some setups require email confirm, but assuming auto-confirm for now)
-        const res = await _client.auth.signInWithPassword({ email: username, password: pass });
-        if (res.error) throw new Error('Account created, but requires email verification or admin approval.');
-        data = res.data;
+        if (student) {
+          setError('Account not activated. Please use the Edge Function or check with Admin to setup your auth account.');
+        } else {
+          setError('This JAMB Registration Number is not in our database. Please ensure you are a registered student of EBSU.');
+        }
+        return;
       } else if (error) {
         throw error;
+      }
+      
+      // Check fees paid status
+      const jambNo = emailInp.value.trim();
+      const { data: student } = await _client.from('students').select('fees_paid').eq('jamb_no', jambNo).single();
+      
+      if (student && student.fees_paid === false) {
+        const banner = document.createElement('div');
+        banner.className = 'fee-banner';
+        banner.innerHTML = '⚠️ Fee Payment Required: Your school fees have not been confirmed. ID Card generation is disabled until fees are cleared.';
+        document.body.appendChild(banner);
+        
+        const genBtn = document.querySelector('.btn-generate');
+        if (genBtn) genBtn.disabled = true;
       }
       
       checkGoogleLink();
@@ -820,14 +897,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Check if Google is linked
     const isGoogleLinked = session.user.app_metadata?.providers?.includes('google');
+    const layoutContainer = document.querySelector('.app-split-layout');
     
     if (!isGoogleLinked) {
       hideGate();
       document.getElementById('link-google-gate').style.display = 'flex';
+      if (layoutContainer) layoutContainer.classList.add('privacy-blurred');
     } else {
       document.getElementById('link-google-gate').style.display = 'none';
       setUserBadge(session.user);
       hideGate();
+      if (layoutContainer) layoutContainer.classList.remove('privacy-blurred');
     }
   }
 

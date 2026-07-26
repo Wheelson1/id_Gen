@@ -45,6 +45,8 @@ type NormalizedStudent = {
   photo_url: string | null;
   expiry:    number;
   status:    string;
+  fees_paid: boolean;
+  school_reg_no: string | null;
 };
 
 type VerificationResult =
@@ -71,7 +73,7 @@ class SupabaseSource implements VerificationSource {
   async lookup(cardId: string): Promise<VerificationResult> {
     const { data, error } = await this.client
       .from('students')
-      .select('name,matric,faculty,dept,level,session,blood,genotype,photo_url,expiry,status')
+      .select('name,matric,faculty,dept,level,session,blood,genotype,photo_url,expiry,status,fees_paid,school_reg_no')
       .eq('id', cardId)
       .maybeSingle();
 
@@ -95,6 +97,8 @@ class SupabaseSource implements VerificationSource {
         photo_url: data.photo_url ?? null,
         expiry:    Number(data.expiry),
         status:    data.status,
+        fees_paid: Boolean(data.fees_paid ?? true),
+        school_reg_no: data.school_reg_no ?? null,
       },
     };
   }
@@ -177,6 +181,8 @@ class PortalSource implements VerificationSource {
         photo_url: raw.passport_url          ? String(raw.passport_url) : null,
         expiry:    Number(raw.expiry_year    ?? 0),
         status:    String(raw.card_status    ?? 'active'),
+        fees_paid: raw.fees_paid !== undefined ? Boolean(raw.fees_paid) : true,
+        school_reg_no: raw.school_reg_no     ? String(raw.school_reg_no) : null,
       },
     };
   }
@@ -265,7 +271,9 @@ async function handleVerify(
   const currentYear = new Date().getFullYear();
 
   let status: string;
-  if (student.status === 'revoked') {
+  if (student.fees_paid === false) {
+    status = 'unpaid';
+  } else if (student.status === 'revoked') {
     status = 'revoked';
   } else if (student.expiry < currentYear) {
     status = 'expired';
@@ -285,6 +293,8 @@ async function handleVerify(
     genotype:  student.genotype,
     photo_url: student.photo_url,
     expiry:    student.expiry,
+    fees_paid: student.fees_paid,
+    school_reg_no: student.school_reg_no,
   };
 
   return json({

@@ -1,0 +1,15 @@
+{
+  "name": "ebsu-id-scripts",
+  "version": "1.0.0",
+  "description": "Scripts for managing EBSU ID card data",
+  "main": "sync_students.js",
+  "type": "module",
+  "scripts": {
+    "sync": "node sync_students.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.3.1"
+  }
+}
