@@ -162,36 +162,17 @@ class MiniIDBatchDesktopApp(ctk.CTk):
         )
         self.btn_upload_photo.pack(fill="x", padx=12, pady=(0, 12))
 
-        # Signature Mode Dropdown Selector
-        lbl_sig_mode = ctk.CTkLabel(self.sidebar, text="Signature Format (Dropdown):", font=ctk.CTkFont(size=12, weight="bold"))
-        lbl_sig_mode.pack(anchor="w", padx=12, pady=(6, 4))
+        # Signature Photo Picker ONLY
+        lbl_sig = ctk.CTkLabel(self.sidebar, text="Student Signature Photo (Landscape):", font=ctk.CTkFont(size=12, weight="bold"))
+        lbl_sig.pack(anchor="w", padx=12, pady=(10, 4))
 
-        self.cbo_sig_type = ctk.CTkComboBox(
-            self.sidebar,
-            values=["Abbreviation Text (e.g. O.N)", "Signature Picture (Landscape Image)"],
-            variable=self.var_sig_type,
-            command=self.on_sig_type_change
-        )
-        self.cbo_sig_type.pack(fill="x", padx=12, pady=(0, 10))
-
-        # Signature Text Input
-        self.frame_sig_text = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-        self.frame_sig_text.pack(fill="x", padx=12)
-        lbl_st = ctk.CTkLabel(self.frame_sig_text, text="Abbreviation Text:", font=ctk.CTkFont(size=11))
-        lbl_st.pack(anchor="w")
-        entry_st = ctk.CTkEntry(self.frame_sig_text, textvariable=self.var_sig_text)
-        entry_st.pack(fill="x", pady=(2, 10))
-        entry_st.bind("<KeyRelease>", lambda e: self.update_preview())
-
-        # Signature Image Upload Box
-        self.frame_sig_image = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         self.btn_upload_sig = ctk.CTkButton(
-            self.frame_sig_image,
-            text="✍️ Select Landscape Signature Image",
+            self.sidebar,
+            text="✍️ Select Signature Image",
             fg_color="#1e3a66",
             command=self.pick_sig_image
         )
-        self.btn_upload_sig.pack(fill="x", pady=(2, 10))
+        self.btn_upload_sig.pack(fill="x", padx=12, pady=(0, 12))
 
         # Blood & Genotype
         lbl_bg = ctk.CTkLabel(self.sidebar, text="Blood Group & Genotype:", font=ctk.CTkFont(size=12, weight="bold"))
@@ -420,17 +401,15 @@ class MiniIDBatchDesktopApp(ctk.CTk):
         draw.text((180, H - 75), "Genotype", fill="#000000", font=font_bold)
         draw.text((180, H - 45), self.var_genotype.get(), fill="#000000", font=font_norm)
 
-        # Signature Mode
+        # Signature Photo Image ONLY
         draw.text((W - 320, H - 55), "Signature", fill="#000000", font=font_bold)
-        if "Picture" in self.var_sig_type.get() and self.sig_image_path and os.path.exists(self.sig_image_path):
+        if self.sig_image_path and os.path.exists(self.sig_image_path):
             try:
                 sig_i = Image.open(self.sig_image_path).convert("RGBA")
-                sig_i = sig_i.resize((140, 50))
-                img.paste(sig_i, (W - 210, H - 70), sig_i)
+                sig_i = sig_i.resize((150, 55))
+                img.paste(sig_i, (W - 220, H - 72), sig_i)
             except Exception:
                 pass
-        else:
-            draw.text((W - 190, H - 58), self.var_sig_text.get(), fill="#000000", font=font_bold)
 
         # Card Border
         draw.rectangle([0, 0, W - 1, H - 1], outline="#0056D2", width=3)

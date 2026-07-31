@@ -295,28 +295,11 @@ document.addEventListener('DOMContentLoaded', () => {
     cardGenotypeText.textContent = inpGenotype.value || 'AA';
     cardPhoneText.textContent = inpPhone.value || '+234-8067664449';
 
-    // Signature Dropdown Mode: Either Abbreviation Text OR Landscape Image
-    const sigMode = document.getElementById('inp-sig-type') ? document.getElementById('inp-sig-type').value : 'text';
-    const groupSigText = document.getElementById('group-sig-text');
-    const groupSigImage = document.getElementById('group-sig-image');
-
-    if (sigMode === 'image') {
-      if (groupSigText) groupSigText.classList.add('hidden');
-      if (groupSigImage) groupSigImage.classList.remove('hidden');
-      if (cardSigImg.getAttribute('src') && cardSigImg.getAttribute('src') !== '') {
-        cardSigImg.classList.remove('hidden');
-        cardSigText.classList.add('hidden');
-      } else {
-        cardSigImg.classList.add('hidden');
-        cardSigText.classList.remove('hidden');
-        cardSigText.textContent = inpSignatureText.value || 'O.N';
-      }
+    // Signature Photo Display
+    if (cardSigImg.getAttribute('src') && cardSigImg.getAttribute('src') !== '') {
+      cardSigImg.classList.remove('hidden');
     } else {
-      if (groupSigText) groupSigText.classList.remove('hidden');
-      if (groupSigImage) groupSigImage.classList.add('hidden');
       cardSigImg.classList.add('hidden');
-      cardSigText.classList.remove('hidden');
-      cardSigText.textContent = inpSignatureText.value || 'O.N';
     }
 
     generateQRCode();
