@@ -84,8 +84,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     cardGenotypeText.textContent = inpGenotype.value || 'AA';
-    cardSigText.textContent = inpSignatureText.value || 'O.N';
     cardPhoneText.textContent = inpPhone.value || '+234-8067664449';
+
+    // Signature Mutual Exclusivity: EITHER Signature Image OR Abbreviation Text (never both!)
+    if (cardSigImg.getAttribute('src') && cardSigImg.getAttribute('src') !== '' && !cardSigImg.classList.contains('hidden')) {
+      cardSigImg.classList.remove('hidden');
+      cardSigText.classList.add('hidden');
+    } else {
+      cardSigImg.classList.add('hidden');
+      cardSigText.classList.remove('hidden');
+      cardSigText.textContent = inpSignatureText.value || 'O.N';
+    }
 
     // Regenerate Live Scannable Verification QR Code
     generateQRCode();
@@ -227,6 +236,18 @@ document.addEventListener('DOMContentLoaded', () => {
         inpBlood.value = data.blood;
         inpGenotype.value = data.genotype;
         inpSignatureText.value = data.signature;
+
+        // Reset uploaded signature image so text abbreviation shows cleanly
+        cardSigImg.src = '';
+        cardSigImg.classList.add('hidden');
+        cardSigText.classList.remove('hidden');
+
+        // Reset signature dropzone thumbnail preview
+        const sigThumb = document.getElementById('sig-thumb-preview');
+        if (sigThumb) { sigThumb.src = ''; sigThumb.classList.add('hidden'); }
+        const sigPrompt = document.getElementById('sig-prompt');
+        if (sigPrompt) { sigPrompt.classList.remove('hidden'); }
+
         updateCardPreview();
       }
     });
