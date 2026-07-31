@@ -380,13 +380,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Save PDF ready for direct CorelDRAW Import/Open
         doc.save(`EBSU_CorelDRAW_Layout_${cleanMatric}.pdf`);
-      } else {
-        // Fallback: download 300 DPI high-res PNG
-        const link = document.createElement('a');
-        link.download = `EBSU_CorelDRAW_Front_${cleanMatric}.png`;
-        link.href = imgDataFront;
-        link.click();
-      }
+
+        alert(
+          '✅ CorelDRAW Import-Ready Vector Template Downloaded!\n\n' +
+          '📌 TO PLACE INTO YOUR CorelDRAW (kfx.cdr):\n' +
+          '1. Open CorelDRAW with your kfx.cdr document.\n' +
+          '2. Press Ctrl + I (or File → Import).\n' +
+          '3. Select "EBSU_CorelDRAW_Layout_' + cleanMatric + '.pdf".\n' +
+          '4. CorelDRAW will import both Front and Back cards at exact 1:1 millimetric scale (85.6mm x 54mm) snapped right onto your page guidelines!'
+        );
 
     } catch (err) {
       console.error('Error generating CorelDRAW export:', err);
