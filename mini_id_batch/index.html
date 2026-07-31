@@ -51,28 +51,14 @@
       <form id="id-form" onsubmit="return false;">
         
         <!-- Passport & Signature Uploads -->
-        <div class="form-row">
-          <div class="form-group upload-box">
-            <label>Student Photo</label>
-            <div class="file-dropzone" id="photo-dropzone">
-              <input type="file" id="inp-photo" accept="image/*">
-              <img id="photo-thumb-preview" src="" alt="Photo Preview" class="thumb-img hidden">
-              <div class="upload-prompt" id="photo-prompt">
-                <span class="upload-icon">📷</span>
-                <span>Upload Photo</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group upload-box">
-            <label>Signature Image (Optional)</label>
-            <div class="file-dropzone" id="sig-dropzone">
-              <input type="file" id="inp-sig" accept="image/*">
-              <img id="sig-thumb-preview" src="" alt="Sig Preview" class="thumb-img hidden">
-              <div class="upload-prompt" id="sig-prompt">
-                <span class="upload-icon">✍️</span>
-                <span>Upload Sig</span>
-              </div>
+        <div class="form-group upload-box">
+          <label>Student Photo</label>
+          <div class="file-dropzone" id="photo-dropzone">
+            <input type="file" id="inp-photo" accept="image/*">
+            <img id="photo-thumb-preview" src="" alt="Photo Preview" class="thumb-img hidden">
+            <div class="upload-prompt" id="photo-prompt">
+              <span class="upload-icon">📷</span>
+              <span>Upload Passport Photo</span>
             </div>
           </div>
         </div>
@@ -107,8 +93,28 @@
           </div>
 
           <div class="form-group">
-            <label for="inp-signature-text">Signature Text</label>
-            <input type="text" id="inp-signature-text" value="O.N" placeholder="e.g. O.N">
+            <label for="inp-sig-type">Signature Format</label>
+            <select id="inp-sig-type">
+              <option value="text" selected>Abbreviation Text (e.g. O.N)</option>
+              <option value="image">Signature Picture (Landscape Image)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" id="group-sig-text">
+          <label for="inp-signature-text">Signature Abbreviation Text</label>
+          <input type="text" id="inp-signature-text" value="O.N" placeholder="e.g. O.N">
+        </div>
+
+        <div class="form-group upload-box hidden" id="group-sig-image">
+          <label>Signature Picture (Landscape Upload)</label>
+          <div class="file-dropzone" id="sig-dropzone">
+            <input type="file" id="inp-sig" accept="image/*">
+            <img id="sig-thumb-preview" src="" alt="Sig Preview" class="thumb-img hidden">
+            <div class="upload-prompt" id="sig-prompt">
+              <span class="upload-icon">✍️</span>
+              <span>Upload Landscape Sig</span>
+            </div>
           </div>
         </div>
 
