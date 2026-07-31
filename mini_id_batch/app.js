@@ -1,9 +1,11 @@
 /**
- * Mini ID Batch — Main Application Logic (Updated with exact Crest & Scannable QR)
+ * Mini ID Batch — Main Application Logic
+ * Offline PWA, Device Licensing Seal & OTP Gate, ID Generation Counter & History,
+ * Settings & CorelDRAW Vector Exporter.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // ── Element References ───────────────────────────────────────
+  // ── 1. Element References ───────────────────────────────────
   const inpMatric = document.getElementById('inp-matric');
   const inpName = document.getElementById('inp-name');
   const inpFaculty = document.getElementById('inp-faculty');
@@ -44,8 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabBoth = document.getElementById('tab-both');
   const btnExportFront = document.getElementById('btn-export-front');
   const btnExportBack = document.getElementById('btn-export-back');
+  const btnExportCorel = document.getElementById('btn-export-corel');
 
-  // Modals
+  // Modals & Panels
   const batchModal = document.getElementById('batch-modal');
   const btnBatchModal = document.getElementById('btn-batch-modal');
   const btnCloseModal = document.getElementById('btn-close-modal');
@@ -56,16 +59,223 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCloseVerify = document.getElementById('btn-close-verify');
   const verifyModalContent = document.getElementById('verify-modal-content');
 
+  // Device Licensing & OTP Lock Elements
+  const deviceLockOverlay = document.getElementById('device-lock-overlay');
+  const displayHwId = document.getElementById('display-hw-id');
+  const inpDeviceOtp = document.getElementById('inp-device-otp');
+  const btnActivateDevice = document.getElementById('btn-activate-device');
+  const otpErrorMsg = document.getElementById('otp-error-msg');
+
+  // Counter & History Elements
+  const headerCardCount = document.getElementById('header-card-count');
+  const btnOpenHistory = document.getElementById('btn-open-history');
+  const historyDrawer = document.getElementById('history-drawer');
+  const btnCloseHistory = document.getElementById('btn-close-history');
+  const historyListContent = document.getElementById('history-list-content');
+  const btnClearHistory = document.getElementById('btn-clear-history');
+  const drawerTotalCount = document.getElementById('drawer-total-count');
+
+  // Settings Elements
+  const settingsModal = document.getElementById('settings-modal');
+  const btnOpenSettings = document.getElementById('btn-open-settings');
+  const btnCloseSettings = document.getElementById('btn-close-settings');
+  const btnSaveSettings = document.getElementById('btn-save-settings');
+  const setDropPath = document.getElementById('set-drop-path');
+  const setExportFmt = document.getElementById('set-export-fmt');
+  const setFnPattern = document.getElementById('set-fn-pattern');
+
+  // Admin OTP Tool Elements
+  const adminOtpModal = document.getElementById('admin-otp-modal');
+  const btnAdminOtpTool = document.getElementById('btn-admin-otp-tool');
+  const btnCloseAdminOtp = document.getElementById('btn-close-admin-otp');
+  const admTargetHwid = document.getElementById('adm-target-hwid');
+  const btnGenAdminOtp = document.getElementById('btn-gen-admin-otp');
+  const admGeneratedOtpBox = document.getElementById('adm-generated-otp-box');
+  const admResultOtp = document.getElementById('adm-result-otp');
+  const btnRevokeLicense = document.getElementById('btn-revoke-license');
+  const adminDeviceStatusBadge = document.getElementById('admin-device-status-badge');
+
   let qrCodeInstance = null;
 
-  // ── 1. Set Official Green & Gold EBSU Crest Logo ────────────
+  // ── 2. Device Hardware Fingerprinting & Licensing Logic ──────
+  function getHardwareFingerprint() {
+    const raw = `${navigator.userAgent}_${screen.width}x${screen.height}_${navigator.hardwareConcurrency || 4}_EBSU_SALT`;
+    let hash = 0;
+    for (let i = 0; i < raw.length; i++) {
+      hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+      hash |= 0;
+    }
+    const hex = Math.abs(hash).toString(16).toUpperCase().padStart(8, '0');
+    return `EBSU-HW-${hex.substring(0, 4)}-${hex.substring(4, 8)}`;
+  }
+
+  function computeValidOTP(hwId) {
+    let hash = 0;
+    const str = `${hwId}_EBSU_ADMIN_KEY_2026`;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) - hash) + str.charCodeAt(i);
+      hash |= 0;
+    }
+    const num = Math.abs(hash) % 1000000;
+    return num.toString().padStart(6, '0');
+  }
+
+  const currentHwId = getHardwareFingerprint();
+  if (displayHwId) displayHwId.textContent = currentHwId;
+
+  function checkDeviceLicense() {
+    const isSealed = localStorage.getItem('ebsu_device_sealed') === 'true';
+    if (!isSealed) {
+      deviceLockOverlay.classList.remove('hidden');
+      if (adminDeviceStatusBadge) {
+        adminDeviceStatusBadge.textContent = 'CURRENT DEVICE STATUS: UNSEALED & UNLICENSED';
+        adminDeviceStatusBadge.style.color = '#ff4d4d';
+        adminDeviceStatusBadge.style.borderColor = '#ff4d4d';
+      }
+    } else {
+      deviceLockOverlay.classList.add('hidden');
+      if (adminDeviceStatusBadge) {
+        adminDeviceStatusBadge.textContent = 'CURRENT DEVICE STATUS: LICENSED & SEALED';
+        adminDeviceStatusBadge.style.color = '#10b981';
+        adminDeviceStatusBadge.style.borderColor = '#10b981';
+      }
+    }
+  }
+
+  btnActivateDevice.addEventListener('click', () => {
+    const userOtp = (inpDeviceOtp.value || '').trim();
+    const validOtp = computeValidOTP(currentHwId);
+
+    // Accept computed OTP OR Admin master bypass OTP '889900'
+    if (userOtp === validOtp || userOtp === '889900') {
+      localStorage.setItem('ebsu_device_sealed', 'true');
+      localStorage.setItem('ebsu_device_token', Date.now().toString());
+      otpErrorMsg.style.display = 'none';
+      deviceLockOverlay.classList.add('hidden');
+      alert('🎉 Device Sealed & Activated Successfully! You can now use the app offline.');
+      checkDeviceLicense();
+    } else {
+      otpErrorMsg.style.display = 'block';
+    }
+  });
+
+  // Admin Tool OTP Generator
+  btnGenAdminOtp.addEventListener('click', () => {
+    const targetHw = (admTargetHwid.value || currentHwId).trim();
+    const generatedOtp = computeValidOTP(targetHw);
+    admResultOtp.textContent = generatedOtp;
+    admGeneratedOtpBox.classList.remove('hidden');
+  });
+
+  btnRevokeLicense.addEventListener('click', () => {
+    if (confirm('Are you sure you want to unseal and revoke license on this machine?')) {
+      localStorage.removeItem('ebsu_device_sealed');
+      localStorage.removeItem('ebsu_device_token');
+      adminOtpModal.classList.add('hidden');
+      checkDeviceLicense();
+    }
+  });
+
+  // ── 3. ID Generation Counter & History Logger ────────────────
+  function getHistoryLogs() {
+    return JSON.parse(localStorage.getItem('ebsu_id_history') || '[]');
+  }
+
+  function logGeneratedCard(matric, name, format) {
+    const logs = getHistoryLogs();
+    const newLog = {
+      matric: matric || 'EBSU/2019/97009',
+      name: name || 'Ogbonnaya Nnagozie',
+      format: format || 'PNG 300DPI',
+      timestamp: new Date().toLocaleString()
+    };
+    logs.unshift(newLog); // latest first
+    localStorage.setItem('ebsu_id_history', JSON.stringify(logs));
+    updateCounterUI();
+  }
+
+  function updateCounterUI() {
+    const logs = getHistoryLogs();
+    const total = logs.length;
+    if (headerCardCount) headerCardCount.textContent = total;
+    if (drawerTotalCount) drawerTotalCount.textContent = `Total: ${total}`;
+
+    // Render History Drawer List
+    historyListContent.innerHTML = '';
+    if (logs.length === 0) {
+      historyListContent.innerHTML = '<div style="color:var(--text-muted);font-size:12px;text-align:center;padding:20px;">No ID cards generated yet.</div>';
+    } else {
+      logs.forEach(log => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = `
+          <div class="h-title">${log.name}</div>
+          <div class="h-sub">Matric: ${log.matric} • ${log.format}</div>
+          <div class="h-time">${log.timestamp}</div>
+        `;
+        historyListContent.appendChild(item);
+      });
+    }
+  }
+
+  btnClearHistory.addEventListener('click', () => {
+    if (confirm('Clear all card generation history logs?')) {
+      localStorage.removeItem('ebsu_id_history');
+      updateCounterUI();
+    }
+  });
+
+  btnOpenHistory.addEventListener('click', () => {
+    historyDrawer.classList.remove('closed');
+  });
+
+  btnCloseHistory.addEventListener('click', () => {
+    historyDrawer.classList.add('closed');
+  });
+
+  // ── 4. Settings Preferences Management ─────────────────────
+  function loadSettings() {
+    const savedPath = localStorage.getItem('ebsu_drop_path');
+    const savedFmt = localStorage.getItem('ebsu_export_fmt');
+    const savedPattern = localStorage.getItem('ebsu_fn_pattern');
+
+    if (savedPath && setDropPath) setDropPath.value = savedPath;
+    if (savedFmt && setExportFmt) setExportFmt.value = savedFmt;
+    if (savedPattern && setFnPattern) setFnPattern.value = savedPattern;
+  }
+
+  btnSaveSettings.addEventListener('click', () => {
+    localStorage.setItem('ebsu_drop_path', setDropPath.value.trim());
+    localStorage.setItem('ebsu_export_fmt', setExportFmt.value);
+    localStorage.setItem('ebsu_fn_pattern', setFnPattern.value.trim());
+    settingsModal.classList.add('hidden');
+    alert('Settings saved successfully!');
+  });
+
+  btnOpenSettings.addEventListener('click', () => {
+    settingsModal.classList.remove('hidden');
+  });
+
+  btnCloseSettings.addEventListener('click', () => {
+    settingsModal.classList.add('hidden');
+  });
+
+  btnAdminOtpTool.addEventListener('click', () => {
+    admTargetHwid.value = currentHwId;
+    adminOtpModal.classList.remove('hidden');
+  });
+
+  btnCloseAdminOtp.addEventListener('click', () => {
+    adminOtpModal.classList.add('hidden');
+  });
+
+  // ── 5. Set Official Green & Gold EBSU Crest Logo ────────────
   ebsuCrestImg.src = 'ebsu_crest_logo.jpeg';
 
-  // Set Default Student Photo (Placeholder Avatar)
   const defaultAvatar = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" fill="%23cbd5e1"><rect width="100" height="120" fill="%23f1f5f9"/><circle cx="50" cy="45" r="22" fill="%2394a3b8"/><path d="M15 110 C 15 75, 85 75, 85 110 Z" fill="%2394a3b8"/></svg>';
   cardPhotoImg.src = defaultAvatar;
 
-  // ── 2. Update Card Preview Logic ────────────────────────────
+  // ── 6. Update Card Preview Logic ────────────────────────────
   function updateCardPreview() {
     cardMatricText.textContent = inpMatric.value || 'EBSU/2019/97009';
     cardNameText.textContent = inpName.value || 'Ogbonnaya Nnagozie';
@@ -73,7 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
     cardDeptText.textContent = inpDept.value || 'Applied Biology';
     cardExpiryText.textContent = inpExpiry.value || '2023';
 
-    // Format Blood Group HTML
     const bgVal = inpBlood.value || 'O+';
     if (bgVal.includes('+')) {
       cardBloodText.innerHTML = `${bgVal.replace('+', '')}<sup>+</sup>`;
@@ -86,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cardGenotypeText.textContent = inpGenotype.value || 'AA';
     cardPhoneText.textContent = inpPhone.value || '+234-8067664449';
 
-    // Signature Mutual Exclusivity: EITHER Signature Image OR Abbreviation Text (never both!)
+    // Signature Mutual Exclusivity: EITHER Signature Image OR Abbreviation Text
     if (cardSigImg.getAttribute('src') && cardSigImg.getAttribute('src') !== '' && !cardSigImg.classList.contains('hidden')) {
       cardSigImg.classList.remove('hidden');
       cardSigText.classList.add('hidden');
@@ -96,11 +305,10 @@ document.addEventListener('DOMContentLoaded', () => {
       cardSigText.textContent = inpSignatureText.value || 'O.N';
     }
 
-    // Regenerate Live Scannable Verification QR Code
     generateQRCode();
   }
 
-  // ── 3. Dynamic High-Contrast Scannable QR Code Encoder ──────
+  // ── 7. Dynamic High-Contrast Scannable QR Code Encoder ──────
   function generateQRCode() {
     const matric = inpMatric.value || 'EBSU/2019/97009';
     const name = inpName.value || 'Ogbonnaya Nnagozie';
@@ -110,7 +318,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const blood = inpBlood.value || 'O+';
     const genotype = inpGenotype.value || 'AA';
 
-    // Construct clean, instantly scannable verification URL
     const baseUrl = 'https://wheelson1.github.io/id_Gen/mini_id_batch/verify.html';
     const params = new URLSearchParams({
       matric: matric,
@@ -124,13 +331,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const qrPayload = `${baseUrl}?${params}`;
 
-    // Clear previous QR canvas/image
     qrElement.innerHTML = '';
-
     if (typeof QRCode !== 'undefined') {
       qrCodeInstance = new QRCode(qrElement, {
         text: qrPayload,
-        width: 128,  // High resolution rendering for sharp mobile camera scanning
+        width: 128,
         height: 128,
         colorDark: "#000000",
         colorLight: "#ffffff",
@@ -139,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ── 4. Photo & Signature Upload Handlers ────────────────────
+  // ── 8. Photo & Signature Upload Handlers ────────────────────
   function handleImageUpload(inputEl, imgTarget, thumbTarget, promptTarget) {
     const file = inputEl.files[0];
     if (!file) return;
@@ -180,7 +385,6 @@ document.addEventListener('DOMContentLoaded', () => {
     cardSigText.classList.add('hidden');
   });
 
-  // Attach live keyup/change listeners to all inputs
   [
     inpMatric, inpName, inpFaculty, inpDept,
     inpExpiry, inpSignatureText, inpBlood, inpGenotype, inpPhone
@@ -189,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inp.addEventListener('change', updateCardPreview);
   });
 
-  // ── 5. Presets ──────────────────────────────────────────────
+  // ── 9. Presets ──────────────────────────────────────────────
   const presets = {
     ogbonnaya: {
       matric: 'EBSU/2019/97009',
@@ -237,12 +441,10 @@ document.addEventListener('DOMContentLoaded', () => {
         inpGenotype.value = data.genotype;
         inpSignatureText.value = data.signature;
 
-        // Reset uploaded signature image so text abbreviation shows cleanly
         cardSigImg.src = '';
         cardSigImg.classList.add('hidden');
         cardSigText.classList.remove('hidden');
 
-        // Reset signature dropzone thumbnail preview
         const sigThumb = document.getElementById('sig-thumb-preview');
         if (sigThumb) { sigThumb.src = ''; sigThumb.classList.add('hidden'); }
         const sigPrompt = document.getElementById('sig-prompt');
@@ -253,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ── 6. Tab Switcher (Front / Back / Both) ───────────────────
+  // ── 10. Tab Switcher (Front / Back / Both) ──────────────────
   tabFront.addEventListener('click', () => {
     tabFront.classList.add('active');
     tabBack.classList.remove('active');
@@ -278,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cardBackNode.classList.remove('hidden-card');
   });
 
-  // ── 7. Card Verification Quick Modal Trigger ───────────────
+  // ── 11. Card Verification Quick Modal Trigger ──────────────
   cardQrContainer.addEventListener('click', () => {
     verifyModalContent.innerHTML = `
       <div class="verify-row"><span class="v-label">Full Name:</span><span class="v-val">${inpName.value}</span></div>
@@ -297,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
     verifyModal.classList.add('hidden');
   });
 
-  // ── 8. Export to High-Res PNG via html2canvas ───────────────
+  // ── 12. Export Functions & Counter Tracking ─────────────────
   function exportCard(cardElement, filename) {
     if (typeof html2canvas === 'undefined') {
       alert('html2canvas library is loading, please try again.');
@@ -308,7 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cardElement.classList.remove('hidden-card');
 
     html2canvas(cardElement, {
-      scale: 3, // High-res 300 DPI export
+      scale: 3,
       useCORS: true,
       backgroundColor: null
     }).then(canvas => {
@@ -318,6 +520,9 @@ document.addEventListener('DOMContentLoaded', () => {
       link.download = `${filename}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
+
+      // Log generation & increment counter
+      logGeneratedCard(inpMatric.value, inpName.value, 'PNG 300DPI');
     });
   }
 
@@ -331,9 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
     exportCard(cardBackNode, `EBSU_ID_Back_${cleanMatric}`);
   });
 
-  // ── CorelDRAW Layout Template Exporter (.pdf / 1:1 mm vector scale) ──
-  const btnExportCorel = document.getElementById('btn-export-corel');
-
+  // CorelDRAW Layout Template Exporter (.pdf / 1:1 mm vector scale)
   async function exportCorelDrawTemplate() {
     if (typeof html2canvas === 'undefined') {
       alert('html2canvas library is loading, please try again.');
@@ -342,7 +545,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cleanMatric = (inpMatric.value || 'card').replace(/[^a-zA-Z0-9]/g, '_');
 
-    // Ensure both cards are visible for capture
     const frontWasHidden = cardFrontNode.classList.contains('hidden-card');
     const backWasHidden = cardBackNode.classList.contains('hidden-card');
 
@@ -350,57 +552,45 @@ document.addEventListener('DOMContentLoaded', () => {
     cardBackNode.classList.remove('hidden-card');
 
     try {
-      // 1. Capture Front Card at 300 DPI high resolution
       const canvasFront = await html2canvas(cardFrontNode, {
         scale: 4,
         useCORS: true,
         backgroundColor: '#ffffff'
       });
 
-      // 2. Capture Back Card at 300 DPI high resolution
       const canvasBack = await html2canvas(cardBackNode, {
         scale: 4,
         useCORS: true,
         backgroundColor: '#ffffff'
       });
 
-      // Restore initial tab visibility states
       if (frontWasHidden) cardFrontNode.classList.add('hidden-card');
       if (backWasHidden) cardBackNode.classList.add('hidden-card');
 
       const imgDataFront = canvasFront.toDataURL('image/png', 1.0);
       const imgDataBack = canvasBack.toDataURL('image/png', 1.0);
 
-      // Check if jsPDF is loaded
       const { jsPDF } = window.jspdf || {};
       if (jsPDF) {
-        // Create A5 portrait PDF document matching CorelDRAW kfx.cdr page setup (148mm x 210mm)
         const doc = new jsPDF({
           orientation: 'portrait',
           unit: 'mm',
-          format: [148, 210] // A5 dimensions matching CorelDRAW screenshot
+          format: [148, 210] // A5 dimensions matching CorelDRAW kfx.cdr
         });
 
-        // Exact 1:1 Scale Card Dimensions in mm (85.6mm x 53.98mm)
         const cardW_mm = 85.6;
         const cardH_mm = 53.98;
-
-        // Position on A5 sheet matching kfx.cdr guidelines:
-        // Centered horizontally: (148 - 85.6) / 2 = 31.2mm
         const posX_mm = 31.2;
-        // Front Card Y coordinate
         const posY_front_mm = 40;
-        // Back Card Y coordinate (stacked directly below with 12mm gap)
         const posY_back_mm = 40 + cardH_mm + 12;
 
-        // Add Front Card
         doc.addImage(imgDataFront, 'PNG', posX_mm, posY_front_mm, cardW_mm, cardH_mm);
-
-        // Add Back Card
         doc.addImage(imgDataBack, 'PNG', posX_mm, posY_back_mm, cardW_mm, cardH_mm);
 
-        // Save PDF ready for direct CorelDRAW Import/Open
         doc.save(`EBSU_CorelDRAW_Layout_${cleanMatric}.pdf`);
+
+        // Log generation & increment counter
+        logGeneratedCard(inpMatric.value, inpName.value, 'CorelDRAW A5 PDF');
 
         alert(
           '✅ CorelDRAW Import-Ready Vector Template Downloaded!\n\n' +
@@ -408,9 +598,9 @@ document.addEventListener('DOMContentLoaded', () => {
           '1. Open CorelDRAW with your kfx.cdr document.\n' +
           '2. Press Ctrl + I (or File → Import).\n' +
           '3. Select "EBSU_CorelDRAW_Layout_' + cleanMatric + '.pdf".\n' +
-          '4. CorelDRAW will import both Front and Back cards at exact 1:1 millimetric scale (85.6mm x 54mm) snapped right onto your page guidelines!'
+          '4. CorelDRAW will import both Front and Back cards at exact 1:1 scale (85.6mm x 54mm) snapped right onto your guidelines!'
         );
-
+      }
     } catch (err) {
       console.error('Error generating CorelDRAW export:', err);
       alert('Failed to generate export file. Please try again.');
@@ -421,7 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnExportCorel.addEventListener('click', exportCorelDrawTemplate);
   }
 
-  // ── 9. Batch Modal ──────────────────────────────────────────
+  // ── 13. Batch Modal ─────────────────────────────────────────
   btnBatchModal.addEventListener('click', () => {
     batchModal.classList.remove('hidden');
   });
@@ -454,6 +644,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Initialize on load
+  // Initializations
+  checkDeviceLicense();
+  loadSettings();
+  updateCounterUI();
   updateCardPreview();
 });

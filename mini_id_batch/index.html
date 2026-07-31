@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mini ID Batch — EBSU Student ID Generator</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
   <!-- Google Fonts for Modern UI & Exact Card Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,10 +25,15 @@
       <div class="logo-area">
         <span class="badge">EBSU ICT</span>
         <h1>Mini ID Batch Generator</h1>
+        <div id="btn-open-history" class="counter-pill" title="Click to view ID Generation History Log">
+          🪪 Generated: <span id="header-card-count">0</span>
+        </div>
       </div>
       <div class="header-actions">
         <button id="btn-batch-modal" class="btn btn-secondary">⚡ Batch CSV/JSON Import</button>
-        <a href="verify.html" target="_blank" class="btn btn-outline">🔍 Scanner & Verifier</a>
+        <button id="btn-open-settings" class="btn btn-outline">⚙️ Path & Export Settings</button>
+        <button id="btn-admin-otp-tool" class="btn btn-outline" style="border-color:#38bdf8;color:#38bdf8;">🔑 Device Seal Admin</button>
+        <a href="verify.html" target="_blank" class="btn btn-outline">🔍 Verifier</a>
       </div>
     </div>
   </header>
@@ -299,6 +305,101 @@
 
   </main>
 
+  <!-- ── 1. DEVICE HARDWARE OTP ACTIVATION GATE OVERLAY ───────── -->
+  <div id="device-lock-overlay" class="device-lock-backdrop hidden">
+    <div class="device-lock-card">
+      <div class="lock-icon-badge">🔒</div>
+      <h2>Device Seal & Activation Required</h2>
+      <p>This offline application must be sealed and activated to this specific hardware device by the Admin before use.</p>
+      
+      <div class="form-group">
+        <label>Your Hardware Device ID (Share with Admin):</label>
+        <div class="hw-id-box" id="display-hw-id">EBSU-HW-7B9F-44A2</div>
+      </div>
+
+      <div class="otp-input-group">
+        <label style="font-size:12px;color:var(--text-muted);">Enter 6-Digit Admin Master OTP Code:</label>
+        <input type="text" id="inp-device-otp" placeholder="000000" maxlength="6" autocomplete="off">
+      </div>
+
+      <button id="btn-activate-device" class="btn-activate">🔒 Seal & Activate This Device</button>
+      <div id="otp-error-msg" style="color:#ff4d4d;font-size:12px;margin-top:12px;display:none;">Invalid OTP Code. Contact Admin.</div>
+    </div>
+  </div>
+
+  <!-- ── 2. HISTORY / GENERATED CARDS DRAWER ──────────────────── -->
+  <div id="history-drawer" class="history-drawer closed">
+    <div class="drawer-header">
+      <h3>🪪 ID Generation History</h3>
+      <button id="btn-close-history" class="btn-close">✕</button>
+    </div>
+    <div class="history-list" id="history-list-content">
+      <!-- Dynamically populated -->
+    </div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;">
+      <button id="btn-clear-history" class="btn btn-outline" style="font-size:11px;color:#ff4d4d;">Clear History</button>
+      <span style="font-size:11px;color:var(--text-muted);" id="drawer-total-count">Total: 0</span>
+    </div>
+  </div>
+
+  <!-- ── 3. PATH & EXPORT SETTINGS MODAL ─────────────────────── -->
+  <div id="settings-modal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>⚙️ Path & Export Preferences</h3>
+        <button id="btn-close-settings" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Default Drop Directory / Output Folder Label:</label>
+          <input type="text" id="set-drop-path" value="C:/Users/pc/Desktop/ID BATCH/exports/">
+        </div>
+        <div class="form-group">
+          <label>Default Export Format:</label>
+          <select id="set-export-fmt">
+            <option value="png">High-Res PNG (300 DPI)</option>
+            <option value="pdf">CorelDRAW A5 Print PDF (1:1 mm scale)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Filename Pattern:</label>
+          <input type="text" id="set-fn-pattern" value="EBSU_ID_{MATRIC}_{NAME}">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-save-settings" class="btn btn-primary">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. ADMIN MASTER OTP TOOL MODAL ───────────────────────── -->
+  <div id="admin-otp-modal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>🔑 Admin Device Seal & OTP Management</h3>
+        <button id="btn-close-admin-otp" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="verify-status-badge" id="admin-device-status-badge">CURRENT DEVICE STATUS: LICENSED & SEALED</div>
+        <p>As the Admin, you can generate one-time activation OTP codes for any hardware device ID to allow offline sharing:</p>
+
+        <div class="form-group">
+          <label>Target Hardware Device ID:</label>
+          <input type="text" id="adm-target-hwid" placeholder="e.g. EBSU-HW-7B9F-44A2">
+        </div>
+
+        <button id="btn-gen-admin-otp" class="btn btn-primary" style="width:100%;margin-bottom:14px;">Generate Activation OTP</button>
+
+        <div id="adm-generated-otp-box" class="hw-id-box hidden" style="color:#10b981;font-size:20px;">
+          OTP: <span id="adm-result-otp">889900</span>
+        </div>
+
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-color);">
+          <button id="btn-revoke-license" class="btn btn-outline" style="color:#ff4d4d;border-color:#ff4d4d;width:100%;">Unseal & Revoke License On This Machine</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Batch Import Modal -->
   <div id="batch-modal" class="modal-backdrop hidden">
@@ -346,5 +447,17 @@
 
   <script src="../assets.js"></script>
   <script src="app.js"></script>
+  <script>
+    // Register Service Worker for 100% Offline PWA execution
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          console.log('Offline PWA Service Worker registered successfully!', reg.scope);
+        }).catch((err) => {
+          console.log('Service Worker registration failed:', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>
