@@ -310,6 +310,94 @@ document.addEventListener('DOMContentLoaded', () => {
     exportCard(cardBackNode, `EBSU_ID_Back_${cleanMatric}`);
   });
 
+  // ── CorelDRAW Layout Template Exporter (.pdf / 1:1 mm vector scale) ──
+  const btnExportCorel = document.getElementById('btn-export-corel');
+
+  async function exportCorelDrawTemplate() {
+    if (typeof html2canvas === 'undefined') {
+      alert('html2canvas library is loading, please try again.');
+      return;
+    }
+
+    const cleanMatric = (inpMatric.value || 'card').replace(/[^a-zA-Z0-9]/g, '_');
+
+    // Ensure both cards are visible for capture
+    const frontWasHidden = cardFrontNode.classList.contains('hidden-card');
+    const backWasHidden = cardBackNode.classList.contains('hidden-card');
+
+    cardFrontNode.classList.remove('hidden-card');
+    cardBackNode.classList.remove('hidden-card');
+
+    try {
+      // 1. Capture Front Card at 300 DPI high resolution
+      const canvasFront = await html2canvas(cardFrontNode, {
+        scale: 4,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+
+      // 2. Capture Back Card at 300 DPI high resolution
+      const canvasBack = await html2canvas(cardBackNode, {
+        scale: 4,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+
+      // Restore initial tab visibility states
+      if (frontWasHidden) cardFrontNode.classList.add('hidden-card');
+      if (backWasHidden) cardBackNode.classList.add('hidden-card');
+
+      const imgDataFront = canvasFront.toDataURL('image/png', 1.0);
+      const imgDataBack = canvasBack.toDataURL('image/png', 1.0);
+
+      // Check if jsPDF is loaded
+      const { jsPDF } = window.jspdf || {};
+      if (jsPDF) {
+        // Create A5 portrait PDF document matching CorelDRAW kfx.cdr page setup (148mm x 210mm)
+        const doc = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: [148, 210] // A5 dimensions matching CorelDRAW screenshot
+        });
+
+        // Exact 1:1 Scale Card Dimensions in mm (85.6mm x 53.98mm)
+        const cardW_mm = 85.6;
+        const cardH_mm = 53.98;
+
+        // Position on A5 sheet matching kfx.cdr guidelines:
+        // Centered horizontally: (148 - 85.6) / 2 = 31.2mm
+        const posX_mm = 31.2;
+        // Front Card Y coordinate
+        const posY_front_mm = 40;
+        // Back Card Y coordinate (stacked directly below with 12mm gap)
+        const posY_back_mm = 40 + cardH_mm + 12;
+
+        // Add Front Card
+        doc.addImage(imgDataFront, 'PNG', posX_mm, posY_front_mm, cardW_mm, cardH_mm);
+
+        // Add Back Card
+        doc.addImage(imgDataBack, 'PNG', posX_mm, posY_back_mm, cardW_mm, cardH_mm);
+
+        // Save PDF ready for direct CorelDRAW Import/Open
+        doc.save(`EBSU_CorelDRAW_Layout_${cleanMatric}.pdf`);
+      } else {
+        // Fallback: download 300 DPI high-res PNG
+        const link = document.createElement('a');
+        link.download = `EBSU_CorelDRAW_Front_${cleanMatric}.png`;
+        link.href = imgDataFront;
+        link.click();
+      }
+
+    } catch (err) {
+      console.error('Error generating CorelDRAW export:', err);
+      alert('Failed to generate export file. Please try again.');
+    }
+  }
+
+  if (btnExportCorel) {
+    btnExportCorel.addEventListener('click', exportCorelDrawTemplate);
+  }
+
   // ── 9. Batch Modal ──────────────────────────────────────────
   btnBatchModal.addEventListener('click', () => {
     batchModal.classList.remove('hidden');

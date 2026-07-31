@@ -13,6 +13,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <!-- html2canvas for instant high-res card export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- jsPDF for 1:1 millimeter CorelDRAW PDF/SVG export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -157,8 +159,9 @@
           <button id="tab-both" class="tab-btn">Both Views</button>
         </div>
         <div class="download-actions">
-          <button id="btn-export-front" class="btn btn-primary">⬇ Export Front (PNG)</button>
-          <button id="btn-export-back" class="btn btn-secondary">⬇ Export Back (PNG)</button>
+          <button id="btn-export-front" class="btn btn-primary">⬇ Front (PNG)</button>
+          <button id="btn-export-back" class="btn btn-secondary">⬇ Back (PNG)</button>
+          <button id="btn-export-corel" class="btn btn-outline" style="border-color:#10b981;color:#10b981;font-weight:700;">🎨 CorelDRAW Layout (.pdf / .svg)</button>
         </div>
       </div>
 
