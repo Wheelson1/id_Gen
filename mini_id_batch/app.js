@@ -1,7 +1,5 @@
 /**
- * Mini ID Batch — Main Application Logic
- * Handles real-time ID preview, file uploads, dynamic QR code generation,
- * verification modal, batch processing, and high-res PNG export.
+ * Mini ID Batch — Main Application Logic (Updated with exact Crest & Scannable QR)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -60,13 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let qrCodeInstance = null;
 
-  // ── 1. Default Crest Logo ───────────────────────────────────
-  if (typeof CREST_LARGE !== 'undefined' && CREST_LARGE) {
-    ebsuCrestImg.src = CREST_LARGE;
-  } else {
-    // SVG Fallback Crest
-    ebsuCrestImg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%230052cc"/><text x="50" y="58" font-size="24" text-anchor="middle" fill="%23ffffff" font-family="sans-serif" font-weight="bold">EBSU</text></svg>';
-  }
+  // ── 1. Set Official Green & Gold EBSU Crest Logo ────────────
+  ebsuCrestImg.src = 'ebsu_crest_logo.jpeg';
 
   // Set Default Student Photo (Placeholder Avatar)
   const defaultAvatar = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" fill="%23cbd5e1"><rect width="100" height="120" fill="%23f1f5f9"/><circle cx="50" cy="45" r="22" fill="%2394a3b8"/><path d="M15 110 C 15 75, 85 75, 85 110 Z" fill="%2394a3b8"/></svg>';
@@ -94,35 +87,42 @@ document.addEventListener('DOMContentLoaded', () => {
     cardSigText.textContent = inpSignatureText.value || 'O.N';
     cardPhoneText.textContent = inpPhone.value || '+234-8067664449';
 
-    // Regenerate Live Verification QR Code
+    // Regenerate Live Scannable Verification QR Code
     generateQRCode();
   }
 
-  // ── 3. Dynamic QR Code Encoder ──────────────────────────────
+  // ── 3. Dynamic High-Contrast Scannable QR Code Encoder ──────
   function generateQRCode() {
-    const studentData = {
-      matric: inpMatric.value || 'EBSU/2019/97009',
-      name: inpName.value || 'Ogbonnaya Nnagozie',
-      faculty: inpFaculty.value || 'Science',
-      department: inpDept.value || 'Applied Biology',
-      expiry: inpExpiry.value || '2023',
-      blood: inpBlood.value || 'O+',
-      genotype: inpGenotype.value || 'AA',
-      verified: true
-    };
+    const matric = inpMatric.value || 'EBSU/2019/97009';
+    const name = inpName.value || 'Ogbonnaya Nnagozie';
+    const faculty = inpFaculty.value || 'Science';
+    const dept = inpDept.value || 'Applied Biology';
+    const expiry = inpExpiry.value || '2023';
+    const blood = inpBlood.value || 'O+';
+    const genotype = inpGenotype.value || 'AA';
 
-    // Verification URL format
-    const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '') + 'verify.html';
-    const params = new URLSearchParams(studentData).toString();
+    // Construct clean, instantly scannable verification URL
+    const baseUrl = 'https://wheelson1.github.io/id_Gen/mini_id_batch/verify.html';
+    const params = new URLSearchParams({
+      matric: matric,
+      name: name,
+      faculty: faculty,
+      department: dept,
+      expiry: expiry,
+      blood: blood,
+      genotype: genotype
+    }).toString();
+    
     const qrPayload = `${baseUrl}?${params}`;
 
-    // Clear previous QR
+    // Clear previous QR canvas/image
     qrElement.innerHTML = '';
+
     if (typeof QRCode !== 'undefined') {
       qrCodeInstance = new QRCode(qrElement, {
         text: qrPayload,
-        width: 72,
-        height: 72,
+        width: 128,  // High resolution rendering for sharp mobile camera scanning
+        height: 128,
         colorDark: "#000000",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.M
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="verify-row"><span class="v-label">Expiry Year:</span><span class="v-val">${inpExpiry.value}</span></div>
       <div class="verify-row"><span class="v-label">Blood Group:</span><span class="v-val">${inpBlood.value}</span></div>
       <div class="verify-row"><span class="v-label">Genotype:</span><span class="v-val">${inpGenotype.value}</span></div>
-      <div class="verify-row"><span class="v-label">Status:</span><span class="v-val" style="color:#10b981;">ACTIVE / PAID</span></div>
+      <div class="verify-row"><span class="v-label">Status:</span><span class="v-val" style="color:#10b981;">ACTIVE / VERIFIED</span></div>
     `;
     verifyModal.classList.remove('hidden');
   });
@@ -276,14 +276,13 @@ document.addEventListener('DOMContentLoaded', () => {
     verifyModal.classList.add('hidden');
   });
 
-  // ── 8. Export to PNG via html2canvas ────────────────────────
+  // ── 8. Export to High-Res PNG via html2canvas ───────────────
   function exportCard(cardElement, filename) {
     if (typeof html2canvas === 'undefined') {
       alert('html2canvas library is loading, please try again.');
       return;
     }
 
-    // Force visible for capture
     const wasHidden = cardElement.classList.contains('hidden-card');
     cardElement.classList.remove('hidden-card');
 

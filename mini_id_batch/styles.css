@@ -3,12 +3,12 @@
   --bg-dark: #070f1e;
   --panel-bg: #0d1b30;
   --border-color: #1a2d4b;
-  --primary-blue: #0056D2;
-  --accent-red: #E60000;
+  --primary-blue: #0052cc;
+  --accent-red: #e50914;
   --text-main: #e2e8f0;
   --text-muted: #94a3b8;
-  --card-w: 480px;
-  --card-h: 300px;
+  --card-w: 490px;
+  --card-h: 305px;
 }
 
 * {
@@ -296,7 +296,7 @@ body {
 }
 
 .btn-primary:hover {
-  background: #0045aa;
+  background: #003da8;
 }
 
 .btn-secondary {
@@ -338,7 +338,7 @@ body {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   EXACT EBSU ID CARD STYLING (MATCHES SCREENSHOT SPECIFICATIONS)
+   EXACT EBSU ID CARD STYLING (PIXEL-PERFECT REPLICA)
    ═════════════════════════════════════════════════════════════ */
 .id-card {
   width: var(--card-w);
@@ -348,7 +348,7 @@ body {
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
   position: relative;
   overflow: hidden;
-  border: 1.5px solid #0056D2;
+  border: 1.5px solid #0052cc;
   color: #000;
   display: flex;
   flex-direction: column;
@@ -361,11 +361,12 @@ body {
   display: none !important;
 }
 
-/* Watermark Seal */
+/* Exact Faint EBSU Watermark Seal */
 .card-watermark {
   position: absolute;
   inset: 0;
-  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.08"><circle cx="50" cy="50" r="40" fill="none" stroke="%230056D2" stroke-width="4"/><text x="50" y="55" font-size="12" text-anchor="middle" fill="%230056D2" font-family="sans-serif" font-weight="bold">EBSU</text></svg>') center/220px no-repeat;
+  background: url('ebsu_watermark.png') center center / 220px auto no-repeat;
+  opacity: 0.50;
   pointer-events: none;
   z-index: 1;
 }
@@ -377,10 +378,10 @@ body {
   background: #0052cc;
   color: #ffffff;
   font-family: 'Montserrat', Arial, sans-serif;
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 900;
   text-align: center;
-  padding: 8px 0;
+  padding: 7px 0;
   letter-spacing: 0.5px;
   z-index: 2;
   text-transform: uppercase;
@@ -389,12 +390,12 @@ body {
 
 /* Red Subtitle */
 .card-title-red {
-  color: #e60000;
+  color: #e50914;
   font-family: 'Arial', sans-serif;
   font-size: 13px;
   font-weight: 800;
   text-align: center;
-  padding-top: 6px;
+  padding-top: 4px;
   letter-spacing: 0.4px;
   z-index: 2;
 }
@@ -404,7 +405,7 @@ body {
   color: #0052cc;
   font-size: 12px;
   font-weight: 800;
-  padding: 3px 18px;
+  padding: 3px 18px 4px 18px;
   z-index: 2;
 }
 
@@ -416,7 +417,7 @@ body {
 /* Main Body Grid */
 .card-body-grid {
   display: grid;
-  grid-template-columns: 100px 1fr 90px;
+  grid-template-columns: 102px 1fr 88px;
   gap: 12px;
   padding: 4px 18px;
   z-index: 2;
@@ -424,18 +425,20 @@ body {
   align-items: flex-start;
 }
 
-/* Photo Column */
+/* Photo Column - Positioned lower for breathing room */
 .photo-column {
   display: flex;
   flex-direction: column;
+  padding-top: 4px;
 }
 
 .photo-frame {
-  width: 96px;
-  height: 114px;
-  border: 1px solid #ccc;
-  background: #f1f5f9;
+  width: 98px;
+  height: 116px;
+  border: 1px solid #222;
+  background: #ffffff;
   overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
 .photo-frame img {
@@ -472,18 +475,18 @@ body {
   margin-bottom: 2px;
 }
 
-/* Right QR Column */
+/* Right QR Column: Crest Logo + High Contrast QR Code */
 .qr-column {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding-top: 2px;
+  padding-top: 0px;
 }
 
 .crest-logo-wrapper {
-  width: 54px;
-  height: 54px;
+  width: 56px;
+  height: 58px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -495,25 +498,33 @@ body {
   object-fit: contain;
 }
 
+/* High Contrast Scannable QR Code Box */
 .qr-code-box {
-  width: 72px;
-  height: 72px;
-  background: #fff;
-  padding: 3px;
-  border: 1px solid #ddd;
+  width: 82px;
+  height: 82px;
+  background: #ffffff !important;
+  padding: 4px;
+  border: 1.5px solid #000000;
   border-radius: 4px;
   cursor: pointer;
   transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .qr-code-box:hover {
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
 .qr-code-box img,
 .qr-code-box canvas {
   width: 100% !important;
   height: 100% !important;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 /* Bottom Footer Row */
@@ -521,7 +532,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding: 4px 18px 10px 18px;
+  padding: 2px 18px 8px 18px;
   z-index: 2;
 }
 
