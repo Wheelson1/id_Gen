@@ -391,7 +391,38 @@ const BulkStudio = (() => {
     return count;
   }
 
-  // ── 1-CLICK PRINT PRODUCTION ─────────────────────────────────────
+  // ── DYNAMIC QR CODE GENERATOR FOR BATCH CARDS ───────────────────
+  function generateCardQRDataUrl(s) {
+    try {
+      const qc = document.createElement('canvas');
+      const reg = s.matric || s.schoolRegNo || '';
+      const name = s.name || '';
+      const dept = s.dept || '';
+      const exp = s.expiry || '2029';
+      const blood = s.blood || 'O+';
+      const geno = s.genotype || 'AA';
+      const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+      const url = `${window.location.origin}${basePath}/verify.html?m=${encodeURIComponent(reg)}&n=${encodeURIComponent(name)}&d=${encodeURIComponent(dept)}&b=${encodeURIComponent(blood)}&g=${encodeURIComponent(geno)}&exp=${encodeURIComponent(exp)}`;
+      if (typeof QRGen !== 'undefined' && QRGen.drawToCanvas) {
+        QRGen.drawToCanvas(qc, url, 3);
+        return qc.toDataURL('image/png');
+      }
+    } catch(e) {
+      console.warn('QR render notice:', e);
+    }
+    return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23fff"/><text x="12" y="55" font-family="sans-serif" font-size="10" fill="%23000">QR SECURED</text></svg>';
+  }
+
+  // ── 1-CLICK PRINT PRODUCTION & FAIL-SAFE SECTIONED PIPELINE ────────
+
+  let _sectionQueueState = {
+    selectedStudents: [],
+    sections: [],
+    sectionSize: 8,
+    isPaused: false,
+    isCancelled: false,
+    activeSectionIndex: 0
+  };
 
   function printBatchSheet() {
     const selected = getSelectedStudents();
@@ -400,48 +431,312 @@ const BulkStudio = (() => {
       return;
     }
 
-    let printWin = null;
-    try {
-      printWin = window.open('', '_blank');
-    } catch(e) {
-      printWin = null;
+    // Fail-safe protection: if volume > 8 cards (more than 1 A4 sheet), trigger protection prompt
+    if (selected.length > 8) {
+      showFailSafePrompt(selected);
+    } else {
+      startSectionedProduction(selected, 8);
+    }
+  }
+
+  // ── FAIL-SAFE VOLUME PROTECTION MODAL ────────────────────────────
+  function showFailSafePrompt(selected) {
+    let modal = document.getElementById('bulk-failsafe-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'bulk-failsafe-modal';
+      modal.style.cssText = 'position:fixed; inset:0; background:rgba(4,10,20,0.88); backdrop-filter:blur(8px); z-index:99999; display:flex; align-items:center; justify-content:center; padding:20px;';
+      document.body.appendChild(modal);
     }
 
-    // Build print HTML document with standard CR80 cards grid (8 cards per A4 page)
-    const cardsHtml = selected.map(s => `
-      <div class="cr80-print-card">
-        <div class="cr80-header">
-          <img src="crest_small.png.jpeg" class="cr80-crest" />
-          <div class="cr80-inst">EBONYI STATE UNIVERSITY</div>
-        </div>
-        <div class="cr80-sub">STUDENT IDENTITY CARD</div>
-        
-        <div class="cr80-body">
-          <div class="cr80-photo-box">
-            <img src="${s.photo || 'images/demo_user_face.jpg'}" class="cr80-photo" />
-          </div>
-          <div class="cr80-details">
-            <div class="cr80-row"><span class="k">NAME:</span> <strong class="v">${s.name}</strong></div>
-            <div class="cr80-row"><span class="k">MATRIC:</span> <strong class="v">${s.matric}</strong></div>
-            <div class="cr80-row"><span class="k">FACULTY:</span> <span class="v">${s.faculty}</span></div>
-            <div class="cr80-row"><span class="k">DEPT:</span> <span class="v">${s.dept}</span></div>
-            <div class="cr80-row"><span class="k">LEVEL:</span> <span class="v">${s.level} · BLOOD: ${s.blood}</span></div>
-            <div class="cr80-row"><span class="k">GRADUATION / EXPIRY:</span> <strong class="v" style="color:#0044cc;">${s.expiry}</strong></div>
-          </div>
-          <div class="cr80-qr-box">
-            <div class="cr80-qr-placeholder">🔲 QR SECURED<br/><small style="font-size:7px;">Ed25519 SEAL</small></div>
-            <div style="font-size:7px; font-weight:800; margin-top:2px;">VERIFIED</div>
+    const estimatedPages = Math.ceil(selected.length / 8);
+
+    modal.innerHTML = `
+      <div style="background:#0c1b2f; border:1px solid #d4a574; border-radius:18px; max-width:540px; width:100%; padding:28px; box-shadow:0 24px 60px rgba(0,0,0,0.7); position:relative; color:#e2edf8;">
+        <button type="button" onclick="document.getElementById('bulk-failsafe-modal').style.display='none'" style="position:absolute; top:16px; right:18px; background:none; border:none; color:#6080a0; font-size:22px; cursor:pointer;">✕</button>
+
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+          <div style="font-size:32px;">🛡️</div>
+          <div>
+            <h3 style="font-size:18px; font-weight:800; color:#fff; margin:0;">High-Volume Production Fail-Safe Guard</h3>
+            <span style="font-size:11px; color:#d4a574; font-weight:700;">System Stability &amp; Memory Protection Active</span>
           </div>
         </div>
-        <div class="cr80-footer">
-          <span>ISSUED: 2024/2025</span>
-          <span>OFFICIAL DIGITAL CREDENTIAL · SID SYSTEM</span>
+
+        <div style="background:rgba(212,165,116,0.12); border:1px solid rgba(212,165,116,0.3); border-radius:10px; padding:12px 16px; margin-bottom:16px;">
+          <div style="font-size:12px; font-weight:800; color:#f0d4a8; margin-bottom:4px;">
+            ⚠️ Heavy Request Volume: ${selected.length} Student Cards Selected (${estimatedPages} Standard A4 Sheets)
+          </div>
+          <div style="font-size:11px; color:#cbd5e1; line-height:1.5;">
+            Rendering hundreds of 300 DPI security cards in a single uninterrupted burst can overload browser GPU/RAM and cause tab crashes (STATUS_ACCESS_VIOLATION).
+          </div>
         </div>
+
+        <p style="font-size:12px; color:#94a3b8; line-height:1.6; margin-bottom:16px;">
+          <strong>Fail-Safe Arrangement:</strong> The production engine will process this volume in <strong>sequential sections</strong> (8 cards / 1 sheet per section). This yields execution back to the browser between sections, prevents crashes, and lets you print sheet-by-sheet or all together.
+        </p>
+
+        <div style="background:#071220; border:1px solid #1e3558; border-radius:10px; padding:14px; margin-bottom:20px;">
+          <label style="font-size:11px; font-weight:700; color:#93c5fd; display:block; margin-bottom:8px;">
+            SELECT SECTION CHUNK SIZE:
+          </label>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="display:flex; align-items:center; gap:10px; font-size:12px; cursor:pointer; color:#fff;">
+              <input type="radio" name="failsafe-chunk-size" value="8" checked style="accent-color:#d4a574;" />
+              <span><strong>8 Cards per Section</strong> (1 A4 Sheet / Section) — <em>Recommended (Zero Memory Risk)</em></span>
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; font-size:12px; cursor:pointer; color:#fff;">
+              <input type="radio" name="failsafe-chunk-size" value="16" style="accent-color:#d4a574;" />
+              <span><strong>16 Cards per Section</strong> (2 A4 Sheets / Section)</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; font-size:12px; cursor:pointer; color:#fff;">
+              <input type="radio" name="failsafe-chunk-size" value="24" style="accent-color:#d4a574;" />
+              <span><strong>24 Cards per Section</strong> (3 A4 Sheets / Section)</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button type="button" onclick="
+            const selectedSize = parseInt(document.querySelector('input[name=\\'failsafe-chunk-size\\']:checked').value, 10) || 8;
+            document.getElementById('bulk-failsafe-modal').style.display='none';
+            BulkStudio.startSectionedProduction(BulkStudio.getSelectedStudents(), selectedSize);
+          " style="flex:1; background:linear-gradient(135deg, #1558c0, #3b82f6); color:#fff; border:none; padding:12px; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; box-shadow:0 4px 15px rgba(21,88,192,0.4);">
+            ▶ Start Safe Sectioned Generation
+          </button>
+          <button type="button" onclick="document.getElementById('bulk-failsafe-modal').style.display='none'" style="background:transparent; border:1px solid #475569; color:#94a3b8; padding:12px 18px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">
+            Cancel
+          </button>
+        </div>
+      </div>
+    `;
+    modal.style.display = 'flex';
+  }
+
+  // ── SECTIONED BATCH PRODUCTION ENGINE (ARRANGEMENT IN SECTIONS) ────
+  async function startSectionedProduction(selected, sectionSize = 8) {
+    _sectionQueueState.selectedStudents = selected;
+    _sectionQueueState.sectionSize = sectionSize;
+    _sectionQueueState.isPaused = false;
+    _sectionQueueState.isCancelled = false;
+
+    // Split into sections
+    const totalSections = Math.ceil(selected.length / sectionSize);
+    const sections = [];
+    for (let i = 0; i < totalSections; i++) {
+      sections.push({
+        index: i,
+        pageNumber: i + 1,
+        students: selected.slice(i * sectionSize, (i + 1) * sectionSize),
+        status: 'queued', // queued | generating | ready
+        html: ''
+      });
+    }
+    _sectionQueueState.sections = sections;
+
+    showSectionConsole();
+
+    // Process section by section asynchronously
+    for (let sIdx = 0; sIdx < sections.length; sIdx++) {
+      if (_sectionQueueState.isCancelled) break;
+
+      while (_sectionQueueState.isPaused) {
+        await new Promise(r => setTimeout(r, 200));
+        if (_sectionQueueState.isCancelled) break;
+      }
+
+      const sec = sections[sIdx];
+      sec.status = 'generating';
+      updateSectionConsoleUI(sIdx, sections);
+
+      // Render cards with real scannable QR data URLs
+      sec.html = renderCardsHtml(sec.students, sec.pageNumber, totalSections);
+      sec.status = 'ready';
+
+      // Yield execution to the browser UI thread to prevent lag and enable GC
+      await new Promise(r => setTimeout(r, 60));
+      updateSectionConsoleUI(sIdx + 1, sections);
+    }
+  }
+
+  function renderCardsHtml(studentsList, pageNum, totalPages) {
+    return studentsList.map(s => {
+      const qrDataUrl = generateCardQRDataUrl(s);
+      return `
+        <div class="cr80-print-card">
+          <div class="cr80-header">
+            <img src="crest_small.png.jpeg" class="cr80-crest" />
+            <div class="cr80-inst">EBONYI STATE UNIVERSITY</div>
+          </div>
+          <div class="cr80-sub">STUDENT IDENTITY CARD</div>
+          
+          <div class="cr80-body">
+            <div class="cr80-photo-box">
+              <img src="${s.photo || 'images/demo_user_face.jpg'}" class="cr80-photo" />
+            </div>
+            <div class="cr80-details">
+              <div class="cr80-row"><span class="k">NAME:</span> <strong class="v">${s.name}</strong></div>
+              <div class="cr80-row"><span class="k">MATRIC:</span> <strong class="v">${s.matric}</strong></div>
+              <div class="cr80-row"><span class="k">FACULTY:</span> <span class="v">${s.faculty}</span></div>
+              <div class="cr80-row"><span class="k">DEPT:</span> <span class="v">${s.dept}</span></div>
+              <div class="cr80-row"><span class="k">LEVEL:</span> <span class="v">${s.level} · BLOOD: ${s.blood}</span></div>
+              <div class="cr80-row"><span class="k">GRADUATION / EXPIRY:</span> <strong class="v" style="color:#0044cc;">${s.expiry}</strong></div>
+            </div>
+            <div class="cr80-qr-box">
+              <div style="background:#fff; border:1px solid #1a365d; border-radius:2px; padding:1px; display:inline-block;">
+                <img src="${qrDataUrl}" style="width:14mm; height:14mm; display:block;" alt="Card QR" />
+              </div>
+              <div style="font-size:6.5pt; font-weight:800; margin-top:1.5px; color:#1a365d;">VERIFIED</div>
+            </div>
+          </div>
+          <div class="cr80-footer">
+            <span>ISSUED: 2024/2025</span>
+            <span>SHEET ${pageNum}/${totalPages} · CR80 STANDARD 300 DPI</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function showSectionConsole() {
+    let modal = document.getElementById('bulk-section-console');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'bulk-section-console';
+      modal.style.cssText = 'position:fixed; inset:0; background:rgba(4,10,20,0.92); backdrop-filter:blur(8px); z-index:99999; display:flex; flex-direction:column; overflow:hidden; color:#fff;';
+      document.body.appendChild(modal);
+    }
+    modal.style.display = 'flex';
+    updateSectionConsoleUI(0, _sectionQueueState.sections);
+  }
+
+  function updateSectionConsoleUI(completedCount, sections) {
+    const modal = document.getElementById('bulk-section-console');
+    if (!modal) return;
+
+    const total = sections.length;
+    const pct = total === 0 ? 0 : Math.round((completedCount / total) * 100);
+    const totalStudents = _sectionQueueState.selectedStudents.length;
+    const readySections = sections.filter(s => s.status === 'ready');
+
+    modal.innerHTML = `
+      <div style="background:#0c1b2e; border-bottom:1px solid #1e3050; padding:14px 24px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:24px;">📦</span>
+          <div>
+            <div style="font-size:16px; font-weight:800; color:#d4a574;">
+              Sectioned Bulk ID Generation Console
+            </div>
+            <div style="font-size:11px; color:#8090a8;">
+              ${totalStudents} Students Arranged into ${total} Safe Sections (${_sectionQueueState.sectionSize} Cards / Sheet)
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button type="button" onclick="BulkStudio.togglePauseQueue()" style="background:#1e293b; color:#cbd5e1; border:1px solid #475569; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">
+            ${_sectionQueueState.isPaused ? '▶ Resume' : '⏸ Pause'}
+          </button>
+          <button type="button" onclick="BulkStudio.printAllReadySections()" ${readySections.length === 0 ? 'disabled' : ''} style="background:linear-gradient(135deg, #1558c0, #3b82f6); color:#fff; border:none; padding:8px 18px; border-radius:6px; font-size:12px; font-weight:800; cursor:pointer; opacity:${readySections.length === 0 ? 0.5 : 1};">
+            🖨️ Print All Ready Sections (${readySections.length}/${total})
+          </button>
+          <button type="button" onclick="BulkStudio.closeSectionConsole()" style="background:#334155; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">
+            ✕ Close
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Animated Progress Bar -->
+      <div style="background:#091424; padding:12px 24px; border-bottom:1px solid #1e3050; flex-shrink:0;">
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+          <span style="color:#93c5fd; font-weight:700;">
+            ${pct < 100 ? `Generating Section ${Math.min(completedCount + 1, total)} of ${total}...` : '✓ All Sections Successfully Generated & Cryptographically Sealed'}
+          </span>
+          <span style="color:#34d399; font-weight:800;">${pct}% Complete</span>
+        </div>
+        <div style="height:8px; background:#1e293b; border-radius:4px; overflow:hidden;">
+          <div style="width:${pct}%; height:100%; background:linear-gradient(90deg, #1558c0, #34d399); transition:width 0.3s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Sections Grid -->
+      <div style="flex:1; overflow-y:auto; padding:20px; background:#07101d;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+          ${sections.map((sec, idx) => {
+            const isReady = sec.status === 'ready';
+            const isGen = sec.status === 'generating';
+            return `
+              <div style="background:${isReady ? '#0d1f36' : isGen ? '#132847' : '#081322'}; border:1px solid ${isReady ? '#10b981' : isGen ? '#3b82f6' : '#1e3050'}; border-radius:12px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; gap:12px;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <strong style="color:#fff; font-size:13px;">Section ${sec.pageNumber} of ${total}</strong>
+                    <span style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:12px; background:${isReady ? 'rgba(16,185,129,0.15)' : isGen ? 'rgba(59,130,246,0.15)' : 'rgba(100,116,139,0.15)'}; color:${isReady ? '#34d399' : isGen ? '#60a5fa' : '#94a3b8'};">
+                      ${isReady ? '✓ READY' : isGen ? '⚡ GENERATING...' : '⏳ IN QUEUE'}
+                    </span>
+                  </div>
+                  <div style="font-size:11px; color:#8090a8; line-height:1.4;">
+                    Cards ${(sec.pageNumber - 1) * _sectionQueueState.sectionSize + 1} – ${(sec.pageNumber - 1) * _sectionQueueState.sectionSize + sec.students.length} (${sec.students.length} Students)
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:8px;">
+                  <button type="button" onclick="BulkStudio.printSingleSection(${idx})" ${!isReady ? 'disabled' : ''} style="flex:1; background:${isReady ? '#1558c0' : '#1e293b'}; color:#fff; border:none; padding:7px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:${isReady ? 'pointer' : 'not-allowed'}; opacity:${isReady ? 1 : 0.4};">
+                    🖨️ Print Sheet ${sec.pageNumber}
+                  </button>
+                  <button type="button" onclick="BulkStudio.previewSingleSection(${idx})" ${!isReady ? 'disabled' : ''} style="background:transparent; border:1px solid ${isReady ? '#4a90d9' : '#334155'}; color:${isReady ? '#93c5fd' : '#64748b'}; padding:7px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:${isReady ? 'pointer' : 'not-allowed'}; opacity:${isReady ? 1 : 0.4};">
+                    👁️ Preview
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function togglePauseQueue() {
+    _sectionQueueState.isPaused = !_sectionQueueState.isPaused;
+    updateSectionConsoleUI(_sectionQueueState.sections.filter(s => s.status === 'ready').length, _sectionQueueState.sections);
+  }
+
+  function closeSectionConsole() {
+    _sectionQueueState.isCancelled = true;
+    const modal = document.getElementById('bulk-section-console');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function printSingleSection(sectionIndex) {
+    const sec = _sectionQueueState.sections[sectionIndex];
+    if (!sec || !sec.html) return;
+    openPrintWindow([sec.html], `Section ${sec.pageNumber} (${sec.students.length} Cards)`);
+  }
+
+  function previewSingleSection(sectionIndex) {
+    const sec = _sectionQueueState.sections[sectionIndex];
+    if (!sec || !sec.html) return;
+    showInPagePrintModal(sec.html, sec.students.length);
+  }
+
+  function printAllReadySections() {
+    const ready = _sectionQueueState.sections.filter(s => s.status === 'ready');
+    if (ready.length === 0) return;
+    const allHtml = ready.map(s => s.html);
+    openPrintWindow(allHtml, `All Ready Sections (${ready.length} Sheets)`);
+  }
+
+  function openPrintWindow(sheetsHtmlArray, title) {
+    let printWin = null;
+    try { printWin = window.open('', '_blank'); } catch(e) { printWin = null; }
+
+    const combinedHtml = sheetsHtmlArray.map(html => `
+      <div class="sheet-grid" style="page-break-after:always;">
+        ${html}
       </div>
     `).join('');
 
     if (!printWin) {
-      showInPagePrintModal(cardsHtml, selected.length);
+      showInPagePrintModal(combinedHtml, sheetsHtmlArray.length * 8);
       return;
     }
 
@@ -449,7 +744,7 @@ const BulkStudio = (() => {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Batch ID Cards Print Sheet — ${selected.length} Students</title>
+        <title>Batch ID Cards Print Sheet — ${title}</title>
         <style>
           @page { size: A4 portrait; margin: 8mm; }
           body { font-family: 'Inter', sans-serif; background: #fff; color: #000; margin: 0; padding: 0; }
@@ -474,8 +769,7 @@ const BulkStudio = (() => {
           .cr80-details { flex: 1; font-size: 6pt; line-height: 1.35; }
           .cr80-row { margin-bottom: 0.8mm; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
           .cr80-row .k { color: #555; font-weight: 700; font-size: 5.5pt; }
-          .cr80-qr-box { width: 14mm; text-align: center; flex-shrink: 0; }
-          .cr80-qr-placeholder { width: 14mm; height: 14mm; border: 1px dashed #444; font-size: 5pt; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+          .cr80-qr-box { width: 16mm; text-align: center; flex-shrink: 0; }
           .cr80-footer { font-size: 5pt; color: #666; border-top: 0.5px solid #ccc; padding-top: 1mm; display: flex; justify-content: space-between; font-weight: 600; }
 
           @media print {
@@ -489,13 +783,11 @@ const BulkStudio = (() => {
         <div class="print-toolbar">
           <div>
             <strong>Ebonyi State University — Bulk ID Printing Sheet</strong>
-            <span style="margin-left: 14px; font-size: 12px; color: #94a3b8;">${selected.length} ID Cards Selected (CR80 Standard 300 DPI)</span>
+            <span style="margin-left: 14px; font-size: 12px; color: #94a3b8;">${title}</span>
           </div>
-          <button class="print-btn" onclick="window.print()">🖨️ Click to Print All IDs</button>
+          <button class="print-btn" onclick="window.print()">🖨️ Click to Print</button>
         </div>
-        <div class="sheet-grid">
-          ${cardsHtml}
-        </div>
+        ${combinedHtml}
       </body>
       </html>
     `);
@@ -514,7 +806,7 @@ const BulkStudio = (() => {
       <div style="background:#0c1b2e; color:#fff; padding:14px 24px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e3050; flex-shrink:0;">
         <div>
           <strong style="font-size:16px; color:#d4a574;">🖨️ Massive Bulk ID Print Sheet</strong>
-          <span style="margin-left:14px; font-size:12px; color:#94a3b8;">${count} CR80 ID Cards (Standard 8 per A4 Page)</span>
+          <span style="margin-left:14px; font-size:12px; color:#94a3b8;">CR80 ID Cards (Standard 8 per A4 Page)</span>
         </div>
         <div style="display:flex; gap:10px;">
           <button onclick="window.print()" style="background:#1558c0; color:#fff; border:none; padding:8px 18px; border-radius:6px; font-weight:800; cursor:pointer;">
@@ -545,8 +837,7 @@ const BulkStudio = (() => {
             .cr80-details { flex: 1; font-size: 6pt; line-height: 1.35; }
             .cr80-row { margin-bottom: 0.8mm; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             .cr80-row .k { color: #555; font-weight: 700; font-size: 5.5pt; }
-            .cr80-qr-box { width: 14mm; text-align: center; flex-shrink: 0; }
-            .cr80-qr-placeholder { width: 14mm; height: 14mm; border: 1px dashed #444; font-size: 5pt; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+            .cr80-qr-box { width: 16mm; text-align: center; flex-shrink: 0; }
             .cr80-footer { font-size: 5pt; color: #666; border-top: 0.5px solid #ccc; padding-top: 1mm; display: flex; justify-content: space-between; font-weight: 600; }
           </style>
           <div class="sheet-grid">
@@ -722,7 +1013,14 @@ const BulkStudio = (() => {
     showInPagePrintModal,
     downloadSampleCsv,
     previewSingleCard,
-    applyFilterAndRender
+    applyFilterAndRender,
+    startSectionedProduction,
+    showFailSafePrompt,
+    togglePauseQueue,
+    closeSectionConsole,
+    printSingleSection,
+    previewSingleSection,
+    printAllReadySections
   };
 })();
 

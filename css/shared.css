@@ -458,12 +458,13 @@ h1, h2, h3, h4, h5, h6 {
 
 
 /* ═══════════════════════════════════════════════════════════════
-   RESPONSIVE BREAKPOINTS
+   RESPONSIVE BREAKPOINTS & MOBILE RESILIENCE
    ═══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 1024px) {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
   .container { padding: 0 var(--sp-4); }
+  .modal-dialog { max-width: 90vw !important; }
 }
 
 @media (max-width: 768px) {
@@ -471,6 +472,21 @@ h1, h2, h3, h4, h5, h6 {
   .grid-2 { grid-template-columns: 1fr; }
 
   .hide-mobile { display: none !important; }
+  .show-mobile { display: block !important; }
+
+  /* Smooth horizontal scrolling for wide data tables */
+  .table-responsive, .table-container, .roster-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Flexible header and navbars */
+  .app-header, .site-header, .top-nav {
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    gap: 8px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -478,10 +494,24 @@ h1, h2, h3, h4, h5, h6 {
   .grid-4 { grid-template-columns: 1fr; }
 
   .btn-lg {
-    padding: var(--sp-3) var(--sp-6);
+    padding: var(--sp-3) var(--sp-5);
     font-size: 14px;
+    width: 100%;
+  }
+
+  /* Full-bleed comfortable modals on small phones */
+  .modal-content, .modal-card, .prompt-modal {
+    width: 95vw !important;
+    padding: 18px 14px !important;
+    border-radius: 14px !important;
+  }
+
+  /* Better inputs and touch spacing on phone screens */
+  input[type="text"], input[type="email"], input[type="password"], select {
+    font-size: 16px; /* Stop auto-zoom in iOS Safari */
   }
 }
+
 
 /* ═══════════════════════════════════════════════════════════════
    1-CLICK DEMO LOGIN & ATTACHED CAPABILITIES SYSTEM

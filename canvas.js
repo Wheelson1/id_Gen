@@ -371,7 +371,13 @@ function drawCard(canvas, arg1, arg2, arg3, arg4) {
     const qc = document.createElement('canvas');
     if (typeof QRGen !== 'undefined' && QRGen.drawToCanvas) {
       QRGen.drawToCanvas(qc, buildQRData(st), 4);
+      c.save();
+      // Pure white backing to prevent background/watermark interference
+      c.fillStyle = '#ffffff';
+      c.fillRect(S(CC.qrX) - S(4), S(CC.qrY) - S(4), S(CC.qrSize) + S(8), S(CC.qrSize) + S(8));
+      c.imageSmoothingEnabled = false;
       c.drawImage(qc, S(CC.qrX), S(CC.qrY), S(CC.qrSize), S(CC.qrSize));
+      c.restore();
     }
     stepSig();
   }

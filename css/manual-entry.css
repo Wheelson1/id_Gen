@@ -699,3 +699,136 @@ body.manual-fill-page {
   background: #000;
   margin-bottom: 10px;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPREHENSIVE MOBILE RESPONSIVE ENGINE
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .mf-layout-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px;
+  }
+  .mf-sticky-panel {
+    position: static !important;
+    top: auto;
+  }
+  .mf-mobile-switch-bar {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .mf-header {
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .mf-brand {
+    gap: 10px;
+  }
+  .mf-crest {
+    width: 36px;
+    height: 36px;
+  }
+  .mf-brand-title {
+    font-size: 15px;
+  }
+  .mf-brand-sub {
+    font-size: 9.5px;
+    letter-spacing: 0.5px;
+  }
+  .mf-nav-links {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    gap: 6px;
+  }
+  .mf-nav-links::-webkit-scrollbar {
+    display: none;
+  }
+  .mf-nav-link {
+    padding: 6px 10px;
+    font-size: 11.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .mf-badge-pill {
+    flex-shrink: 0;
+    font-size: 9.5px;
+    padding: 3px 8px;
+  }
+
+  .mf-hero {
+    padding: 20px 0 16px 0;
+    margin-bottom: 20px;
+  }
+  .mf-hero-left h1 {
+    font-size: 21px;
+  }
+  .mf-hero-left p {
+    font-size: 12.5px;
+  }
+  .mf-hero-actions {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+  .mf-hero-actions button {
+    flex: 1;
+    font-size: 12px;
+    padding: 9px 8px;
+    justify-content: center;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .mf-container {
+    padding: 0 12px 60px 12px;
+  }
+  .mf-card {
+    padding: 16px 14px;
+    border-radius: 14px;
+    margin-bottom: 16px;
+  }
+  .mf-section-title {
+    font-size: 14.5px;
+    margin-bottom: 14px;
+  }
+  .mf-input, .mf-select {
+    font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+    padding: 11px 12px;
+  }
+  .mf-pills {
+    gap: 6px;
+  }
+  .mf-pill {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mf-preview-box {
+    padding: 16px 14px;
+  }
+  .mf-btn-primary {
+    font-size: 14px;
+    padding: 13px 16px;
+  }
+  .mf-action-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .mf-action-row .mf-btn-secondary {
+    font-size: 11.5px;
+    padding: 8px 6px;
+  }
+  .mf-modal {
+    padding: 24px 16px;
+  }
+}
+

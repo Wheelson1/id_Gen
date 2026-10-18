@@ -554,6 +554,16 @@
     </div>
   </div>
 
+  <!-- Mobile Floating Switch Bar (Visible on mobile/tablet screens) -->
+  <div class="mf-mobile-switch-bar" style="display:none; position:fixed; bottom:16px; left:50%; transform:translateX(-50%); z-index:999; background:rgba(8,18,34,0.92); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border:1px solid #1e3558; border-radius:30px; padding:4px 6px; box-shadow:0 8px 32px rgba(0,0,0,0.65); gap:6px;">
+    <button type="button" onclick="document.querySelector('.mf-form-column').scrollIntoView({behavior:'smooth'})" style="background:var(--mf-blue); color:#fff; border:none; padding:8px 16px; border-radius:20px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+      📝 Form Fields
+    </button>
+    <button type="button" onclick="document.querySelector('.mf-preview-column').scrollIntoView({behavior:'smooth'})" style="background:transparent; color:#d4a574; border:1px solid rgba(212,165,116,0.4); padding:8px 16px; border-radius:20px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+      🪪 Live Card &amp; QR
+    </button>
+  </div>
+
   <!-- Toast Notification -->
   <div id="mf-toast" class="mf-toast"></div>
 

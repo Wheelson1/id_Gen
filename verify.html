@@ -188,6 +188,9 @@
   </div>
   <nav class="v-header-nav">
     <span id="v-user-badge" class="user-badge"></span>
+    <button type="button" onclick="openMobilePairingModal()" style="background: linear-gradient(135deg, #10b981, #059669); border: none; color: #fff; font-weight: 800; cursor: pointer; padding: 6px 12px; border-radius: 6px; font-size: 11px; display: inline-flex; align-items: center; gap: 5px;">
+      📱 Continue on Mobile
+    </button>
     <button onclick="SID_SYSTEM.toggleTheme()" class="sid-theme-toggle" style="background: rgba(212,165,116,0.15); border: 1px solid rgba(212,165,116,0.3); color: #d4a574; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 6px; font-size: 11px;">☀️ Light</button>
     <a href="admin.html">⚙ Staff / Admin</a>
     <a href="index.html">← Student Generator</a>
@@ -332,6 +335,27 @@
       🌐 ONLINE MODE ACTIVE · Verifying against University ERP & Live Database
     </div>
 
+    <!-- ── QUICK MOBILE SWITCH & CAMERA CONTROLS BAR ── -->
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+      <button type="button" onclick="openMobilePairingModal()" style="flex:1; min-width:180px; padding:9px 14px; background:linear-gradient(135deg, rgba(16,185,129,0.18), rgba(5,150,105,0.25)); border:1px solid #10b981; border-radius:8px; color:#34d399; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span>📱</span>
+        <span>Continue on Mobile (Phone Camera)</span>
+      </button>
+
+      <div style="display:flex; gap:6px;">
+        <button type="button" onclick="flipCamera()" title="Flip Camera" style="padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:12px; font-weight:700; cursor:pointer;">
+          🔄 Flip
+        </button>
+        <button type="button" id="btn-torch" onclick="toggleTorch()" title="Toggle Flashlight / Torch" style="padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:12px; font-weight:700; cursor:pointer;">
+          💡 Torch
+        </button>
+        <label title="Upload or Take Photo of Card" style="padding:8px 12px; background:rgba(74,144,217,0.15); border:1px solid var(--blue-lt); border-radius:8px; color:var(--blue-lt); font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+          <span>📷 Photo</span>
+          <input type="file" id="card-photo-input" accept="image/*" style="display:none;" onchange="if(this.files && this.files[0]) scanUploadedImage(this.files[0])" />
+        </label>
+      </div>
+    </div>
+
     <div class="video-container" id="video-container">
       <video id="scanner-video" playsinline autoplay muted></video>
       <div class="scan-overlay">
@@ -341,10 +365,10 @@
 
     <div class="camera-error" id="camera-error">
       Camera access denied or unavailable.<br>
-      <small>Allow camera permission in your browser, or use manual input below.</small>
+      <small>Allow camera permission, use "📷 Photo" above to upload an image, or continue on mobile.</small>
     </div>
 
-    <div class="scanner-status" id="scanner-status">Align the QR code inside the box</div>
+    <div class="scanner-status" id="scanner-status">Point camera at student ID card or QR code</div>
 
     <!-- Anti-Replay Simulation & Hardware Wear Tools -->
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -410,10 +434,56 @@
   </div>
 </div>
 
+<!-- ── MOBILE PAIRING MODAL ─────────────────────────────────────── -->
+<div id="mobile-pair-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:99999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#0c1b2e; border:1px solid #1e3558; border-radius:18px; max-width:440px; width:100%; padding:26px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.6); position:relative;">
+    <button type="button" onclick="closeMobilePairingModal()" style="position:absolute; top:14px; right:16px; background:none; border:none; color:#6080a0; font-size:22px; cursor:pointer;">✕</button>
+
+    <div style="font-size:36px; margin-bottom:8px;">📱</div>
+    <h3 style="font-size:18px; font-weight:800; color:#fff; margin-bottom:4px;">Switch to Smartphone Scanner</h3>
+    <p style="font-size:11px; color:#8090a8; line-height:1.5; margin-bottom:18px;">
+      Smartphone cameras have optical macro focus, better resolution, and LED torches — ideal for scanning printed student cards and digital screens in seconds.
+    </p>
+
+    <!-- QR Canvas Container -->
+    <div style="background:#fff; border-radius:12px; padding:14px; display:inline-block; margin-bottom:14px; box-shadow:0 8px 24px rgba(0,0,0,0.3);">
+      <canvas id="mobile-pair-qr" width="180" height="180" style="display:block;"></canvas>
+    </div>
+
+    <div style="font-size:11px; font-weight:700; color:#34d399; margin-bottom:12px;">
+      Point your phone's camera at this QR code to open the verifier instantly
+    </div>
+
+    <!-- LAN IP helper for local dev -->
+    <div style="background:#091322; border:1px solid #1e3050; border-radius:10px; padding:12px; text-align:left; margin-bottom:14px;">
+      <label style="font-size:10px; color:#8090a8; font-weight:700; display:block; margin-bottom:4px;">
+        NETWORK / WI-FI HOST LINK:
+      </label>
+      <div style="display:flex; gap:6px;">
+        <input id="mobile-pair-input" type="text" style="flex:1; background:#112240; border:1px solid #1e3558; border-radius:6px; color:#fff; font-size:11px; padding:6px 10px; outline:none;" />
+        <button type="button" onclick="updateMobilePairingUrl()" style="background:#1558c0; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">Update</button>
+      </div>
+      <small style="font-size:9.5px; color:#6080a0; margin-top:4px; display:block;">
+        💡 Tip: If using Wi-Fi, change "localhost" to your PC's IP (e.g. 192.168.1.10) so your phone can reach this page.
+      </small>
+    </div>
+
+    <div style="display:flex; gap:8px;">
+      <button type="button" onclick="copyMobilePairingUrl()" class="v-btn" style="flex:1; padding:10px; font-size:12px;">
+        📋 Copy Mobile Link
+      </button>
+      <button type="button" onclick="closeMobilePairingModal()" class="v-btn outline" style="flex:1; padding:10px; font-size:12px;">
+        Done
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Hidden canvas for QR decode -->
 <canvas id="scan-canvas" style="display:none"></canvas>
 
-<!-- jsQR -->
+<!-- QR Code Generator & Scanner Libraries -->
+<script src="qr.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <!-- Supabase JS client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -574,49 +644,212 @@ function showScreen(name) {
 let videoStream  = null;
 let scanLoopId   = null;
 let scanCooldown = false;
+let currentFacingMode = 'environment';
+let isTorchActive = false;
+
+// Initialize hardware BarcodeDetector if natively supported by browser
+let nativeBarcodeDetector = null;
+if ('BarcodeDetector' in window) {
+  try {
+    nativeBarcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+  } catch (e) {
+    nativeBarcodeDetector = null;
+  }
+}
+
+// Audio beep for successful scan feedback
+function playScanBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime); // High pleasant beep (A5)
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.15);
+  } catch(e) {}
+}
 
 async function startCamera() {
   const video  = document.getElementById('scanner-video');
   const errDiv = document.getElementById('camera-error');
-  errDiv.style.display = 'none';
-  document.getElementById('scanner-status').textContent = 'Starting camera…';
+  if (errDiv) errDiv.style.display = 'none';
+  const statusEl = document.getElementById('scanner-status');
+  if (statusEl) statusEl.textContent = 'Starting high-resolution camera…';
 
-  try {
-    videoStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } }
-    });
-    video.srcObject = videoStream;
-    await video.play();
-    document.getElementById('scanner-status').textContent = 'Align the QR code inside the box';
-    requestAnimationFrame(scanLoop);
-  } catch (err) {
-    errDiv.style.display = 'block';
-    document.getElementById('scanner-status').textContent = 'Camera unavailable — use manual input below';
+  stopCamera();
+
+  const constraintsList = [
+    // 1. HD 1080p environment camera with continuous autofocus (Ideal for dense card QRs)
+    { video: { facingMode: { ideal: currentFacingMode }, width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 }, focusMode: { ideal: 'continuous' } } },
+    // 2. Standard 720p
+    { video: { facingMode: { ideal: currentFacingMode }, width: { ideal: 1280 }, height: { ideal: 720 } } },
+    // 3. Fallback without resolution constraints
+    { video: { facingMode: { ideal: currentFacingMode } } },
+    // 4. Any camera device
+    { video: true }
+  ];
+
+  let stream = null;
+  for (const c of constraintsList) {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(c);
+      if (stream) break;
+    } catch (err) {
+      // Continue to next constraint fallback
+    }
   }
+
+  if (!stream) {
+    if (errDiv) errDiv.style.display = 'block';
+    if (statusEl) statusEl.textContent = 'Camera unavailable — use "📷 Photo" upload above or manual input below';
+    return;
+  }
+
+  videoStream = stream;
+  video.srcObject = videoStream;
+  try {
+    await video.play();
+  } catch (err) {}
+
+  if (statusEl) statusEl.textContent = 'Point camera at student ID card or QR code';
+  scanCooldown = false;
+  scanLoopId = requestAnimationFrame(scanLoop);
 }
 
 function stopCamera() {
-  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
-  cancelAnimationFrame(scanLoopId);
+  if (videoStream) {
+    videoStream.getTracks().forEach(t => t.stop());
+    videoStream = null;
+  }
+  if (scanLoopId) {
+    cancelAnimationFrame(scanLoopId);
+    scanLoopId = null;
+  }
+  isTorchActive = false;
 }
 
-function scanLoop() {
+function flipCamera() {
+  currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
+  startCamera();
+}
+
+async function toggleTorch() {
+  if (!videoStream) return;
+  const track = videoStream.getVideoTracks()[0];
+  if (!track) return;
+  try {
+    isTorchActive = !isTorchActive;
+    await track.applyConstraints({ advanced: [{ torch: isTorchActive }] });
+    const btn = document.getElementById('btn-torch');
+    if (btn) btn.style.background = isTorchActive ? '#d97706' : 'var(--surface2)';
+  } catch (e) {
+    console.warn('Torch not supported on this device/camera:', e);
+  }
+}
+
+// ── Image Photo File / Drag & Drop Scanner ──
+async function scanUploadedImage(file) {
+  if (!file) return;
+  const statusEl = document.getElementById('scanner-status');
+  if (statusEl) statusEl.textContent = 'Processing uploaded card photo…';
+
+  const reader = new FileReader();
+  reader.onload = async (evt) => {
+    const img = new Image();
+    img.onload = async () => {
+      // Pass 1: Native BarcodeDetector on image element
+      if (nativeBarcodeDetector) {
+        try {
+          const barcodes = await nativeBarcodeDetector.detect(img);
+          if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
+            playScanBeep();
+            handleQRData(barcodes[0].rawValue);
+            return;
+          }
+        } catch (err) {}
+      }
+
+      // Pass 2: jsQR on canvas
+      const oc = document.createElement('canvas');
+      oc.width = img.naturalWidth || img.width;
+      oc.height = img.naturalHeight || img.height;
+      const octx = oc.getContext('2d');
+      octx.drawImage(img, 0, 0);
+      const imgData = octx.getImageData(0, 0, oc.width, oc.height);
+      const code = (typeof jsQR !== 'undefined') ? jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: 'attemptBoth' }) : null;
+
+      if (code && code.data) {
+        playScanBeep();
+        handleQRData(code.data);
+      } else {
+        alert('Could not detect a QR code in the uploaded image. Please ensure the card QR is clearly focused, well-lit, and uncropped.');
+        if (statusEl) statusEl.textContent = 'Scan failed on image. Try another photo or the live camera.';
+      }
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Multi-tier Scanner Loop (Native BarcodeDetector + Center Viewfinder Crop ROI + Full Frame) ──
+async function scanLoop() {
   const scannerEl = document.getElementById('screen-scanner');
   if (scannerEl && scannerEl.classList.contains('active') && !scanCooldown) {
     const video  = document.getElementById('scanner-video');
     const canvas = document.getElementById('scan-canvas');
+
     if (video.readyState === video.HAVE_ENOUGH_DATA) {
-      canvas.width  = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      // attemptBoth improves real-world scan rate for dark-on-light AND light-on-dark QRs
-      const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: 'attemptBoth' });
-      if (code) {
-        scanCooldown = true;
-        handleQRData(code.data);
-        return;
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+
+      // Tier 1: Hardware-accelerated BarcodeDetector (instant, angle-resilient)
+      if (nativeBarcodeDetector) {
+        try {
+          const barcodes = await nativeBarcodeDetector.detect(video);
+          if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
+            scanCooldown = true;
+            playScanBeep();
+            if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+            handleQRData(barcodes[0].rawValue);
+            return;
+          }
+        } catch (err) {}
+      }
+
+      // Tier 2: Center Viewfinder ROI Crop (effectively doubles QR pixel resolution for jsQR)
+      if (typeof jsQR !== 'undefined' && canvas) {
+        canvas.width  = vw;
+        canvas.height = vh;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(video, 0, 0, vw, vh);
+
+        // Crop 55% central window matching the scanner guide box
+        const cropW = Math.round(vw * 0.55);
+        const cropH = Math.round(vh * 0.55);
+        const cropX = Math.round((vw - cropW) / 2);
+        const cropY = Math.round((vh - cropH) / 2);
+
+        const cropImgData = ctx.getImageData(cropX, cropY, cropW, cropH);
+        let code = jsQR(cropImgData.data, cropImgData.width, cropImgData.height, { inversionAttempts: 'attemptBoth' });
+
+        // Tier 3: Full Frame Fallback
+        if (!code) {
+          const fullImgData = ctx.getImageData(0, 0, vw, vh);
+          code = jsQR(fullImgData.data, fullImgData.width, fullImgData.height, { inversionAttempts: 'attemptBoth' });
+        }
+
+        if (code && code.data) {
+          scanCooldown = true;
+          playScanBeep();
+          if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+          handleQRData(code.data);
+          return;
+        }
       }
     }
   }
@@ -626,13 +859,13 @@ function scanLoop() {
 // ── Verification pipeline ──────────────────────────────────────────────────
 async function handleQRData(raw) {
   const statusEl = document.getElementById('scanner-status');
-  if (statusEl) statusEl.textContent = 'Verifying…';
+  if (statusEl) statusEl.textContent = 'Verifying card identity…';
 
   if (!raw || typeof raw !== 'string') return;
   raw = raw.trim();
 
   // 1. Support URL format or query strings (from smartphone camera or browser navigation)
-  if (raw.includes('?') || raw.startsWith('http://') || raw.startsWith('https://')) {
+  if (raw.includes('?') || raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('/')) {
     try {
       const urlObj = new URL(raw.startsWith('http') ? raw : (window.location.origin + (raw.startsWith('/') ? '' : '/') + raw));
       const p = urlObj.searchParams;
@@ -683,24 +916,65 @@ async function handleQRData(raw) {
     }
   }
 
-  // 2. Support JSON formatted QR code
+  // 2. Support Plain Text lines (Name: ... \n Matric: ...)
+  if (raw.includes('Matric:') || raw.includes('Name:')) {
+    const lines = raw.split('\n');
+    let pName = '', pMatric = '', pDept = '', pExp = '';
+    lines.forEach(l => {
+      const lower = l.toLowerCase().trim();
+      if (lower.startsWith('name:')) pName = l.replace(/^name:/i, '').trim();
+      else if (lower.startsWith('matric:')) pMatric = l.replace(/^matric:/i, '').trim();
+      else if (lower.startsWith('dept:')) pDept = l.replace(/^dept:/i, '').trim();
+      else if (lower.startsWith('expiry:')) pExp = l.replace(/^expiry:/i, '').trim();
+    });
+
+    let resolved = null;
+    if (typeof StudentDataSource !== 'undefined' && pMatric) {
+      resolved = await StudentDataSource.resolve(pMatric);
+    }
+
+    showResult({
+      status: 'valid',
+      student: resolved || {
+        name: pName || 'STUDENT NAME',
+        matric: pMatric || '—',
+        school_reg_no: pMatric || '—',
+        dept: pDept || '—',
+        faculty: (resolved && resolved.faculty) || 'Academic Faculty',
+        blood: (resolved && resolved.blood) || 'O+',
+        genotype: (resolved && resolved.genotype) || 'AA',
+        expiry: pExp || '2029',
+        status: 'active'
+      },
+      checked_at: new Date().toISOString()
+    });
+    return;
+  }
+
+  // 3. Support JSON formatted QR code
   if (raw.startsWith('{') && raw.endsWith('}')) {
     try {
       const data = JSON.parse(raw);
+      const reg = data.matric || data.school_reg_no || data.reg || data.id;
+      let resolved = null;
+      if (typeof StudentDataSource !== 'undefined' && reg) {
+        resolved = await StudentDataSource.resolve(reg);
+      }
+
       const student = {
-        name: data.name || data.fullName || 'STUDENT NAME',
-        matric: data.matric || data.school_reg_no || data.reg || '—',
-        school_reg_no: data.school_reg_no || data.matric || '—',
-        faculty: data.faculty || 'Science',
-        dept: data.dept || data.department || '—',
-        blood: data.blood || data.blood_group || data.bloodGroup || 'O+',
-        genotype: data.genotype || 'AA',
-        level: data.level || '100 Level',
-        session: data.session || '2024/2025',
-        expiry: data.expiry || 2029,
-        photo_url: data.photo || data.photo_url || null,
-        signature_url: data.sig || data.signature_url || null,
-        status: data.status || 'active'
+        name: (resolved && resolved.name) || data.name || data.fullName || 'STUDENT NAME',
+        matric: (resolved && (resolved.matric || resolved.schoolRegNo)) || reg || '—',
+        school_reg_no: (resolved && (resolved.schoolRegNo || resolved.matric)) || reg || '—',
+        faculty: (resolved && resolved.faculty) || data.faculty || 'Science',
+        dept: (resolved && (resolved.dept || resolved.department)) || data.dept || data.department || '—',
+        blood: (resolved && (resolved.blood || resolved.bloodGroup)) || data.blood || data.blood_group || data.bloodGroup || 'O+',
+        genotype: (resolved && resolved.genotype) || data.genotype || 'AA',
+        level: (resolved && resolved.level) || data.level || '100 Level',
+        session: (resolved && resolved.session) || data.session || '2024/2025',
+        expiry: (resolved && resolved.expiry) || data.expiry || 2029,
+        photo_url: (resolved && (resolved.photoUrl || resolved.photo)) || data.photo || data.photo_url || null,
+        signature_url: (resolved && (resolved.signatureUrl || resolved.sig)) || data.sig || data.signature_url || null,
+        status: (resolved && resolved.status) || data.status || 'active'
       };
       showResult({
         status: 'valid',
@@ -713,11 +987,27 @@ async function handleQRData(raw) {
     }
   }
 
-  // 3. Support direct SID: or Matric/Reg lookup
-  if (raw.startsWith('SID:') || raw.startsWith('EBSU/') || raw.startsWith('manual-')) {
+  // 4. Support direct SID:, Matric, or Reg lookup (e.g. EBSU/..., 2025..., STU-...)
+  if (raw.startsWith('SID:') || raw.startsWith('EBSU') || raw.startsWith('STU-') || raw.startsWith('manual-') || /^[0-9]{4}[0-9a-zA-Z]{4,14}$/.test(raw)) {
     const cleanId = raw.replace(/^SID:/, '').trim();
     if (typeof StudentDataSource !== 'undefined') {
       const resolved = await StudentDataSource.resolve(cleanId);
+      if (resolved) {
+        showResult({
+          status: 'valid',
+          student: resolved,
+          checked_at: new Date().toISOString()
+        });
+        return;
+      }
+    }
+  }
+
+  // 5. Support 2-part EBSU1:token (e.g. EBSU1:STU-001 or EBSU1:ebsu-...)
+  if (raw.startsWith('EBSU1:')) {
+    const p = raw.split(':');
+    if (p.length === 2 && typeof StudentDataSource !== 'undefined') {
+      const resolved = await StudentDataSource.resolve(p[1]);
       if (resolved) {
         showResult({
           status: 'valid',
@@ -985,6 +1275,65 @@ function submitWearReport(reason) {
   }, 2500);
 }
 
+// ── Mobile Pairing & Mobile Terminal Mode ──────────────────────────────────
+let mobilePairingUrl = '';
+
+function openMobilePairingModal() {
+  const modal = document.getElementById('mobile-pair-modal');
+  if (!modal) return;
+
+  const currentHref = window.location.href.split('#')[0].split('?')[0];
+  const urlObj = new URL(currentHref);
+  
+  mobilePairingUrl = `${urlObj.origin}${urlObj.pathname}?mode=mobile`;
+  
+  const input = document.getElementById('mobile-pair-input');
+  if (input) input.value = mobilePairingUrl;
+
+  renderMobilePairingQR(mobilePairingUrl);
+  modal.style.display = 'flex';
+}
+
+function closeMobilePairingModal() {
+  const modal = document.getElementById('mobile-pair-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function renderMobilePairingQR(url) {
+  const canvas = document.getElementById('mobile-pair-qr');
+  if (!canvas) return;
+  if (typeof QRGen !== 'undefined' && QRGen.drawToCanvas) {
+    QRGen.drawToCanvas(canvas, url, 3);
+  }
+}
+
+function updateMobilePairingUrl() {
+  const input = document.getElementById('mobile-pair-input');
+  if (!input) return;
+  let val = input.value.trim();
+  if (!val.startsWith('http://') && !val.startsWith('https://')) {
+    val = 'http://' + val;
+  }
+  if (!val.includes('mode=mobile')) {
+    val += (val.includes('?') ? '&' : '?') + 'mode=mobile';
+  }
+  mobilePairingUrl = val;
+  input.value = mobilePairingUrl;
+  renderMobilePairingQR(mobilePairingUrl);
+}
+
+function copyMobilePairingUrl() {
+  if (navigator.clipboard && mobilePairingUrl) {
+    navigator.clipboard.writeText(mobilePairingUrl).then(() => {
+      alert('✓ Mobile Verifier Link copied to clipboard!\nSend to your phone or paste in your mobile browser.');
+    }).catch(() => {
+      prompt('Copy mobile verifier URL:', mobilePairingUrl);
+    });
+  } else {
+    prompt('Copy mobile verifier URL:', mobilePairingUrl);
+  }
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────
 (async () => {
   // Check if public direct QR verification parameters are present in URL
@@ -995,6 +1344,18 @@ function submitWearReport(reason) {
     searchParams.has('name') || searchParams.has('id') || searchParams.has('c')
   ) {
     await handleQRData(window.location.href);
+    return;
+  }
+
+  // Check if opened directly in mobile mode from QR scan on another device
+  if (searchParams.get('mode') === 'mobile') {
+    const mockMobileOfficer = {
+      email: 'mobile-gate@ebsu.edu.ng',
+      user_metadata: { role: 'verifier', full_name: 'Mobile Security Invigilator' }
+    };
+    setUserBadge(mockMobileOfficer);
+    showScreen('scanner');
+    startCamera();
     return;
   }
 
