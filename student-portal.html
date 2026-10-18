@@ -2,8 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>EBSU Student Portal</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" />
+  <link rel="stylesheet" href="css/shared.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     .portal-container { max-width: 500px; margin: 40px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
@@ -94,6 +98,9 @@
   </div>
 
   <div class="portal-container">
+    <div style="border-radius: 8px 8px 0 0; overflow: hidden; margin: -20px -20px 20px -20px; height: 110px; position: relative; border-bottom: 2px solid #e2e8f0;">
+      <img src="images/banner_welcome_in.jpg" alt="Welcome In" style="width: 100%; height: 100%; object-fit: cover;" />
+    </div>
     <div class="portal-header">
       <h2>🎓 EBSU Digital ID Portal</h2>
       <p>Access and manage your student ID card securely.</p>
@@ -111,8 +118,103 @@
         <label class="label" for="portal-matric">Registration Number (Matric)</label>
         <input id="portal-matric" type="text" class="input" placeholder="EBSU/2024/123456" />
         <button id="btn-request-otp" class="btn-primary btn-full">Unlock Digital ID</button>
+
+        <!-- ── 1-CLICK DEMO STUDENTS SUITE ──────────────────────────── -->
+        <div class="demo-login-box" style="margin-top:16px; padding-top:14px; border-top:1px dashed #cbd5e1;">
+          <div class="demo-box-header">
+            <span class="demo-box-title" style="color:#1558c0;">⚡ 1-Click Demo Students</span>
+            <span class="demo-box-badge" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;">Student Personas</span>
+          </div>
+          <p class="demo-box-sub" style="color:#64748b;">Select a student state to instantly unlock their profile and view what is attached:</p>
+
+          <div class="demo-roles-list">
+            <!-- Active & Paid -->
+            <div class="demo-role-card" style="background:#f8fafc; border:1px solid #e2e8f0;" onclick="loginAsDemoStudent('student_active')">
+              <div class="demo-role-top">
+                <div class="demo-role-name" style="color:#0f172a;">
+                  <span>🎓</span>
+                  <strong>Wilson Somtochukwu (Computer Science)</strong>
+                </div>
+                <span class="demo-badge demo-badge-student">ACTIVE · PAID</span>
+              </div>
+              <div class="demo-role-meta">
+                <span class="demo-role-id" style="color:#2563eb;">EBSU/2024/900001 (09035005623)</span>
+              </div>
+              <div class="demo-role-attached" style="background:#eff6ff; border-left-color:#2563eb;">
+                <div class="demo-attached-label" style="color:#1d4ed8;">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
+                <ul class="demo-attached-items" style="color:#334155;">
+                  <li>Fully Active CR80 Digital ID Card &amp; Canvas</li>
+                  <li>Dynamic 30-Second Rotating Anti-Screenshot QR Code</li>
+                  <li>Official Exam Clearance Pass &amp; Gate Verification Token</li>
+                  <li>Tuition Status: PAID (Unrestricted Full Access)</li>
+                </ul>
+              </div>
+              <div class="demo-role-action" style="color:#2563eb;">
+                <span>⚡ 1-Click Student Login</span>
+                <span class="demo-arrow">→</span>
+              </div>
+            </div>
+
+            <!-- Unpaid / Provisional -->
+            <div class="demo-role-card" style="background:#fffbeb; border:1px solid #fef3c7;" onclick="loginAsDemoStudent('student_unpaid')">
+              <div class="demo-role-top">
+                <div class="demo-role-name" style="color:#78350f;">
+                  <span>⚠️</span>
+                  <strong>Chidera Esther (Faculty of Law)</strong>
+                </div>
+                <span class="demo-badge demo-badge-warning">FEES DUE</span>
+              </div>
+              <div class="demo-role-meta">
+                <span class="demo-role-id" style="color:#d97706;">EBSU/2024/900002 (09035005624)</span>
+              </div>
+              <div class="demo-role-attached" style="background:#fef3c7; border-left-color:#d97706;">
+                <div class="demo-attached-label" style="color:#b45309;">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
+                <ul class="demo-attached-items" style="color:#78350f;">
+                  <li>Provisional Student Record (5-Year Law Course)</li>
+                  <li>Tuition Outstanding Restriction Alert Banner</li>
+                  <li>ID Card Generation &amp; Download Blocked Until Paid</li>
+                  <li>Direct Remita Tuition Payment Gateway Link</li>
+                </ul>
+              </div>
+              <div class="demo-role-action" style="color:#d97706;">
+                <span>⚡ 1-Click Student Login</span>
+                <span class="demo-arrow">→</span>
+              </div>
+            </div>
+
+            <!-- Revoked / Lost -->
+            <div class="demo-role-card" style="background:#fef2f2; border:1px solid #fee2e2;" onclick="loginAsDemoStudent('student_revoked')">
+              <div class="demo-role-top">
+                <div class="demo-role-name" style="color:#991b1b;">
+                  <span>🚫</span>
+                  <strong>Godwin Blessing (Accountancy)</strong>
+                </div>
+                <span class="demo-badge demo-badge-danger">CARD REVOKED</span>
+              </div>
+              <div class="demo-role-meta">
+                <span class="demo-role-id" style="color:#dc2626;">EBSU/2024/900003 (09035005625)</span>
+              </div>
+              <div class="demo-role-attached" style="background:#fee2e2; border-left-color:#dc2626;">
+                <div class="demo-attached-label" style="color:#b91c1c;">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
+                <ul class="demo-attached-items" style="color:#991b1b;">
+                  <li>Card Invalidation Notice (Reason: Lost on campus transit)</li>
+                  <li>Security Incident Reference: SEC/LOST/2026/089</li>
+                  <li>Direct Link to Identity Reissue Bureau</li>
+                </ul>
+              </div>
+              <div class="demo-role-action" style="color:#dc2626;">
+                <span>⚡ 1-Click Student Login</span>
+                <span class="demo-arrow">→</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div style="margin-top:15px; text-align:center;">
           <a href="#" id="btn-grace-protocol" style="font-size:12px; color:#1558c0; text-decoration:none; font-weight:bold;">Lost Email Access? Use Grace Protocol</a>
+        </div>
+        <div style="margin-top:10px; text-align:center;">
+          <a href="manual-entry.html" style="font-size:12px; color:#2e7d32; text-decoration:none; font-weight:bold;">✍️ First time? Manual Form Fill Center &amp; ID Capture →</a>
         </div>
       </div>
 
@@ -185,15 +287,23 @@
   </div>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <!-- Face API for Facial Recognition -->
-  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <!-- Required App Scripts -->
-  <script src="config.js"></script>
-  <script src="qr.js"></script>
-  <script src="assets.js"></script>
-  <script src="canvas.js"></script>
-  <script src="student-portal.js"></script>
-
+  <script defer src="config.js"></script>
+  <script defer src="js/academicRules.js"></script>
+  <script defer src="js/demo-suite.js"></script>
+  <script defer src="qr.js"></script>
+  <script defer src="assets.js"></script>
+  <script defer src="js/cardTemplate.js"></script>
+  <script defer src="js/studentDataSource.js"></script>
+  <script defer src="canvas.js"></script>
+  <script defer src="student-portal.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

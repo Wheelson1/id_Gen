@@ -784,9 +784,12 @@ function downloadStudentCard(st){
   // Wait for async image loads
   setTimeout(function(){
     var link=document.createElement('a');
+    link.style.display='none';
     link.download='ID_Card_'+(st.name||'student').replace(/\s+/g,'_')+'_'+(st.matric||'').replace(/\//g,'-')+'.png';
     link.href=hiCvs.toDataURL('image/png',1.0);
+    document.body.appendChild(link);
     link.click();
+    setTimeout(function(){ if(link.parentNode) link.parentNode.removeChild(link); },1500);
   },1200);
 }
 

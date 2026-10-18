@@ -1,0 +1,701 @@
+/* ═══════════════════════════════════════════════════════════════
+   MANUAL-ENTRY.CSS — Styling for Manual Form Fill Center
+   Ebonyi State University Digital ID System
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --mf-bg: #06101c;
+  --mf-surface: #0c1b2f;
+  --mf-surface-card: rgba(14, 28, 50, 0.75);
+  --mf-surface-2: #11223e;
+  --mf-border: #1e3558;
+  --mf-border-glow: rgba(74, 144, 217, 0.4);
+  --mf-blue: #1558c0;
+  --mf-blue-lt: #4a90d9;
+  --mf-gold: #d4a574;
+  --mf-gold-lt: #f3d4b0;
+  --mf-text: #e2edf8;
+  --mf-muted: #728fae;
+  --mf-green: #10b981;
+  --mf-red: #ef4444;
+}
+
+body.manual-fill-page {
+  background: var(--mf-bg);
+  color: var(--mf-text);
+  font-family: var(--font-body, 'Inter', sans-serif);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ── Ambient Background Glows ── */
+.mf-bg-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: 
+    radial-gradient(circle at 15% 15%, rgba(21, 88, 192, 0.18) 0%, transparent 40%),
+    radial-gradient(circle at 85% 25%, rgba(212, 165, 116, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+}
+
+.mf-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 60px 24px;
+}
+
+/* ── Institutional Header ── */
+.mf-header {
+  background: rgba(8, 18, 34, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--mf-border);
+  padding: 14px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.mf-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.mf-crest {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+}
+
+.mf-brand-title {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mf-brand-title span.highlight {
+  color: var(--mf-gold);
+}
+
+.mf-brand-sub {
+  font-size: 11px;
+  color: var(--mf-muted);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.mf-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mf-nav-link {
+  color: var(--mf-text);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mf-nav-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--mf-border);
+  color: #fff;
+}
+
+.mf-nav-link.active {
+  background: rgba(21, 88, 192, 0.2);
+  border-color: var(--mf-blue-lt);
+  color: var(--mf-blue-lt);
+}
+
+.mf-badge-pill {
+  background: rgba(212, 165, 116, 0.15);
+  border: 1px solid var(--mf-gold);
+  color: var(--mf-gold);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ── Hero Center Banner ── */
+.mf-hero {
+  padding: 36px 0 24px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 20px;
+  border-bottom: 1px solid rgba(30, 53, 88, 0.6);
+  margin-bottom: 32px;
+}
+
+.mf-hero-left h1 {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mf-hero-left p {
+  color: var(--mf-muted);
+  font-size: 14px;
+  max-width: 650px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.mf-hero-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ── Split Layout ── */
+.mf-layout-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .mf-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Form Card ── */
+.mf-card {
+  background: var(--mf-surface-card);
+  border: 1px solid var(--mf-border);
+  border-radius: 16px;
+  padding: 28px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.mf-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--mf-blue-lt), var(--mf-gold), transparent);
+}
+
+.mf-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mf-section-title .step-num {
+  background: var(--mf-blue);
+  color: #fff;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* ── Form Inputs ── */
+.mf-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.mf-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .mf-grid-2, .mf-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.mf-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mf-text);
+  letter-spacing: 0.3px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mf-label span.req {
+  color: var(--mf-red);
+}
+
+.mf-label span.hint {
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--mf-muted);
+}
+
+.mf-input, .mf-select {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--mf-surface-2);
+  border: 1px solid var(--mf-border);
+  border-radius: 8px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.mf-input:focus, .mf-select:focus {
+  border-color: var(--mf-blue-lt);
+  background: #14284b;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.2);
+}
+
+.mf-input::placeholder {
+  color: #4b6685;
+}
+
+/* ── Pill Selectors (Blood & Genotype) ── */
+.mf-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.mf-pill {
+  padding: 8px 16px;
+  background: var(--mf-surface-2);
+  border: 1px solid var(--mf-border);
+  border-radius: 20px;
+  color: var(--mf-text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.mf-pill:hover {
+  background: rgba(74, 144, 217, 0.15);
+  border-color: var(--mf-blue-lt);
+}
+
+.mf-pill.active {
+  background: var(--mf-blue);
+  border-color: var(--mf-blue-lt);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(21, 88, 192, 0.4);
+}
+
+/* ── Media Tabs (Upload vs Camera / Draw) ── */
+.mf-media-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  background: rgba(8, 18, 34, 0.5);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--mf-border);
+}
+
+.mf-media-tab {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mf-muted);
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mf-media-tab.active {
+  background: var(--mf-surface-2);
+  color: #fff;
+  border: 1px solid var(--mf-border);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Capture / Upload Boxes ── */
+.mf-media-box {
+  background: var(--mf-surface-2);
+  border: 2px dashed var(--mf-border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: border-color 0.2s ease;
+  position: relative;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.mf-media-box:hover {
+  border-color: var(--mf-blue-lt);
+}
+
+.mf-passport-preview {
+  width: 120px;
+  height: 160px;
+  border-radius: 8px;
+  border: 2px solid var(--mf-blue-lt);
+  object-fit: cover;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  background: #000;
+}
+
+.mf-signature-canvas-wrap {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 2px solid #ccc;
+  overflow: hidden;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.mf-signature-canvas {
+  width: 100%;
+  height: 120px;
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.mf-sig-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ── Right Column: Sticky Live ID Card View ── */
+.mf-sticky-panel {
+  position: sticky;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mf-preview-box {
+  background: var(--mf-surface-card);
+  border: 1px solid var(--mf-border);
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  text-align: center;
+}
+
+.mf-card-canvas-wrap {
+  width: 100%;
+  max-width: 505px;
+  margin: 0 auto 16px auto;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  border: 1px solid #204068;
+  aspect-ratio: 1011 / 638;
+  background: #112035;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mf-card-canvas-wrap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.mf-card-toggles {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mf-toggle-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--mf-surface-2);
+  border: 1px solid var(--mf-border);
+  color: var(--mf-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mf-toggle-btn.active {
+  background: var(--mf-blue);
+  color: #fff;
+  border-color: var(--mf-blue-lt);
+}
+
+/* ── Bound Details Checklist ── */
+.mf-bound-checklist {
+  background: rgba(10, 22, 40, 0.7);
+  border: 1px solid rgba(30, 53, 88, 0.8);
+  border-radius: 10px;
+  padding: 14px 16px;
+  text-align: left;
+  margin-bottom: 18px;
+  font-size: 12.5px;
+}
+
+.mf-bound-checklist h4 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--mf-gold);
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mf-bound-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: var(--mf-muted);
+  transition: color 0.2s ease;
+}
+
+.mf-bound-item.checked {
+  color: #c9e2fa;
+}
+
+.mf-bound-item.checked .mf-check-icon {
+  color: var(--mf-green);
+}
+
+.mf-check-icon {
+  font-size: 14px;
+  color: #4b6685;
+}
+
+/* ── Primary Action Buttons ── */
+.mf-btn-primary {
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #1558c0 0%, #0e459b 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(21, 88, 192, 0.4);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.mf-btn-primary:hover {
+  background: linear-gradient(135deg, #1a6be6 0%, #1152b8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(21, 88, 192, 0.55);
+}
+
+.mf-btn-primary:active {
+  transform: translateY(1px);
+}
+
+.mf-btn-secondary {
+  padding: 10px 16px;
+  background: var(--mf-surface-2);
+  color: var(--mf-text);
+  border: 1px solid var(--mf-border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mf-btn-secondary:hover {
+  background: rgba(74, 144, 217, 0.15);
+  border-color: var(--mf-blue-lt);
+  color: #fff;
+}
+
+.mf-btn-gold {
+  background: linear-gradient(135deg, #b8860b 0%, #946c05 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 15px rgba(184, 134, 11, 0.3);
+}
+
+.mf-btn-gold:hover {
+  background: linear-gradient(135deg, #d49b10 0%, #a87b07 100%);
+}
+
+.mf-action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* ── Interactive Modal: QR Scan Simulation ── */
+.mf-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 10, 18, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.mf-modal {
+  background: #0c1b2f;
+  border: 1px solid var(--mf-border);
+  border-radius: 20px;
+  max-width: 520px;
+  width: 100%;
+  padding: 32px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  position: relative;
+  text-align: center;
+  animation: mfPopIn 0.25s ease;
+}
+
+@keyframes mfPopIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.mf-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  color: var(--mf-muted);
+  font-size: 22px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  line-height: 1;
+}
+
+.mf-modal-close:hover {
+  color: #fff;
+}
+
+/* ── Toast Notification ── */
+.mf-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2000;
+  background: #0f223d;
+  color: #fff;
+  border-left: 4px solid var(--mf-blue-lt);
+  padding: 14px 20px;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  display: none;
+  font-size: 13px;
+  font-weight: 600;
+  animation: mfSlideUp 0.25s ease;
+}
+
+@keyframes mfSlideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ── Camera Video Elements ── */
+#camera-video {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 8px;
+  border: 2px solid var(--mf-border);
+  background: #000;
+  margin-bottom: 10px;
+}

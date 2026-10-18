@@ -3,1119 +3,680 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Student ID Card Generator</title>
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    .privacy-blurred {
-      filter: blur(8px);
-      pointer-events: none;
-      user-select: none;
-    }
-    .privacy-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 8999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(4, 10, 20, 0.85);
-    }
-    .fee-banner {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 8998;
-      padding: 12px 20px;
-      background: linear-gradient(135deg, #cc3300, #990000);
-      color: #fff;
-      font-size: 13px;
-      font-weight: 600;
-      text-align: center;
-      letter-spacing: 0.3px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
-    }
-  </style>
+  <title>Ebonyi State University — Student Digital ID Portal</title>
+  <meta name="description" content="Official Ebonyi State University Student Digital Identification and Verification Portal. Powered by Triple J Group SID System." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" />
+  <link rel="stylesheet" href="css/shared.css" />
+  <link rel="stylesheet" href="css/landing.css" />
 </head>
 <body>
 
-<!-- ── QUICK-CHOICE MODAL ───────────────────────────────────────── -->
-<div id="qc-modal" role="dialog" aria-modal="true" aria-label="Accept or Crop Image">
-  <div class="qc-content">
-    <p class="qc-title" id="qc-title">Image Uploaded</p>
-    <div class="qc-preview-wrap">
-      <img id="qc-preview" class="qc-preview-img" alt="Uploaded image preview" />
+  <!-- ── TOP INSTITUTIONAL NAVBAR ──────────────────────────────────── -->
+  <header class="ebsu-navbar">
+    <div class="ebsu-nav-inner">
+      <a href="index.html" class="ebsu-brand" aria-label="Ebonyi State University Home">
+        <img src="crest_large.png.jpeg" alt="EBSU Crest" class="ebsu-crest" />
+        <div class="ebsu-brand-text">
+          <span class="ebsu-brand-title">EBSU</span>
+          <span class="ebsu-brand-subtitle">EBONYI STATE UNIVERSITY · SID PORTAL</span>
+        </div>
+      </a>
+
+      <nav class="ebsu-nav-links" aria-label="Portal Navigation">
+        <a href="index.html" class="ebsu-nav-link active">Home</a>
+        <a href="manual-entry.html" class="ebsu-nav-link" style="color: #ffd700; font-weight: 700;">✍️ Manual Form Fill</a>
+        <a href="student-portal.html" class="ebsu-nav-link">Student Portal</a>
+        <a href="verify.html" class="ebsu-nav-link">Public Verifier</a>
+        <a href="hub.html" class="ebsu-nav-link ebsu-nav-login">
+          <span>👤</span> Staff Login
+        </a>
+      </nav>
     </div>
-    <p id="qc-dims" class="qc-dims"></p>
-    <p id="qc-hint" class="qc-hint"></p>
-    <div class="qc-actions">
-      <button class="btn-qc-accept"  onclick="acceptCrop()">✓ Accept</button>
-      <button class="btn-qc-crop"    onclick="doCrop()">✂ Crop</button>
-      <button class="btn-crop-cancel" onclick="cancelQuickCrop()">✕ Cancel</button>
-    </div>
-  </div>
-</div>
+  </header>
 
-<!-- ── CROPPER OVERLAY ─────────────────────────────────────────── -->
-<div id="cropper-overlay" role="dialog" aria-modal="true" aria-label="Image Cropper">
-  <p class="cropper-hint">Drag to select area → Apply Crop</p>
-  <div class="cropper-canvas-wrapper">
-    <canvas id="crop-canvas"></canvas>
-  </div>
-  <div class="cropper-actions">
-    <button class="btn-crop-apply" onclick="applyCrop()">✓ Apply Crop</button>
-    <button class="btn-crop-cancel" onclick="cancelCrop()">✕ Cancel</button>
-  </div>
-</div>
+  <!-- ── HERO SECTION (ACADEMIC LIBRARY BACKGROUND) ─────────────────── -->
+  <section class="ebsu-hero" id="generate-section">
+    <div class="ebsu-hero-content">
+      <div class="ebsu-action-card">
+        
+        <div style="border-radius: 8px 8px 0 0; overflow: hidden; margin: -34px -36px 20px -36px; height: 130px; border-bottom: 2px solid #e2e8f0; position: relative;">
+          <img src="images/banner_workstation.jpg" alt="Student Digital ID Workspace" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+        </div>
 
-<!-- ── STATUS TOAST ────────────────────────────────────────────── -->
-<div id="status-toast" role="status" aria-live="polite">
-  <div class="toast-inner">
-    <div class="toast-spinner" aria-hidden="true"></div>
-    <span id="status-text">Processing…</span>
-  </div>
-</div>
+        <div class="ebsu-card-header">
+          <h1 class="ebsu-card-title">Digital ID Generation</h1>
+          <p class="ebsu-card-subtitle">
+            Enter your JAMB Registration Number or School Matric No below to verify your identity and generate your official digital student ID card.
+          </p>
+        </div>
 
-<!-- ── AUTH GATE OVERLAY ────────────────────────────────────────
-     Shown until operator/admin signs in with Supabase Auth.
-     Positioned fixed so it covers the entire generator UI.
-────────────────────────────────────────────────────────────── -->
-<div id="auth-gate" role="dialog" aria-modal="true" aria-label="Operator Login" style="
-  display:flex; position:fixed; inset:0; z-index:9000;
-  align-items:center; justify-content:center;
-  background:rgba(4,10,20,0.97);
-">
-  <div style="
-    background:#0c1b2e; border:1px solid #1e3050; border-radius:16px;
-    padding:40px 36px; width:100%; max-width:380px; text-align:center;
-    box-shadow:0 12px 48px rgba(0,0,0,0.7);
-  ">
-    <div style="font-size:48px;margin-bottom:12px">🪪</div>
-    <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:4px">ID Card Generator</div>
-    <div style="font-size:12px;color:#6080a0;margin-bottom:28px;line-height:1.6">
-      Sign in with your JAMB Reg No. or School Reg No.
-    </div>
-    <input id="ag-email" type="text" placeholder="JAMB Reg No. or School Reg No."
-      autocomplete="username"
-      style="width:100%;padding:11px 14px;margin-bottom:10px;
-        background:#112240;color:#cdd8e8;border:1px solid #1e3050;
-        border-radius:8px;font-size:14px;outline:none;box-sizing:border-box" />
-    <input id="ag-pass" type="password" placeholder="Password"
-      autocomplete="current-password"
-      style="width:100%;padding:11px 14px;margin-bottom:12px;
-        background:#112240;color:#cdd8e8;border:1px solid #1e3050;
-        border-radius:8px;font-size:14px;outline:none;box-sizing:border-box" />
-    <div id="ag-error" style="
-      display:none;color:#ff6666;font-size:12px;margin-bottom:10px;
-    "></div>
-    <button id="ag-login-btn" style="
-      width:100%;padding:13px;background:#1558c0;color:#fff;
-      border:none;border-radius:8px;font-size:14px;font-weight:700;
-      cursor:pointer;letter-spacing:0.5px;margin-bottom:8px;
-    ">Sign In</button>
+        <!-- Institution Selection -->
+        <div class="ebsu-form-group">
+          <label class="ebsu-label" for="sid-inst-select">Select Institution</label>
+          <select id="sid-inst-select" onchange="SID_SYSTEM.switchInstitution(this.value)" class="ebsu-input ebsu-select">
+            <option value="EBSU" selected>Ebonyi State University (EBSU)</option>
+            <option value="UNN">University of Nigeria, Nsukka (UNN)</option>
+            <option value="UNILAG">University of Lagos (UNILAG)</option>
+            <option value="FUTO">Federal University of Tech Owerri (FUTO)</option>
+          </select>
+        </div>
 
-    <div style="margin-top:20px;font-size:11px;color:#3a5070">
-      <a href="verify.html" style="color:#3a5070;text-decoration:none;">Verifier (guards)</a>
-      &nbsp;•&nbsp;
-      <a href="admin.html" style="color:#3a5070;text-decoration:none;">Admin Panel</a>
-    </div>
-  </div>
+        <!-- Registration Number Input -->
+        <div class="ebsu-form-group">
+          <label class="ebsu-label" for="sid-jamb-input">Registration Number (JAMB or Matric No)</label>
+          <input 
+            id="sid-jamb-input" 
+            type="text" 
+            class="ebsu-input" 
+            placeholder="e.g. 202552179149SI, 10824577SI or EBSU/2024/98421" 
+            autocomplete="off" 
+            spellcheck="false" 
+          />
+        </div>
 
-<!--  LINK GOOGLE GATE OVERLAY  -->
-<div id="link-google-gate" role="dialog" style="
-  display:none; position:fixed; inset:0; z-index:9001;
-  align-items:center; justify-content:center;
-  background:rgba(4,10,20,0.97);
-">
-  <div style="
-    background:#0a192f; padding:40px; border-radius:12px; width:360px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.5); font-family:-apple-system,sans-serif; text-align:center; border: 1px solid #1e3050;
-  ">
-    <div style="margin-bottom:20px;">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6080a0" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/></svg>
-    </div>
-    <h3 style="margin:0 0 10px; color:#e6f1ff; font-size:20px; font-weight:600;">Link Google Account</h3>
-    <div style="font-size:13px;color:#6080a0;margin-bottom:24px;line-height:1.5">
-      For security and access to advanced functionalities, you must link your official school portal Google account before continuing.
-    </div>
-    <button id="ag-link-google-btn" style="
-      width:100%;padding:12px;background:transparent;color:#cdd8e8;
-      border:1px solid #1e3050;border-radius:8px;font-size:14px;font-weight:600;
-      cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
-    ">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-      Link Google Account
-    </button>
-    <button id="ag-logout-cancel-btn" style="
-      width:100%;padding:10px;background:transparent;color:#ff6666;
-      border:none;border-radius:8px;font-size:13px;font-weight:600;
-      cursor:pointer;margin-top:10px;
-    ">Cancel & Log Out</button>
-  </div>
-</div>
-</div>
+        <button id="sid-btn-generate" class="ebsu-btn-primary">
+          Generate ID
+        </button>
 
-<!-- ── APP HEADER ──────────────────────────────────────────────── -->
-<header class="app-header">
-  <div class="app-header-brand">
-    <img
-      id="header-logo"
-      class="app-header-logo"
-      src=""
-      alt="University Crest"
-    />
-    <div>
-      <div class="app-header-title">Student ID Card Generator</div>
-      <div class="app-header-subtitle">EXACT CDR TEMPLATE · QR-CODED · SIGNED · DOWNLOAD PNG</div>
-    </div>
-  </div>
-  <nav class="app-header-nav" aria-label="Page navigation">
-    <a href="admin.html" class="tab inactive admin-tab">⚙ Admin</a>
-    <span id="auth-user-badge" style="
-      display:none;font-size:10px;color:#4a90d9;
-      background:rgba(74,144,217,0.1);border:1px solid rgba(74,144,217,0.3);
-      border-radius:6px;padding:4px 10px;letter-spacing:0.5px;
-    "></span>
-    <button id="auth-logout-btn" style="
-      display:none;padding:5px 12px;background:transparent;
-      border:1px solid #3a5070;color:#6080a0;border-radius:6px;
-      font-size:11px;cursor:pointer;
-    ">Sign Out</button>
-  </nav>
-</header>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     SPLIT LAYOUT CONTAINER
-     ═══════════════════════════════════════════════════════════════ -->
-<div class="app-split-layout">
-
-<!-- ═══════════════════════════════════════════════════════════════
-     FORM SECTION
-     ═══════════════════════════════════════════════════════════════ -->
-<main id="page-form" class="page-form">
-
-  <!-- Institution settings -->
-  <section class="section" aria-labelledby="institution-heading">
-    <h2 id="institution-heading" class="section-title">🏫 INSTITUTION SETTINGS</h2>
-
-    <div class="grid-32 mb-14">
-      <div>
-        <label class="label" for="schoolName">School Name</label>
-        <input id="schoolName" type="text" value="EBONYI STATE UNIVERSITY, ABAKALIKI" />
-      </div>
-      <div>
-        <label class="label" for="expiry">Expiry Year</label>
-        <select id="expiry">
-          <option>2025</option>
-          <option>2026</option>
-          <option>2027</option>
-          <option>2028</option>
-          <option selected>2029</option>
-          <option>2030</option>
-          <option>2031</option>
-          <option>2032</option>
-        </select>
-      </div>
-      <div>
-        <label class="label">Custom Crest (optional)</label>
-        <button class="btn-blue full-width" onclick="pickLogo()">⬆ Upload Crest/Logo</button>
-      </div>
-    </div>
-
-    <!-- Colour customisation -->
-    <div class="section-divider">
-      <p class="section-subtitle">🎨 CARD COLOUR SETTINGS</p>
-
-      <div class="color-grid">
-
-        <!-- Header Background -->
-        <div class="color-swatch">
-          <label class="label mb-14" for="c-headerBg">Header Background</label>
-          <div class="color-picker-row">
-            <input type="color" id="c-headerBg" value="#1558c0"
-              onchange="updateColor('headerBg', this.value)"
-              aria-label="Header background colour picker" />
-            <input type="text" id="ct-headerBg" value="#1558C0"
-              class="color-text-input"
-              oninput="syncColorText('headerBg', this.value)"
-              aria-label="Header background hex value" />
+        <div class="ebsu-card-links">
+          <div>
+            Don't have a record in database? <a href="manual-entry.html" style="color:var(--ebsu-blue); font-weight:700;">Fill Manual Form &amp; Tie QR Code →</a>
           </div>
-          <div id="prev-headerBg" class="color-preview-bar" style="background:#1558c0">
-            <span id="prevTxt-headerBg" class="color-preview-text" style="color:#ffffff">SCHOOL NAME</span>
+          <div>
+            First time here? <a href="student-portal.html">Access Student Digital Portal</a>
+          </div>
+          <div style="margin-top: 4px;">
+            <a href="javascript:void(0)" onclick="openPassportGuideModal()" style="color:var(--ebsu-blue); font-weight:700;">📐 Photo &amp; Signature Quality Guide (How to take a fitting passport) →</a>
+          </div>
+          <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">⚡ Quick Demo Loaders:</div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="ebsu-text-btn" style="font-weight: 700; color: var(--ebsu-blue);" onclick="document.getElementById('sid-jamb-input').value='202552179149SI'; document.getElementById('sid-btn-generate').click();">
+                ▶ Primary: 202552179149SI (Computer Sci)
+              </button>
+              <span style="color: #cbd5e1;">|</span>
+              <button type="button" class="ebsu-text-btn" style="font-weight: 700; color: #16a34a;" onclick="document.getElementById('sid-jamb-input').value='10824577SI'; document.getElementById('sid-btn-generate').click();">
+                ▶ Legacy JAMB: 10824577SI
+              </button>
+            </div>
+          </div>
+
+          <!-- ── FACULTY & DEPARTMENT DEMO SELECTOR ── -->
+          <div style="margin-top: 10px; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 11px; font-weight: 800; color: var(--ebsu-blue); text-transform: uppercase; letter-spacing: 0.5px;">
+                🏛️ Test All 5 EBSU Faculties &amp; Departments
+              </span>
+              <span style="font-size: 10px; color: #64748b; font-weight: 600;">30 Departments</span>
+            </div>
+            <select id="sid-faculty-demo-select" class="ebsu-input ebsu-select" style="font-size: 12px; padding: 6px 10px; background: #ffffff;" onchange="if(this.value){ document.getElementById('sid-jamb-input').value = this.value; document.getElementById('sid-btn-generate').click(); }">
+              <option value="">-- Select Any Faculty &amp; Department to Test --</option>
+              <optgroup label="🔬 Faculty of Science">
+                <option value="202552179149SI">Computer Science · Wilson Nnaji (200L)</option>
+                <option value="202581920394MB">Applied Microbiology · Ngozi Ezeh (200L)</option>
+                <option value="202591029384BC">Biochemistry · Ifeanyi Chukwudi (300L)</option>
+                <option value="202540192837BT">Biotechnology · Tochukwu Mbah (200L)</option>
+                <option value="202571928301IC">Industrial Chemistry · Chinyere Ogbonna (300L)</option>
+                <option value="202530192847IP">Industrial Physics · Sampson Onwe (400L)</option>
+                <option value="202519283746GL">Geology and Exploration · Uchenna Aluma (300L)</option>
+                <option value="202528394019AB">Applied Biology · Amara Nweke (200L)</option>
+              </optgroup>
+              <optgroup label="🩺 Basic Medical Sciences (Health Sciences)">
+                <option value="202511029341MS">Medicine and Surgery · Chidubem Okeke (500L)</option>
+                <option value="202534910283AN">Human Anatomy · Chiamaka Udeh (200L)</option>
+                <option value="202549201948PH">Medical Physiology · Kenechukwu Nwankwo (300L)</option>
+                <option value="202578912340ML">Medical Laboratory Science · Miracle Igwe (300L)</option>
+                <option value="202561928374NS">Nursing Science · Blessing Anyanwu (400L)</option>
+              </optgroup>
+              <optgroup label="💼 Faculty of Management Sciences">
+                <option value="202549201938AC">Accountancy · Godwin Okoro (300L)</option>
+                <option value="202519283740BF">Banking and Finance · Jennifer Ezeali (200L)</option>
+                <option value="202568291039BM">Business Management · Chukwuemeka Nwite (400L)</option>
+                <option value="202573910284PA">Public Administration · Stephanie Otu (300L)</option>
+                <option value="202581029384MK">Marketing · Destiny Iloghalu (200L)</option>
+              </optgroup>
+              <optgroup label="🌍 Faculty of Social Sciences &amp; Humanities">
+                <option value="202587654321MC">Mass Communication · Chinaza Okafor (200L)</option>
+                <option value="202519283749EC">Economics · Kingsley Ezenwa (400L)</option>
+                <option value="202592019283PS">Political Science · Francis Ejike (300L)</option>
+                <option value="202561920384SA">Sociology and Anthropology · Joy Ogah (200L)</option>
+                <option value="202549102938PY">Psychology · Promise Igboke (300L)</option>
+                <option value="202538192039EL">English Language &amp; Literature · Patience Aloh (200L)</option>
+              </optgroup>
+              <optgroup label="📚 Faculty of Education">
+                <option value="202571928374SE">Science Education · Samuel Uguru (300L)</option>
+                <option value="202581920384EF">Educational Foundations · Ruth Chukwu (400L)</option>
+                <option value="202591827364GC">Guidance and Counselling · Esther Nwankwo (200L)</option>
+                <option value="202561928301BE">Business Education · Harrison Eze (300L)</option>
+                <option value="202551928374AS">Arts &amp; Social Science Education · Faith Odoh (200L)</option>
+              </optgroup>
+            </select>
           </div>
         </div>
 
-        <!-- Header Text -->
-        <div class="color-swatch">
-          <label class="label mb-14" for="c-headerText">Header Text</label>
-          <div class="color-picker-row">
-            <input type="color" id="c-headerText" value="#ffffff"
-              onchange="updateColor('headerText', this.value)"
-              aria-label="Header text colour picker" />
-            <input type="text" id="ct-headerText" value="#FFFFFF"
-              class="color-text-input"
-              oninput="syncColorText('headerText', this.value)"
-              aria-label="Header text hex value" />
+        <!-- ── VERIFICATION & CARD RENDERING STEPS ── -->
+        <div id="sid-step-container" class="sid-step-container">
+          
+          <!-- SURGE QUEUE OVERLAY -->
+          <div id="sid-queue-overlay" style="display: none;">
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--ebsu-blue); font-weight: 800; letter-spacing: 0.8px;">
+              ⚡ PORTAL ERP ENGINE ACTIVE · QUEUE PROCESSING
+            </div>
+            <div id="sid-queue-ticket">TICK-2026-X89F2A</div>
+            <div style="display: flex; justify-content: center; gap: 16px; font-size: 12px; color: #64748b; margin-bottom: 10px;">
+              <div>Queue Rank: <strong style="color: var(--ebsu-blue);" id="sid-queue-rank">#3</strong></div>
+              <div>Est. Wait Time: <strong style="color: #16a34a;" id="sid-queue-eta">3s</strong></div>
+              <div>ERP Status: <strong style="color: #334155;">CACHED RECORD</strong></div>
+            </div>
+            <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+              <div id="sid-queue-bar" style="width: 25%; height: 100%; background: var(--ebsu-blue); transition: width 0.3s;"></div>
+            </div>
           </div>
-          <div id="prev-headerText" class="color-preview-bar" style="background:#1558c0">
-            <span id="prevTxt-headerText" class="color-preview-text" style="color:#ffffff">SCHOOL NAME</span>
+
+          <!-- STEP 1: NAME CONFIRMATION -->
+          <div id="sid-step-confirm" style="display: none;">
+            <div class="sid-step-badge">Step 1 of 2 · Identity Confirmation</div>
+            <h2 class="sid-step-title">Are you...</h2>
+            <div id="sid-confirm-name" class="sid-name-highlight">STUDENT NAME</div>
+            <p style="color: var(--ebsu-text-muted); font-size: 13px; margin: 0 0 14px 0;">
+              Please confirm if this matches the registered student name on your official university portal.
+            </p>
+
+            <div class="sid-action-row">
+              <button id="sid-btn-yes" class="sid-btn-primary">Yes, Proceed →</button>
+              <button id="sid-btn-no" class="sid-btn-secondary">No, Re-enter Number</button>
+            </div>
           </div>
+
+          <!-- STEP 2: DATE OF BIRTH SECURITY CHECK -->
+          <div id="sid-step-dob" style="display: none;">
+            <div class="sid-step-badge">Step 2 of 2 · Portal Verification</div>
+            <h2 class="sid-step-title">Date of Birth Verification</h2>
+            <p style="color: var(--ebsu-text-muted); font-size: 13px; margin-bottom: 12px;">
+              What is your Date of Birth as stated on your school admission portal?
+            </p>
+            
+            <div>
+              <input id="sid-dob-input" type="date" class="sid-dob-input" value="2003-02-26" />
+            </div>
+            <div id="sid-dob-error" class="sid-error-msg"></div>
+
+            <div class="sid-action-row">
+              <button id="sid-btn-verify-dob" class="ebsu-btn-primary">Verify & Generate SID Card</button>
+            </div>
+          </div>
+
+          <!-- STEP 3: GENERATED CARD RESULT -->
+          <div id="sid-step-result" style="display: none;">
+            <div class="sid-step-badge" style="background: #dcfce7; border-color: #86efac; color: #166534;">
+              ✓ Identity Verified & Card Generated
+            </div>
+            <h2 class="sid-step-title" style="margin-bottom: 4px;">Student Identification Card</h2>
+            <p style="color: var(--ebsu-text-muted); font-size: 12px; margin: 0 0 12px 0;">
+              Official Digital SID Card issued under Ebonyi State University & Triple J Group
+            </p>
+
+            <!-- View Mode Tabs -->
+            <div style="display: flex; gap: 8px; justify-content: center; margin: 14px 0;">
+              <button id="sid-view-front-btn" onclick="SID_SYSTEM.setView('front')" class="sid-btn-tab active-tab">Front Card</button>
+              <button id="sid-view-back-btn" onclick="SID_SYSTEM.setView('back')" class="sid-btn-tab">Back Card</button>
+              <button id="sid-view-both-btn" onclick="SID_SYSTEM.setView('both')" class="sid-btn-tab">View Both Sides</button>
+            </div>
+
+            <div class="sid-canvas-wrap" id="sid-canvas-wrap-front">
+              <canvas id="sid-canvas"></canvas>
+            </div>
+            <div class="sid-canvas-wrap" id="sid-canvas-wrap-back" style="display: none; margin-top: 14px;">
+              <canvas id="sid-canvas-back"></canvas>
+            </div>
+
+            <!-- Metadata Summary Grid -->
+            <div class="sid-meta-grid">
+              <div class="sid-meta-item">
+                <label>Student Name</label>
+                <span id="sid-res-name">NNAJI WILSON SOMTOCHUKWU</span>
+              </div>
+              <div class="sid-meta-item">
+                <label>JAMB Reg No</label>
+                <span id="sid-res-jamb">202412345678AB</span>
+              </div>
+              <div class="sid-meta-item">
+                <label>Matriculation No</label>
+                <span id="sid-res-matric">EBSU/2024/090350</span>
+              </div>
+              <div class="sid-meta-item">
+                <label>Department</label>
+                <span id="sid-res-dept">Computer Science</span>
+              </div>
+              <div class="sid-meta-item">
+                <label>Institution</label>
+                <span id="sid-res-inst">Ebonyi State University (EBSU)</span>
+              </div>
+            </div>
+
+            <!-- Photo & Signature Upload Action Row -->
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 16px 0 8px 0;">
+              <label class="ebsu-btn-secondary" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 7px 14px; border: 1px dashed var(--ebsu-blue); background: #f0f7ff; color: var(--ebsu-blue); font-weight: 700; border-radius: 6px;">
+                <span>📷</span> Upload / Change Photo
+                <input type="file" accept="image/*" style="display: none;" onchange="if(this.files && this.files[0]) SID_SYSTEM.uploadPhoto(this.files[0])" />
+              </label>
+              <label class="ebsu-btn-secondary" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 7px 14px; border: 1px dashed var(--ebsu-teal); background: #f0fdfa; color: var(--ebsu-teal); font-weight: 700; border-radius: 6px;">
+                <span>✍️</span> Upload / Change Signature
+                <input type="file" accept="image/*" style="display: none;" onchange="if(this.files && this.files[0]) SID_SYSTEM.uploadSignature(this.files[0])" />
+              </label>
+              <button type="button" onclick="openPassportGuideModal()" class="ebsu-btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 7px 14px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: 700; border-radius: 6px; cursor: pointer;">
+                <span>📐</span> Photo &amp; Signature Guide
+              </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px;">
+              <button onclick="SID_SYSTEM.downloadFront()" class="ebsu-btn-primary" style="width: auto; padding: 9px 16px; font-size: 13px;">📥 Download Front</button>
+              <button onclick="SID_SYSTEM.downloadBack()" class="ebsu-btn-secondary" style="padding: 9px 16px; font-size: 13px;">📥 Download Back</button>
+              <button onclick="SID_SYSTEM.downloadBoth()" class="ebsu-btn-secondary" style="padding: 9px 16px; font-size: 13px;">📑 Download Both Sides</button>
+              <button onclick="SID_SYSTEM.printCard()" class="ebsu-btn-secondary" style="padding: 9px 16px; font-size: 13px;">🖨️ Print 2-Sided</button>
+            </div>
+          </div>
+
         </div>
 
-        <!-- Body Background -->
-        <div class="color-swatch">
-          <label class="label mb-14" for="c-bodyBg">Body Background</label>
-          <div class="color-picker-row">
-            <input type="color" id="c-bodyBg" value="#ffffff"
-              onchange="updateColor('bodyBg', this.value)"
-              aria-label="Body background colour picker" />
-            <input type="text" id="ct-bodyBg" value="#FFFFFF"
-              class="color-text-input"
-              oninput="syncColorText('bodyBg', this.value)"
-              aria-label="Body background hex value" />
-          </div>
-          <div id="prev-bodyBg" class="color-preview-bar" style="background:#ffffff;border:1px solid #ddd">
-            <span class="color-preview-text" style="color:#333">card body</span>
-          </div>
-        </div>
-
-        <!-- Border Colour -->
-        <div class="color-swatch">
-          <label class="label mb-14" for="c-borderColor">Border Colour</label>
-          <div class="color-picker-row">
-            <input type="color" id="c-borderColor" value="#6ab0e0"
-              onchange="updateColor('borderColor', this.value)"
-              aria-label="Border colour picker" />
-            <input type="text" id="ct-borderColor" value="#6AB0E0"
-              class="color-text-input"
-              oninput="syncColorText('borderColor', this.value)"
-              aria-label="Border colour hex value" />
-          </div>
-          <div id="prev-borderColor" class="color-preview-bar" style="border:3px solid #6ab0e0"></div>
-        </div>
-
-        <!-- Title Colour -->
-        <div class="color-swatch">
-          <label class="label mb-14" for="c-titleColor">Card Title</label>
-          <div class="color-picker-row">
-            <input type="color" id="c-titleColor" value="#cc0000"
-              onchange="updateColor('titleColor', this.value)"
-              aria-label="Title colour picker" />
-            <input type="text" id="ct-titleColor" value="#CC0000"
-              class="color-text-input"
-              oninput="syncColorText('titleColor', this.value)"
-              aria-label="Title colour hex value" />
-          </div>
-          <div class="color-preview-bar">
-            <span id="prevTxt-titleColor" class="color-preview-text" style="color:#cc0000">STUDENT IDENTITY CARD</span>
-          </div>
-        </div>
-
-        <!-- Matric Label -->
-        <div class="color-swatch">
-          <label class="label mb-14" for="c-matricLabel">Matric Label</label>
-          <div class="color-picker-row">
-            <input type="color" id="c-matricLabel" value="#1a3a9a"
-              onchange="updateColor('matricLabel', this.value)"
-              aria-label="Matric label colour picker" />
-            <input type="text" id="ct-matricLabel" value="#1A3A9A"
-              class="color-text-input"
-              oninput="syncColorText('matricLabel', this.value)"
-              aria-label="Matric label colour hex value" />
-          </div>
-          <div class="color-preview-bar">
-            <span id="prevTxt-matricLabel" class="color-preview-text" style="color:#1a3a9a">MATRIC NUMBER</span>
-          </div>
-        </div>
-
-        <!-- Label Colour -->
-        <div class="color-swatch">
-          <label class="label mb-14" for="c-labelColor">Field Labels</label>
-          <div class="color-picker-row">
-            <input type="color" id="c-labelColor" value="#000000"
-              onchange="updateColor('labelColor', this.value)"
-              aria-label="Field label colour picker" />
-            <input type="text" id="ct-labelColor" value="#000000"
-              class="color-text-input"
-              oninput="syncColorText('labelColor', this.value)"
-              aria-label="Field label colour hex value" />
-          </div>
-          <div class="color-preview-bar">
-            <span id="prevTxt-labelColor" class="color-preview-text" style="color:#000">Name: Faculty:</span>
-          </div>
-        </div>
-
-        <!-- Value Colour -->
-        <div class="color-swatch">
-          <label class="label mb-14" for="c-valueColor">Field Values</label>
-          <div class="color-picker-row">
-            <input type="color" id="c-valueColor" value="#222222"
-              onchange="updateColor('valueColor', this.value)"
-              aria-label="Field value colour picker" />
-            <input type="text" id="ct-valueColor" value="#222222"
-              class="color-text-input"
-              oninput="syncColorText('valueColor', this.value)"
-              aria-label="Field value colour hex value" />
-          </div>
-          <div class="color-preview-bar">
-            <span id="prevTxt-valueColor"  class="color-preview-text" style="color:#222">John Doe</span>
-            <span id="prevTxt-valueColor2" class="color-preview-text" style="color:#222"> · Sciences</span>
-          </div>
-        </div>
-
-        <!-- Photo Background -->
-        <div class="color-swatch">
-          <label class="label mb-14" for="c-photoBackground">Photo Background</label>
-          <div class="color-picker-row">
-            <input type="color" id="c-photoBackground" value="#aa1111"
-              onchange="updateColor('photoBackground', this.value)"
-              aria-label="Photo background colour picker" />
-            <input type="text" id="ct-photoBackground" value="#AA1111"
-              class="color-text-input"
-              oninput="syncColorText('photoBackground', this.value)"
-              aria-label="Photo background colour hex value" />
-          </div>
-          <div id="prev-photoBackground" class="color-preview-bar" style="background:#aa1111;height:26px;border-radius:4px"></div>
-        </div>
-
-      </div><!-- /.color-grid -->
-
-      <!-- Theme presets -->
-      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <span class="label" style="margin:0">Quick Themes:</span>
-        <button class="btn-blue"    onclick="applyTheme('ebsu')">🔵 EBSU Blue</button>
-        <button class="btn-blue"    onclick="applyTheme('green')"   style="background:#1a7a3a">🟢 Green</button>
-        <button class="btn-red"     onclick="applyTheme('maroon')"  style="background:#8b0000">🔴 Maroon</button>
-        <button class="btn-outline" onclick="applyTheme('purple')"  style="color:#9a6acc;border-color:#9a6acc">🟣 Purple</button>
-        <button class="btn-outline" onclick="applyTheme('gold')"    style="color:#b8860b;border-color:#b8860b">🟡 Gold</button>
-        <button class="btn-outline" onclick="applyTheme('classic')">⬛ Classic</button>
-      </div>
-    </div><!-- /.section-divider -->
-    <!-- ═══════════════════════════════════════════════════════════
-     LIVE CARD ADJUSTER — paste this inside your <body>, anywhere
-     visible (e.g. below your existing colour panel).
-     It reads/writes CardConfig and calls renderPreview() live.
-════════════════════════════════════════════════════════════ -->
-<div id="card-adjuster" style="
-  background:#111827;
-  border:1px solid #2d3748;
-  border-radius:10px;
-  padding:16px;
-  margin:12px 0;
-  color:#e2e8f0;
-  font-family:Arial,sans-serif;
-  font-size:12px;
-">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <span style="font-weight:700;font-size:13px;color:#63b3ed">⚙ Live Card Adjuster</span>
-    <button onclick="document.getElementById('adj-body').style.display=document.getElementById('adj-body').style.display==='none'?'grid':'none'"
-      style="background:#2d3748;border:none;color:#e2e8f0;padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px">
-      Toggle
-    </button>
-  </div>
-
-  <div id="adj-body" style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;">
-
-    <!-- Card size -->
-    <label>Card Width
-      <input type="range" min="400" max="650" step="5"
-        oninput="CardConfig.cardWidth=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="500"><span>500</span>
-    </label>
-    <label>Card Height
-      <input type="range" min="280" max="480" step="5"
-        oninput="CardConfig.cardHeight=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="370"><span>370</span>
-    </label>
-
-    <!-- Header -->
-    <label>Header Height
-      <input type="range" min="30" max="80" step="1"
-        oninput="CardConfig.headerHeight=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="52"><span>52</span>
-    </label>
-    <label>School Font
-      <input type="range" min="8" max="22" step="1"
-        oninput="CardConfig.schoolFontSize=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="15"><span>15</span>
-    </label>
-
-    <!-- Title / Matric -->
-    <label>Title Font
-      <input type="range" min="8" max="24" step="1"
-        oninput="CardConfig.titleFontSize=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="16"><span>16</span>
-    </label>
-    <label>Matric Font
-      <input type="range" min="6" max="16" step="0.5"
-        oninput="CardConfig.matricFontSize=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="9"><span>9</span>
-    </label>
-
-    <!-- Photo -->
-    <label>Photo Width
-      <input type="range" min="80" max="180" step="2"
-        oninput="CardConfig.photoW=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="118"><span>118</span>
-    </label>
-    <label>Photo Height
-      <input type="range" min="120" max="280" step="2"
-        oninput="CardConfig.photoH=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="205"><span>205</span>
-    </label>
-
-    <!-- Right column -->
-    <label>Right Col Width
-      <input type="range" min="60" max="130" step="2"
-        oninput="CardConfig.rightColWidth=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="95"><span>95</span>
-    </label>
-    <label>Crest Height
-      <input type="range" min="40" max="120" step="2"
-        oninput="CardConfig.crestHeight=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="75"><span>75</span>
-    </label>
-
-    <!-- Fields -->
-    <label>Field Font
-      <input type="range" min="6" max="16" step="0.5"
-        oninput="CardConfig.labelFontSize=+this.value;CardConfig.valueFontSize=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="9.5"><span>9.5</span>
-    </label>
-    <label>Field Spacing
-      <input type="range" min="14" max="55" step="1"
-        oninput="CardConfig.fieldSpacing=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="32"><span>32</span>
-    </label>
-
-    <!-- Value indent -->
-    <label>Value Indent
-      <input type="range" min="40" max="120" step="2"
-        oninput="CardConfig.valueIndent=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="75"><span>75</span>
-    </label>
-
-    <!-- Blood -->
-    <label>Blood Font
-      <input type="range" min="6" max="16" step="0.5"
-        oninput="CardConfig.bloodFontSize=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="10"><span>10</span>
-    </label>
-    <label>Blood Gap (below photo)
-      <input type="range" min="2" max="30" step="1"
-        oninput="CardConfig.bloodGap=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="10"><span>10</span>
-    </label>
-    <label>Blood Line Spacing
-      <input type="range" min="10" max="30" step="1"
-        oninput="CardConfig.bloodSpacing=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="18"><span>18</span>
-    </label>
-
-    <!-- Watermark -->
-    <label>Watermark Alpha
-      <input type="range" min="0" max="0.5" step="0.01"
-        oninput="CardConfig.watermarkAlpha=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="0.15"><span>0.15</span>
-    </label>
-    <label>Watermark Size
-      <input type="range" min="80" max="320" step="5"
-        oninput="CardConfig.watermarkSize=+this.value;this.nextElementSibling.textContent=this.value;UI.renderPreview()"
-        value="200"><span>200</span>
-    </label>
-
-  </div><!-- end adj-body -->
-
-  <div style="margin-top:10px;display:flex;gap:8px">
-    <button onclick="resetCardConfig()" style="
-      flex:1;background:#e53e3e;border:none;color:#fff;
-      padding:6px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700
-    ">Reset Defaults</button>
-    <button onclick="logCardConfig()" style="
-      flex:1;background:#2b6cb0;border:none;color:#fff;
-      padding:6px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700
-    ">Log Config</button>
-  </div>
-</div>
-
-<style>
-#card-adjuster label {
-  display:flex;flex-direction:column;gap:2px;color:#a0aec0;font-size:11px;
-}
-#card-adjuster input[type=range] {
-  width:100%;accent-color:#63b3ed;
-}
-#card-adjuster label span {
-  text-align:right;color:#63b3ed;font-weight:700;font-size:11px;
-}
-</style>
-
-<script>
-// Global object read by adjuster sliders (drawCard does not consume it;
-// values here are display-only helpers for the Live Adjuster UI).
-var CardConfig = {};
-
-// Reset all sliders back to default
-function resetCardConfig() {
-  const defaults = {
-    cardWidth:500,cardHeight:370,headerHeight:52,schoolFontSize:15,
-    titleFontSize:16,matricFontSize:9,photoX:8,photoY:4,photoW:118,photoH:205,
-    rightColWidth:95,rightColGap:10,crestHeight:75,qrGap:8,sigGap:8,sigHeight:38,
-    fieldStartY:20,fieldSpacing:32,labelFontSize:9.5,valueFontSize:9.5,
-    labelIndent:8,valueIndent:75,bloodFontSize:10,bloodGap:10,bloodSpacing:18,
-    bloodIndent:8,bloodValueX:80,watermarkX:130,watermarkY:85,watermarkSize:200,
-    watermarkAlpha:0.15,sigLabelFontSize:9
-  };
-  Object.assign(CardConfig, defaults);
-  // Reset all range inputs
-  document.querySelectorAll('#card-adjuster input[type=range]').forEach(inp => {
-    const key = inp.getAttribute('oninput').match(/CardConfig\.(\w+)/)?.[1];
-    if (key && defaults[key] !== undefined) {
-      inp.value = defaults[key];
-      inp.nextElementSibling.textContent = defaults[key];
-    }
-  });
-  UI.renderPreview();
-}
-
-// Print current config to console (so you can copy final values into canvas.js)
-function logCardConfig() {
-  console.log('Current CardConfig:', JSON.stringify(CardConfig, null, 2));
-  UI.showToast('Config logged to browser console (F12)', 2500);
-}
-</script>
-  </section>
-
-  <!-- Student details -->
-  <section class="section" aria-labelledby="student-heading">
-    <div class="student-tabs-row">
-      <h2 id="student-heading" class="section-title" style="margin:0">👤 STUDENT DETAILS</h2>
-      <div id="student-tabs" role="tablist" aria-label="Student tabs"></div>
-    </div>
-
-    <div class="grid-3 mb-14">
-      <div>
-        <label class="label" for="f-name">Full Name</label>
-        <input id="f-name" type="text" placeholder="Full Name" autocomplete="name" />
-      </div>
-      <div>
-        <label class="label" for="f-matric">Matric Number</label>
-        <input id="f-matric" type="text" placeholder="e.g. EBSU/2025/0001" />
-      </div>
-      <div>
-        <label class="label" for="f-email">Email Address</label>
-        <input id="f-email" type="email" placeholder="e.g. student@ebsu.edu.ng" />
-      </div>
-      <div>
-        <label class="label" for="f-faculty">Faculty</label>
-        <select id="f-faculty" onchange="cascadeDept()">
-          <option value="">— Select Faculty —</option>
-          <option>Science</option>
-          <option>Agricultural and Natural Resource Management</option>
-          <option>Health Science and Technology</option>
-          <option>Social Sciences and Humanities</option>
-          <option>Basic Medical Sciences</option>
-          <option>Clinical Medicine</option>
-          <option>Education</option>
-          <option>Management Sciences</option>
-          <option>Law</option>
-        </select>
-      </div>
-      <div>
-        <label class="label" for="f-dept">Department</label>
-        <select id="f-dept">
-          <option value="">— Select Faculty first —</option>
-        </select>
-      </div>
-      <div>
-        <label class="label" for="f-level">Level</label>
-        <select id="f-level">
-          <option>100 Level</option>
-          <option>200 Level</option>
-          <option>300 Level</option>
-          <option>400 Level</option>
-          <option>500 Level</option>
-          <option>600 Level</option>
-          <option>Postgraduate</option>
-        </select>
-      </div>
-      <div>
-        <label class="label" for="f-session">Session</label>
-        <select id="f-session">
-          <option>2023/2024</option>
-          <option selected>2024/2025</option>
-          <option>2025/2026</option>
-          <option>2026/2027</option>
-        </select>
-      </div>
-      <div>
-        <label class="label" for="f-blood">Blood Group</label>
-        <select id="f-blood">
-          <option>A+</option><option>A-</option>
-          <option>B+</option><option>B-</option>
-          <option selected>O+</option><option>O-</option>
-          <option>AB+</option><option>AB-</option>
-        </select>
-      </div>
-      <div>
-        <label class="label" for="f-genotype">Genotype</label>
-        <select id="f-genotype">
-          <option selected>AA</option>
-          <option>AS</option>
-          <option>AC</option>
-          <option>SS</option>
-          <option>SC</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Photo & Signature -->
-    <div class="grid-2 section-divider">
-      <div>
-        <label class="label mb-14">Passport Photo (3:4 ratio)</label>
-        <div class="upload-area">
-          <div id="photo-preview" aria-label="Photo preview">
-            <span class="preview-placeholder">👤</span>
-          </div>
-          <div class="upload-controls">
-            <button class="btn-blue" onclick="pickFile('photo', 0.75)">⬆ Upload &amp; Crop</button>
-            <button id="rm-photo" class="btn-dark" style="display:none" onclick="removeImg('photo')">✕ Remove</button>
-            <span class="upload-hint">Red background preferred<br>3:4 ratio enforced</span>
-          </div>
-        </div>
-      </div>
-      <div>
-        <label class="label mb-14">Student Signature</label>
-        <div class="upload-area">
-          <div id="sig-preview" aria-label="Signature preview">
-            <span class="sig-placeholder">Signature</span>
-          </div>
-          <div class="upload-controls">
-            <button class="btn-blue" onclick="pickFile('sig', 3)">⬆ Upload &amp; Crop</button>
-            <button id="rm-sig" class="btn-dark" style="display:none" onclick="removeImg('sig')">✕ Remove</button>
-          </div>
-        </div>
       </div>
     </div>
   </section>
 
-  <!-- Generate button -->
-  <div class="generate-row">
-    <button class="btn-generate" onclick="generate()">
-      🪪 GENERATE ID CARD
-    </button>
+  <!-- ── SUB-NAV TAB STRIP (LIKE EBSU PORTAL) ──────────────────────── -->
+  <div class="ebsu-subnav-strip">
+    <a href="#generate-section" class="ebsu-subnav-item active">Generate ID</a>
+    <a href="student-portal.html" class="ebsu-subnav-item">Student Portal</a>
+    <a href="verify.html" class="ebsu-subnav-item">Public Verifier</a>
+    <a href="hub.html" class="ebsu-subnav-item">Staff Hub</a>
+    <a href="#quick-menu" class="ebsu-subnav-item">Quick Menu Directory</a>
   </div>
 
-</main><!-- /#page-form -->
+  <!-- ── PROGRAM & SERVICES DIRECTORY (QUICK MENU ACCORDION) ───────── -->
+  <section class="ebsu-portal-section" id="quick-menu">
+    <div class="ebsu-section-header">
+      <h2 class="ebsu-section-title">Select Your Program and Choose a Link Below</h2>
+      <p class="ebsu-section-desc">Access direct university identification, matriculation status, and verification services.</p>
+    </div>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     PREVIEW SECTION
-     ═══════════════════════════════════════════════════════════════ -->
-<main id="page-preview" class="page-preview">
+    <div class="ebsu-quickmenu-container">
+      <div class="ebsu-quickmenu-bar">
+        <span>✏️</span> QUICK MENU
+      </div>
 
-  <div class="preview-toolbar">
-    <span class="preview-toolbar-label">LAYOUT:</span>
-    <button id="ly-single"      class="layout-btn on"  onclick="setLayout('single')">🪪 Single (Front)</button>
-    <button id="ly-single-back" class="layout-btn off" onclick="setLayout('single-back')">🪪 Single (Back)</button>
-    <button id="ly-double"      class="layout-btn off" onclick="setLayout('double')">🃏 Front + Back</button>
-    <button id="ly-batch"       class="layout-btn off" onclick="setLayout('batch')">📋 Batch All</button>
+      <!-- Item 1: Active Accordion -->
+      <div class="ebsu-accordion-item active" id="acc-item-1">
+        <button class="ebsu-accordion-header" onclick="toggleAccordion('acc-item-1')">
+          <span>Online Student ID Generation & Retrieval</span>
+          <span class="ebsu-accordion-icon">▲</span>
+        </button>
+        <div class="ebsu-accordion-body">
+          <p>
+            Generate and download your official digital student ID card using your registered JAMB registration number or university matriculation number. Supports instant cryptographic QR verification and 2-sided batch printing.
+          </p>
+          <div class="ebsu-accordion-actions">
+            <a href="#generate-section" class="ebsu-pill-btn">Generate ID Now</a>
+            <a href="student-portal.html" class="ebsu-pill-btn-outline">Student Portal Login</a>
+          </div>
+        </div>
+      </div>
 
-    <div class="preview-toolbar-actions">
-      <button class="btn-ghost"   onclick="showPage('form')">✏️ Edit</button>
-      <button class="btn-blue"    onclick="doPrint()">🖨 Print</button>
-      <button class="btn-red"     onclick="downloadCard()">⬇ Download PNG</button>
+      <!-- Item 2 -->
+      <div class="ebsu-accordion-item" id="acc-item-2">
+        <button class="ebsu-accordion-header" onclick="toggleAccordion('acc-item-2')">
+          <span>Sessional ID Validation & Dynamic QR Renewal</span>
+          <span class="ebsu-accordion-icon">▼</span>
+        </button>
+        <div class="ebsu-accordion-body">
+          <p>
+            Digital SID cards update automatically with active academic session metadata (2024/2025) and cryptographic signatures (Ed25519) to prevent screenshot forgery during semester examinations and gate access control.
+          </p>
+          <div class="ebsu-accordion-actions">
+            <a href="verify.html" class="ebsu-pill-btn">Check Signature Validity</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="ebsu-accordion-item" id="acc-item-3">
+        <button class="ebsu-accordion-header" onclick="toggleAccordion('acc-item-3')">
+          <span>Check Undergraduate Admission Status & Matric Number</span>
+          <span class="ebsu-accordion-icon">▼</span>
+        </button>
+        <div class="ebsu-accordion-body">
+          <p>
+            Incoming 100-Level and Direct Entry students can check their verified admission records and official faculty matriculation assignments before generating digital ID credentials.
+          </p>
+          <div class="ebsu-accordion-actions">
+            <a href="https://portal.ebsu.edu.ng" target="_blank" rel="noopener noreferrer" class="ebsu-pill-btn-outline">Visit Official EBSU Portal ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 4 -->
+      <div class="ebsu-accordion-item" id="acc-item-4">
+        <button class="ebsu-accordion-header" onclick="toggleAccordion('acc-item-4')">
+          <span>School Fee Clearance & Bursary Verification</span>
+          <span class="ebsu-accordion-icon">▼</span>
+        </button>
+        <div class="ebsu-accordion-body">
+          <p>
+            In accordance with university policy, ID cards reflect official school fee clearance. If your card indicates a fee lock, verify your Remita RRR receipt with the university bursary to unlock complete privileges.
+          </p>
+          <div class="ebsu-accordion-actions">
+            <a href="student-portal.html" class="ebsu-pill-btn-outline">Check Fee Status in Student Portal</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 5 -->
+      <div class="ebsu-accordion-item" id="acc-item-5">
+        <button class="ebsu-accordion-header" onclick="toggleAccordion('acc-item-5')">
+          <span>Report Lost or Stolen Physical ID Card</span>
+          <span class="ebsu-accordion-icon">▼</span>
+        </button>
+        <div class="ebsu-accordion-body">
+          <p>
+            Lost or misplaced your card? Report it immediately through the Student Portal to revoke previous cryptographic QR keys and apply for replacement clearance.
+          </p>
+          <div class="ebsu-accordion-actions">
+            <a href="student-portal.html" class="ebsu-pill-btn" style="background:#dc2626;">Report Lost Card</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 6 -->
+      <div class="ebsu-accordion-item" id="acc-item-6">
+        <button class="ebsu-accordion-header" onclick="toggleAccordion('acc-item-6')">
+          <span>Invigilator & Campus Security Verifier Desk</span>
+          <span class="ebsu-accordion-icon">▼</span>
+        </button>
+        <div class="ebsu-accordion-body">
+          <p>
+            Accredited examination invigilators and campus security officers can scan printed or digital QR codes using the offline-capable Public Verifier camera engine.
+          </p>
+          <div class="ebsu-accordion-actions">
+            <a href="verify.html" class="ebsu-pill-btn">Launch Public Verifier</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── WE'RE HERE TO HELP YOU (SUPPORT BANNER) ─────────────────────── -->
+  <section class="ebsu-support-section">
+    <div class="ebsu-support-icon">🎧</div>
+    <h3 class="ebsu-support-title">We're Here to Help You</h3>
+    <p class="ebsu-support-desc">
+      Have some questions? Call our ICT Helpdesk on <a href="tel:09035005623">09016054526</a>, <a href="tel:09016054526 ">09035005623</a> or contact your faculty ICT officer.
+    </p>
+  </section>
+
+  <!-- ── INSTITUTIONAL NAVY FOOTER ─────────────────────────────────── -->
+  <footer class="ebsu-footer">
+    <p class="ebsu-footer-text">
+      Copyright © 2025 Ebonyi State University, Abakaliki. SID System Powered By Triple J Group.<br />
+      <a href="hub.html">Staff & Operator Hub</a> · 
+      <a href="student-portal.html">Student Portal</a> · 
+      <a href="verify.html">Public Verifier</a> · 
+      <a href="generate.html">Batch Generator</a>
+    </p>
+    <div class="ebsu-footer-badges">
+      Secure Student Identification System · Ed25519 Cryptographic Verification
+    </div>
+  </footer>
+
+  <!-- ── ACCORDION TOGGLE SCRIPT ── -->
+  <script>
+    function toggleAccordion(id) {
+      const item = document.getElementById(id);
+      if (!item) return;
+      const isOpen = item.classList.contains('active');
+      
+      // Close all items
+      document.querySelectorAll('.ebsu-accordion-item').forEach(el => {
+        el.classList.remove('active');
+        const icon = el.querySelector('.ebsu-accordion-icon');
+        if (icon) icon.textContent = '▼';
+      });
+
+      // Toggle clicked item if it was closed
+      if (!isOpen) {
+        item.classList.add('active');
+        const icon = item.querySelector('.ebsu-accordion-icon');
+        if (icon) icon.textContent = '▲';
+      }
+    }
+  </script>
+
+  <!-- ── PASSPORT & SIGNATURE GUIDELINE & DEMO MODAL ── -->
+  <div id="passport-guide-modal" class="guide-modal-overlay" style="display: none;" onclick="if(event.target===this) closePassportGuideModal()">
+    <div class="guide-modal-box">
+      <div class="guide-modal-header">
+        <div>
+          <h3 style="margin: 0; font-size: 17px; color: var(--ebsu-navy); font-weight: 800;">
+            📐 Official Passport Photo &amp; Signature Quality Standards
+          </h3>
+          <p style="margin: 2px 0 0 0; font-size: 11px; color: var(--ebsu-text-muted);">
+            Ebonyi State University &amp; Triple J SID Identification Card Standards
+          </p>
+        </div>
+        <button class="guide-modal-close" onclick="closePassportGuideModal()" aria-label="Close modal">✕</button>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="guide-tabs">
+        <button id="btn-tab-photo" class="guide-tab-btn active" onclick="switchGuideTab('tab-photo')">📷 Passport Photo Standards</button>
+        <button id="btn-tab-sig" class="guide-tab-btn" onclick="switchGuideTab('tab-sig')">✍️ Signature Standards</button>
+        <button id="btn-tab-tester" class="guide-tab-btn" onclick="switchGuideTab('tab-tester')">🎯 Live Framing &amp; Crop Demo</button>
+      </div>
+
+      <div class="guide-modal-body">
+        <!-- TAB 1: PASSPORT PHOTO STANDARDS -->
+        <div id="guide-tab-photo" class="guide-tab-content active">
+          <p style="margin-top: 0; font-size: 13px; color: #475569;">
+            Your ID card photograph is an official biometric university credential. To ensure your card prints sharply and passes security verification, follow these criteria:
+          </p>
+          <div class="guide-compare-grid">
+            <!-- Bad Example Card -->
+            <div class="guide-card guide-card-bad">
+              <div class="guide-card-header">
+                <span>❌ Avoid (Common Mistakes)</span>
+              </div>
+              <div class="guide-card-body">
+                <div style="height: 140px; border-radius: 6px; overflow: hidden; background: #e2e8f0; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; position: relative;">
+                  <img src="images/demo_user_photo.jpg" alt="Casual selfie example" style="width: 100%; height: 100%; object-fit: cover; filter: contrast(0.95);" />
+                  <div style="position: absolute; bottom: 6px; right: 6px; background: rgba(220,38,38,0.9); color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">CASUAL SELFIE</div>
+                </div>
+                <ul class="guide-checklist">
+                  <li>❌ <strong>High/Low Angle:</strong> Looking up or down at phone camera.</li>
+                  <li>❌ <strong>Busy Background:</strong> Bedroom walls, fans, outdoors, or door frames.</li>
+                  <li>❌ <strong>Casual Attire:</strong> Sports jerseys (e.g. football kits), singlets.</li>
+                  <li>❌ <strong>Uneven Lighting:</strong> Harsh overhead sunlight or half-shadowed face.</li>
+                  <li>❌ <strong>Expression:</strong> Heavy squinting, frowning, or exaggerated poses.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Good Example Card -->
+            <div class="guide-card guide-card-good">
+              <div class="guide-card-header">
+                <span>✅ Recommended (Official Passport)</span>
+              </div>
+              <div class="guide-card-body">
+                <div style="height: 140px; border-radius: 6px; overflow: hidden; background: #1558c0; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; position: relative;">
+                  <!-- Styled ideal passport demonstration -->
+                  <div style="width: 100%; height: 100%; background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
+                    <div style="width: 52px; height: 52px; border-radius: 50%; background: #fed7aa; border: 2px solid #fff; margin-bottom: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);"></div>
+                    <div style="width: 80px; height: 35px; border-radius: 20px 20px 0 0; background: #ffffff; border: 1px solid #cbd5e1;"></div>
+                  </div>
+                  <div style="position: absolute; bottom: 6px; right: 6px; background: rgba(22,101,52,0.9); color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">OFFICIAL CR80 FIT</div>
+                </div>
+                <ul class="guide-checklist">
+                  <li>✅ <strong>Eye-Level Position:</strong> Camera held straight at eye level.</li>
+                  <li>✅ <strong>Solid Background:</strong> Uniform solid color (Light Blue, Red, or White).</li>
+                  <li>✅ <strong>Proper Framing:</strong> Head &amp; shoulders centered, 10–15% margin at the top.</li>
+                  <li>✅ <strong>Formal/Smart Attire:</strong> Collared shirt, suit, blouse, or plain dark clothing.</li>
+                  <li>✅ <strong>Balanced Lighting:</strong> Soft, uniform front-facing light on both cheeks.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: SIGNATURE STANDARDS -->
+        <div id="guide-tab-sig" class="guide-tab-content">
+          <p style="margin-top: 0; font-size: 13px; color: #475569;">
+            Your signature will be placed onto the security signature box of your ID card. Follow these tips so the strokes remain crisp and professional:
+          </p>
+          <div class="guide-compare-grid">
+            <!-- Bad Signature Example -->
+            <div class="guide-card guide-card-bad">
+              <div class="guide-card-header">
+                <span>❌ Avoid (Hard to Process)</span>
+              </div>
+              <div class="guide-card-body">
+                <div style="height: 100px; border-radius: 6px; overflow: hidden; background: #cbd5e1; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; position: relative;">
+                  <img src="images/demo_user_sig.jpg" alt="Signature with shadows" style="width: 100%; height: 100%; object-fit: cover;" />
+                  <div style="position: absolute; bottom: 6px; right: 6px; background: rgba(220,38,38,0.9); color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">TEXTURED / GREY PAPER</div>
+                </div>
+                <ul class="guide-checklist">
+                  <li>❌ <strong>Paper Shadows:</strong> Hand or phone casting dark shadows on paper.</li>
+                  <li>❌ <strong>Reverse Bleed:</strong> Text, newsprint, or lines showing through from back.</li>
+                  <li>❌ <strong>Faint Ink:</strong> Faint pencil or dried ballpoint pen with broken lines.</li>
+                  <li>❌ <strong>Tilted / Far:</strong> Shot from an acute angle or from far away.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Good Signature Example -->
+            <div class="guide-card guide-card-good">
+              <div class="guide-card-header">
+                <span>✅ Recommended (Clean Isolated Ink)</span>
+              </div>
+              <div class="guide-card-body">
+                <div style="height: 100px; border-radius: 6px; overflow: hidden; background: #ffffff; border: 1px solid #cbd5e1; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; position: relative;">
+                  <div style="font-family: cursive; font-size: 26px; color: #0033aa; font-weight: bold; transform: rotate(-3deg);">
+                    Z. Somtochukwu
+                  </div>
+                  <div style="position: absolute; bottom: 6px; right: 6px; background: rgba(22,101,52,0.9); color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">CLEAN / TRANSPARENT</div>
+                </div>
+                <ul class="guide-checklist">
+                  <li>✅ <strong>Clean White Sheet:</strong> Sign on fresh, unlined blank white paper.</li>
+                  <li>✅ <strong>Bold Pen:</strong> Use a dark blue or black gel/rollerball pen with rich ink.</li>
+                  <li>✅ <strong>Direct Bird's Eye View:</strong> Shoot directly straight down from above (90°).</li>
+                  <li>✅ <strong>Automatic Auto-Clean:</strong> Our canvas engine isolates and deepens the ink while making the paper background transparent!</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: LIVE FRAMING & CROP DEMO -->
+        <div id="guide-tab-tester" class="guide-tab-content">
+          <p style="margin-top: 0; font-size: 13px; color: #475569;">
+            Test any photo in the interactive <strong>Passport Framing Box</strong> below. Align your face inside the green oval guideline to guarantee a clean passport fit on your ID card:
+          </p>
+          
+          <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px;">
+            <button type="button" class="ebsu-btn-primary" style="font-size: 12px; padding: 6px 14px;" onclick="loadDemoFramingPhoto('images/demo_user_photo.jpg')">
+              ▶ Test with My Uploaded Photo
+            </button>
+            <label class="ebsu-btn-secondary" style="font-size: 12px; padding: 6px 14px; cursor: pointer;">
+              📁 Upload Any Photo to Test
+              <input type="file" accept="image/*" style="display: none;" onchange="if(this.files && this.files[0]) handleGuidePhotoUpload(this.files[0])" />
+            </label>
+          </div>
+
+          <div class="guide-framing-box">
+            <img id="guide-test-img" src="images/demo_user_photo.jpg" alt="Framing preview" style="width: 100%; height: 100%; object-fit: cover;" />
+            <div class="guide-framing-overlay">
+              <div class="guide-oval">
+                <div class="guide-eye-line"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: #f1f5f9; border-radius: 6px; padding: 10px 14px; margin-top: 12px; font-size: 12px; color: #334155;">
+            <strong>🎯 Biometric Placement Rules:</strong>
+            <ul style="margin: 6px 0 0 16px; padding: 0;">
+              <li>Eyes should align along the dashed horizontal green line.</li>
+              <li>Top of head/hair should sit just inside the upper curve of the oval.</li>
+              <li>Chin should sit cleanly in the lower curve.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div id="cards-container" aria-live="polite" aria-label="Generated ID cards"></div>
-
-</main><!-- /#page-preview -->
-</div><!-- /.app-split-layout -->
-
-
-<!-- ── SCRIPTS (order matters) ─────────────────────────────────── -->
-<!-- Public config (copy config.example.js → config.js and fill in values) -->
-<script src="config.js"></script>
-<!-- Supabase JS client -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets.js"></script>
-<script src="qr.js"></script>
-<script src="state.js"></script>
-<script src="canvas.js"></script>
-<script src="cropper.js"></script>
-<script src="ui.js"></script>
-<script src="main.js"></script>
-
-<!-- Real-time Flow State Binding -->
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const inputs = document.querySelectorAll('#page-form input, #page-form select');
-  inputs.forEach(input => {
-    input.addEventListener('input', () => {
-      if (typeof UI !== 'undefined' && UI.saveCurrentFields && UI.renderPreview) {
-        UI.saveCurrentFields();
-        UI.renderPreview();
-      }
-    });
-  });
-});
-</script>
-
-<!-- ── Auth initialisation + login gate ──────────────────────────
-     Runs after all modules are loaded.  Hides the generator behind
-     a Supabase email+password login for operator/admin roles.
-──────────────────────────────────────────────────────────────── -->
-<script>
-(function () {
-  // Initialise Supabase client — exposed as window.ebsuSupabase so ui.js
-  // can call auth.getSession() inside generate().
-  let _client = null;
-  if (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.SUPABASE_URL) {
-    _client = supabase.createClient(EBSU_CONFIG.SUPABASE_URL, EBSU_CONFIG.SUPABASE_ANON_KEY);
-  }
-  window.ebsuSupabase = _client;
-
-  // ── Auth gate overlay ─────────────────────────────────────────
-  const gate       = document.getElementById('auth-gate');
-  const emailInp   = document.getElementById('ag-email');
-  const passInp    = document.getElementById('ag-pass');
-  const loginBtn   = document.getElementById('ag-login-btn');
-  const errorEl    = document.getElementById('ag-error');
-  const userBadge  = document.getElementById('auth-user-badge');
-  const logoutBtn  = document.getElementById('auth-logout-btn');
-
-  function showGate()  { if (gate) gate.style.display = 'flex'; }
-  function hideGate()  { if (gate) gate.style.display = 'none';  }
-
-  function setError(msg) {
-    if (errorEl) { errorEl.textContent = msg; errorEl.style.display = msg ? 'block' : 'none'; }
-  }
-
-  function setUserBadge(user) {
-    if (!userBadge) return;
-    if (user) {
-      const role  = user.user_metadata?.role || 'unknown';
-      const email = user.email || '';
-      userBadge.textContent = role.toUpperCase() + ' · ' + email;
-      userBadge.style.display = 'inline';
-      if (logoutBtn) logoutBtn.style.display = 'inline-block';
-    } else {
-      userBadge.style.display = 'none';
-      if (logoutBtn) logoutBtn.style.display = 'none';
-    }
-  }
-
-  function isValidIdentifier(value) {
-    const cleanValue = value.trim();
-    if (cleanValue.length < 5 || cleanValue.length > 30) return false;
-    // Allow digits, letters, slashes (/), hyphens (-), underscores (_), dots (.), or email @
-    return /^[A-Za-z0-9/\-_@\.]+$/.test(cleanValue);
-  }
-
-  function checkRateLimit() {
-    const now = Date.now();
-    let attempts = JSON.parse(localStorage.getItem('loginAttempts') || '[]');
-    attempts = attempts.filter(time => now - time < 60000); // keep only attempts in last 60s
-    if (attempts.length >= 5) {
-      return false;
-    }
-    attempts.push(now);
-    localStorage.setItem('loginAttempts', JSON.stringify(attempts));
-    return true;
-  }
-
-  async function doLogin() {
-    if (!_client) { setError('config.js not loaded — copy config.example.js first.'); return; }
-    let rawInput = emailInp ? emailInp.value.trim() : '';
-    const pass = passInp ? passInp.value : '';
-    if (!rawInput || !pass) { setError('Enter your JAMB Reg No or School Reg No and password.'); return; }
-
-    // Validate identifier format
-    if (!isValidIdentifier(rawInput)) {
-      setError('Invalid Registration Number or Email format.');
-      return;
-    }
-
-    // Rate limit
-    if (!checkRateLimit()) {
-      setError('Too many login attempts. Please wait 60 seconds.');
-      return;
-    }
-
-    setError('');
-    if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Signing in...'; }
-
-    try {
-      let authEmail = rawInput;
-
-      // If user input is not already an email, search database by jamb_no OR school_reg_no
-      if (!rawInput.includes('@')) {
-        const { data: studentRecord } = await _client
-          .from('students')
-          .select('jamb_no, school_reg_no, linked_email')
-          .or(`jamb_no.eq.${rawInput},school_reg_no.eq.${rawInput}`)
-          .maybeSingle();
-
-        if (studentRecord && studentRecord.jamb_no) {
-          authEmail = `${studentRecord.jamb_no}@ebsu.edu.ng`;
-        } else {
-          // Fallback to sanitizing input as email
-          authEmail = `${rawInput.replace(/[^a-zA-Z0-9]/g, '_')}@ebsu.edu.ng`;
-        }
-      }
-
-      let { data, error } = await _client.auth.signInWithPassword({ email: authEmail, password: pass });
-      
-      if (error && error.message.includes('Invalid login credentials')) {
-        const { data: student } = await _client
-          .from('students')
-          .select('*')
-          .or(`jamb_no.eq.${rawInput},school_reg_no.eq.${rawInput}`)
-          .maybeSingle();
-        
-        if (student) {
-          setError('Account credentials invalid or pending setup. Check with Admin if auth is active.');
-        } else {
-          setError('This Registration Number is not in our database. Please ensure you are a registered student of EBSU.');
-        }
-        return;
-      } else if (error) {
-        throw error;
-      }
-
-      // Record / increment login count for 3-times free access rule
-      const loginKey = `ebsu_login_count_${authEmail}`;
-      let loginCount = parseInt(localStorage.getItem(loginKey) || '0', 10);
-      loginCount += 1;
-      localStorage.setItem(loginKey, loginCount.toString());
-      
-      // Check fees paid status
-      const { data: student } = await _client
-        .from('students')
-        .select('fees_paid')
-        .or(`jamb_no.eq.${rawInput},school_reg_no.eq.${rawInput}`)
-        .maybeSingle();
-      
-      if (student && student.fees_paid === false) {
-        const banner = document.createElement('div');
-        banner.className = 'fee-banner';
-        banner.innerHTML = '⚠️ Fee Payment Required: Your school fees have not been confirmed. ID Card generation is disabled until fees are cleared.';
-        document.body.appendChild(banner);
-        
-        const genBtn = document.querySelector('.btn-generate');
-        if (genBtn) genBtn.disabled = true;
-      }
-      
-      checkGoogleLink();
-    } catch (err) {
-      console.error(err);
-      if (err.message && err.message.toLowerCase().includes('failed to fetch')) {
-        setError('Network Connection Error: Unable to reach the Supabase backend. Please check your internet connection or verify your Supabase URL in config.js.');
-      } else {
-        setError(err.message);
-      }
-    } finally {
-      if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Sign In'; }
-    }
-  }
-
-  async function checkGoogleLink() {
-    const { data: { session } } = await _client.auth.getSession();
-    if (!session) return;
-    
-    const authEmail = session.user.email || '';
-    const loginKey = `ebsu_login_count_${authEmail}`;
-    const loginCount = parseInt(localStorage.getItem(loginKey) || '1', 10);
-
-    const isGoogleLinked = session.user.app_metadata?.providers?.includes('google');
-    const layoutContainer = document.querySelector('.app-split-layout');
-    
-    // First 3 logins: FREE ACCESS without forced Google email linking requirement!
-    if (loginCount <= 3) {
-      document.getElementById('link-google-gate').style.display = 'none';
-      setUserBadge(session.user);
-      hideGate();
-      if (layoutContainer) layoutContainer.classList.remove('privacy-blurred');
-    } else {
-      // 4th login onwards: Force Google account linking to authenticate
-      if (!isGoogleLinked) {
-        hideGate();
-        document.getElementById('link-google-gate').style.display = 'flex';
-        if (layoutContainer) layoutContainer.classList.add('privacy-blurred');
-      } else {
-        document.getElementById('link-google-gate').style.display = 'none';
-        setUserBadge(session.user);
-        hideGate();
-        if (layoutContainer) layoutContainer.classList.remove('privacy-blurred');
+  <!-- Guide Modal Controller Scripts -->
+  <script>
+    function openPassportGuideModal() {
+      const modal = document.getElementById('passport-guide-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        switchGuideTab('tab-photo');
       }
     }
-  }
 
-  async function doSignUp() {
-    if (!_client) { setError('config.js not loaded'); return; }
-    const email = emailInp ? emailInp.value.trim() : '';
-    const pass  = passInp  ? passInp.value         : '';
-    if (!email || !pass)  { setError('Enter your email and password.'); return; }
-
-    setError('');
-    const signupBtn = document.getElementById('ag-signup-btn');
-    if (signupBtn) { signupBtn.disabled = true; signupBtn.textContent = 'Creating...'; }
-
-    try {
-      const { error } = await _client.auth.signUp({ email, password: pass });
-      if (error) throw error;
-      setError('Account created! An admin must grant you operator access before you can login.');
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    } finally {
-      if (signupBtn) { signupBtn.disabled = false; signupBtn.textContent = 'Create Account'; }
+    function closePassportGuideModal() {
+      const modal = document.getElementById('passport-guide-modal');
+      if (modal) modal.style.display = 'none';
     }
-  }
 
-  async function doGoogleAuth() {
-    if (!_client) { setError('config.js not loaded'); return; }
-    setError('');
-    const googleBtn = document.getElementById('ag-google-btn');
-    if (googleBtn) { googleBtn.disabled = true; googleBtn.textContent = 'Redirecting...'; }
+    function switchGuideTab(tabName) {
+      document.querySelectorAll('.guide-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.guide-tab-content').forEach(c => c.classList.remove('active'));
 
-    try {
-      const { error } = await _client.auth.signInWithOAuth({ provider: 'google' });
-      if (error) throw error;
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-      if (googleBtn) { 
-        googleBtn.disabled = false; 
-        googleBtn.innerHTML = '<img src="https://www.google.com/favicon.ico" alt="G" style="width:16px;height:16px;"> Continue with Google';
+      if (tabName === 'tab-photo') {
+        document.getElementById('btn-tab-photo')?.classList.add('active');
+        document.getElementById('guide-tab-photo')?.classList.add('active');
+      } else if (tabName === 'tab-sig') {
+        document.getElementById('btn-tab-sig')?.classList.add('active');
+        document.getElementById('guide-tab-sig')?.classList.add('active');
+      } else if (tabName === 'tab-tester') {
+        document.getElementById('btn-tab-tester')?.classList.add('active');
+        document.getElementById('guide-tab-tester')?.classList.add('active');
       }
     }
-  }
 
-  async function doLogout() {
-    if (_client) await _client.auth.signOut();
-    setUserBadge(null);
-    showGate();
-    if (passInp) passInp.value = '';
-  }
-
-  // ── Cascading faculty → department dropdowns ──────────────────
-  const EBSU_DEPTS = {
-    'Science': [
-      'Applied Biology',
-      'Applied Microbiology and Brewing',
-      'Biochemistry',
-      'Biotechnology',
-      'Computer Science',
-      'Geology and Exploration Geophysics',
-      'Industrial Chemistry',
-      'Industrial Mathematics and Statistics',
-      'Industrial Physics',
-    ],
-    'Agricultural and Natural Resource Management': [
-      'Agricultural Economics and Extension',
-      'Animal Science',
-      'Fishery and Aqua-Culture',
-      'Food Science and Technology',
-      'Soil Science and Environmental Management',
-    ],
-    'Health Science and Technology': [
-      'Medical Laboratory Science',
-      'Nursing Science',
-    ],
-    'Social Sciences and Humanities': [
-      'Economics',
-      'English Language and Literature',
-      'History and International Relations',
-      'Language and Linguistics',
-      'Library and Information Science',
-      'Mass Communication',
-      'Philosophy and Religion',
-      'Political Science',
-      'Psychology',
-      'Social Works',
-      'Sociology and Anthropology',
-    ],
-    'Basic Medical Sciences': [
-      'Anatomy',
-      'Medicine and Surgery',
-      'Physiology',
-    ],
-    'Clinical Medicine': [
-      'Community Medicine',
-      'Internal Medicine',
-      'Pharmacology',
-      'Surgery',
-    ],
-    'Education': [
-      'Arts and Social Science Education',
-      'Business Education',
-      'Educational Foundations',
-      'Guidance and Counselling',
-      'Home Economics Education',
-      'Human Kinetics and Health Education',
-      'Science Education',
-      'Technology and Vocational Education',
-    ],
-    'Management Sciences': [
-      'Accountancy',
-      'Banking and Finance',
-      'Business Management',
-      'Marketing',
-      'Public Administration',
-    ],
-    'Law': [
-      'Business Law',
-      'Civil Law',
-      'International Law and Jurisprudence',
-      'Private and Property Law',
-      'Public Law',
-    ],
-  };
-
-  window.cascadeDept = function () {
-    const fac  = document.getElementById('f-faculty').value;
-    const dept = document.getElementById('f-dept');
-    dept.innerHTML = '';
-    if (!fac || !EBSU_DEPTS[fac]) {
-      dept.innerHTML = '<option value="">— Select Faculty first —</option>';
-      return;
+    function loadDemoFramingPhoto(src) {
+      const img = document.getElementById('guide-test-img');
+      if (img) img.src = src;
     }
-    dept.innerHTML = '<option value="">— Select Department —</option>';
-    EBSU_DEPTS[fac].forEach(d => {
-      const opt = document.createElement('option');
-      opt.value = d;
-      opt.textContent = d;
-      dept.appendChild(opt);
-    });
-  };
 
-  // Wire buttons
-  if (loginBtn) loginBtn.addEventListener('click', doLogin);
-  const linkGoogleBtn = document.getElementById('ag-link-google-btn');
-  if (linkGoogleBtn) linkGoogleBtn.addEventListener('click', doGoogleAuth);
-  const logoutCancelBtn = document.getElementById('ag-logout-cancel-btn');
-  if (logoutCancelBtn) logoutCancelBtn.addEventListener('click', async () => { await doLogout(); document.getElementById('link-google-gate').style.display='none'; showGate(); });
-  if (logoutBtn) logoutBtn.addEventListener('click', doLogout);
-  if (passInp) passInp.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-
-  // Check existing session on load
-  (async () => {
-    if (!_client) { showGate(); return; }
-
-    const { data: { session } } = await _client.auth.getSession();
-    if (session) {
-      checkGoogleLink();
-      return;
+    function handleGuidePhotoUpload(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        loadDemoFramingPhoto(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
-    showGate();
-    if (emailInp) emailInp.focus();
-  })();
+  </script>
 
-  // Set header logo after assets.js loaded
-  document.getElementById('header-logo').src = CREST_SMALL;
-})();
-</script>
-
+  <!-- Required App Scripts -->
+  <script defer src="config.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script defer src="assets.js"></script>
+  <script defer src="qr.js"></script>
+  <script defer src="js/cardTemplate.js"></script>
+  <script defer src="js/studentDataSource.js"></script>
+  <script defer src="canvas.js"></script>
+  <script defer src="js/sid.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

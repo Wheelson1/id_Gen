@@ -1,0 +1,1020 @@
+/* ═══════════════════════════════════════════════════════════════
+   LANDING.CSS — Authentic Institutional University Portal Theme
+   Faithfully inspired by the EBSU Institutional Portal
+   Clean · Utilitarian · Handcrafted · Zero AI-Slop Aesthetics
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --ebsu-blue:         #0066cc;
+  --ebsu-blue-hover:   #0052a3;
+  --ebsu-blue-light:   #e7f1ff;
+  --ebsu-blue-border:  #b6d4fe;
+  --ebsu-navy:         #04101e;
+  --ebsu-navy-subtle:  #08172c;
+  --ebsu-teal:         #008b8b;
+  --ebsu-teal-bright:  #00b4d8;
+  --ebsu-text:         #1e293b;
+  --ebsu-text-muted:   #64748b;
+  --ebsu-border:       #dee2e6;
+  --ebsu-border-light: #e9ecef;
+  --ebsu-input-bg:     #f8fafc;
+  --ebsu-card-bg:      #ffffff;
+  --ebsu-font-sans:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --ebsu-font-mono:    'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--ebsu-font-sans);
+  background-color: #f8fafc;
+  color: var(--ebsu-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--ebsu-blue);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: var(--ebsu-blue-hover);
+}
+
+/* ── TOP INSTITUTIONAL NAVBAR ──────────────────────────────────── */
+.ebsu-navbar {
+  position: relative;
+  z-index: 50;
+  background: rgba(4, 16, 30, 0.94);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  padding: 10px 24px;
+}
+
+.ebsu-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ebsu-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.ebsu-crest {
+  width: 36px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+
+.ebsu-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.ebsu-brand-title {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: var(--ebsu-teal-bright);
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.ebsu-brand-subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.3px;
+}
+
+.ebsu-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.ebsu-nav-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.ebsu-nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+}
+
+.ebsu-nav-link.active {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.ebsu-nav-login {
+  background: var(--ebsu-blue);
+  color: #ffffff !important;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 4px;
+}
+
+.ebsu-nav-login:hover {
+  background: var(--ebsu-blue-hover);
+  text-decoration: none;
+}
+
+/* ── HERO BANNER (ACADEMIC LIBRARY BACKGROUND) ─────────────────── */
+.ebsu-hero {
+  position: relative;
+  background: url('../images/banner_workstation.jpg') center center / cover no-repeat;
+  padding: 50px 16px 65px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 520px;
+}
+
+.ebsu-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(4, 16, 30, 0.25) 0%,
+    rgba(6, 20, 38, 0.4) 60%,
+    rgba(4, 16, 30, 0.6) 100%
+  );
+  z-index: 1;
+}
+
+.ebsu-hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+/* ── PURE WHITE INSTITUTIONAL ACTION CARD ──────────────────────── */
+.ebsu-action-card {
+  background: var(--ebsu-card-bg);
+  border-radius: 8px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 34px 36px;
+  animation: cardFadeIn 0.35s ease-out;
+}
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ebsu-card-header {
+  margin-bottom: 22px;
+}
+
+.ebsu-card-title {
+  margin: 0 0 6px 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.3px;
+}
+
+.ebsu-card-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ebsu-text-muted);
+  line-height: 1.45;
+}
+
+.ebsu-form-group {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.ebsu-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 6px;
+  letter-spacing: 0.2px;
+}
+
+.ebsu-input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #1e293b;
+  background-color: var(--ebsu-input-bg);
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.ebsu-input:focus {
+  background-color: #ffffff;
+  border-color: var(--ebsu-blue);
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+}
+
+.ebsu-select {
+  appearance: auto;
+  cursor: pointer;
+}
+
+.ebsu-btn-primary {
+  width: 100%;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--ebsu-blue);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.05s ease;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ebsu-btn-primary:hover {
+  background: var(--ebsu-blue-hover);
+}
+
+.ebsu-btn-primary:active {
+  transform: translateY(1px);
+}
+
+.ebsu-btn-primary:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.ebsu-btn-secondary {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ebsu-btn-secondary:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.ebsu-card-links {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: #475569;
+  text-align: left;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 14px;
+}
+
+.ebsu-card-links a {
+  font-weight: 600;
+  color: var(--ebsu-blue);
+}
+
+.ebsu-text-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ebsu-blue);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.ebsu-text-btn:hover {
+  color: var(--ebsu-blue-hover);
+}
+
+/* ── STEP CONTAINER (VERIFICATION FLOW) ────────────────────────── */
+.sid-step-container {
+  display: none;
+  margin-top: 20px;
+  scroll-margin-top: 24px;
+}
+
+.sid-fade-in {
+  animation: sidFadeIn 0.22s ease-out forwards;
+}
+
+@keyframes sidFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sid-step-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: var(--ebsu-blue-light);
+  color: var(--ebsu-blue);
+  border: 1px solid var(--ebsu-blue-border);
+  margin-bottom: 12px;
+}
+
+.sid-step-title {
+  margin: 0 0 10px 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.sid-name-highlight {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid var(--ebsu-blue);
+  padding: 12px 14px;
+  border-radius: 4px;
+  margin: 12px 0;
+  text-align: left;
+}
+
+.sid-action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.sid-action-row .sid-btn-primary {
+  flex: 1;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--ebsu-blue);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.sid-action-row .sid-btn-primary:hover {
+  background: var(--ebsu-blue-hover);
+}
+
+.sid-action-row .sid-btn-secondary {
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.sid-action-row .sid-btn-secondary:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.sid-dob-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #1e293b;
+  outline: none;
+}
+
+.sid-dob-input:focus {
+  border-color: var(--ebsu-blue);
+  background: #fff;
+}
+
+.sid-error-msg {
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
+  display: none;
+}
+
+/* ── QUEUE SIMULATION OVERLAY ──────────────────────────────────── */
+#sid-queue-overlay {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+#sid-queue-ticket {
+  font-family: var(--ebsu-font-mono);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ebsu-blue);
+  margin: 6px 0;
+}
+
+/* ── CARD RESULT & CANVAS OUTPUT ───────────────────────────────── */
+.sid-btn-tab {
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sid-btn-tab:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.sid-btn-tab.active-tab {
+  background: var(--ebsu-blue) !important;
+  color: #ffffff !important;
+  border-color: var(--ebsu-blue) !important;
+}
+
+.sid-canvas-wrap {
+  width: 100%;
+  max-width: 580px;
+  aspect-ratio: 1011 / 638;
+  margin: 14px auto;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  contain: layout;
+}
+
+.sid-canvas-wrap canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.sid-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+  text-align: left;
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.sid-meta-item label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.sid-meta-item span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* ── SUB-NAV TAB STRIP (LIKE EBSU PORTAL) ──────────────────────── */
+.ebsu-subnav-strip {
+  background: rgba(4, 16, 30, 0.96);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.ebsu-subnav-item {
+  padding: 12px 28px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #cbd5e1;
+  text-decoration: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.15s ease;
+}
+
+.ebsu-subnav-item:first-child {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ebsu-subnav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.ebsu-subnav-item.active {
+  background: var(--ebsu-blue);
+  color: #ffffff;
+}
+
+/* ── CONTENT SECTION (QUICK MENU ACCORDION) ────────────────────── */
+.ebsu-portal-section {
+  background: #ffffff;
+  padding: 50px 20px 60px;
+}
+
+.ebsu-section-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.ebsu-section-title {
+  margin: 0 0 8px 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.4px;
+}
+
+.ebsu-section-desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ebsu-text-muted);
+}
+
+.ebsu-quickmenu-container {
+  max-width: 860px;
+  margin: 0 auto;
+  border: 1px solid var(--ebsu-border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+}
+
+.ebsu-quickmenu-bar {
+  background: #e9ecef;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #495057;
+  border-bottom: 1px solid var(--ebsu-border);
+}
+
+.ebsu-accordion-item {
+  border-bottom: 1px solid var(--ebsu-border);
+}
+
+.ebsu-accordion-item:last-child {
+  border-bottom: none;
+}
+
+.ebsu-accordion-header {
+  width: 100%;
+  background: #ffffff;
+  border: none;
+  padding: 16px 22px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.ebsu-accordion-header:hover {
+  background-color: #f8fafc;
+}
+
+.ebsu-accordion-item.active .ebsu-accordion-header {
+  background-color: var(--ebsu-blue-light);
+  color: var(--ebsu-blue);
+  font-weight: 700;
+}
+
+.ebsu-accordion-icon {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+  color: #64748b;
+}
+
+.ebsu-accordion-item.active .ebsu-accordion-icon {
+  transform: rotate(180deg);
+  color: var(--ebsu-blue);
+}
+
+.ebsu-accordion-body {
+  display: none;
+  padding: 18px 22px 22px;
+  background-color: #ffffff;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
+  border-top: 1px solid #f1f5f9;
+}
+
+.ebsu-accordion-item.active .ebsu-accordion-body {
+  display: block;
+}
+
+.ebsu-accordion-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ebsu-pill-btn {
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 4px;
+  background: var(--ebsu-blue);
+  color: #ffffff;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease;
+}
+
+.ebsu-pill-btn:hover {
+  background: var(--ebsu-blue-hover);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.ebsu-pill-btn-outline {
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.ebsu-pill-btn-outline:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+/* ── SUPPORT & HELPDESK BAR ────────────────────────────────────── */
+.ebsu-support-section {
+  background: #f8fafc;
+  border-top: 1px solid var(--ebsu-border);
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.ebsu-support-icon {
+  font-size: 32px;
+  color: var(--ebsu-blue);
+  margin-bottom: 8px;
+}
+
+.ebsu-support-title {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.ebsu-support-desc {
+  margin: 0;
+  font-size: 14px;
+  color: #475569;
+}
+
+.ebsu-support-desc a {
+  font-weight: 700;
+  color: var(--ebsu-blue);
+}
+
+/* ── INSTITUTIONAL NAVY FOOTER ─────────────────────────────────── */
+.ebsu-footer {
+  background: var(--ebsu-navy);
+  color: #cbd5e1;
+  padding: 24px 20px;
+  text-align: center;
+  font-size: 12px;
+  border-top: 2px solid var(--ebsu-teal);
+}
+
+.ebsu-footer a {
+  color: #94a3b8;
+  margin: 0 6px;
+}
+
+.ebsu-footer a:hover {
+  color: #ffffff;
+}
+
+.ebsu-footer-text {
+  margin: 0 0 8px 0;
+  line-height: 1.6;
+}
+
+.ebsu-footer-badges {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* ── RESPONSIVE DESIGN ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .ebsu-nav-links {
+    display: none;
+  }
+  .ebsu-subnav-strip {
+    justify-content: flex-start;
+  }
+  .ebsu-subnav-item {
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+  .ebsu-action-card {
+    padding: 24px 20px;
+  }
+  .ebsu-section-title {
+    font-size: 20px;
+  }
+  .sid-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── PASSPORT & SIGNATURE GUIDELINE MODAL ──────────────────────── */
+.guide-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(4, 16, 30, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: sidFadeIn 0.2s ease-out;
+}
+
+.guide-modal-box {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 840px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  border: 1px solid #cbd5e1;
+}
+
+.guide-modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+}
+
+.guide-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.guide-modal-close:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.guide-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.guide-tab-btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.guide-tab-btn:hover {
+  color: var(--ebsu-blue);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.guide-tab-btn.active {
+  background: #ffffff;
+  color: var(--ebsu-blue);
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.guide-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.guide-tab-content {
+  display: none;
+}
+
+.guide-tab-content.active {
+  display: block;
+  animation: sidFadeIn 0.2s ease-out;
+}
+
+.guide-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.guide-card {
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.guide-card-bad {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+
+.guide-card-good {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.guide-card-header {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.guide-card-bad .guide-card-header {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.guide-card-good .guide-card-header {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.guide-card-body {
+  padding: 14px;
+}
+
+.guide-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+  font-size: 12px;
+}
+
+.guide-checklist li {
+  margin-bottom: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.guide-framing-box {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 310 / 360;
+  margin: 14px auto;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px dashed #3b82f6;
+  background: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guide-framing-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.guide-oval {
+  width: 58%;
+  height: 62%;
+  border: 2px dashed #22c55e;
+  border-radius: 50% 50% 45% 45%;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.guide-eye-line {
+  position: absolute;
+  top: 45%;
+  left: 10%;
+  right: 10%;
+  border-top: 1px dashed rgba(34, 197, 94, 0.7);
+}
+

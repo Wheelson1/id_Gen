@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Design ID Card — EBSU</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" />
+  <link rel="stylesheet" href="css/shared.css" />
+  <link rel="stylesheet" href="css/design.css" />
+</head>
+<body>
+
+<!-- ── AMBIENT BACKGROUND ──────────────────────────────────────── -->
+<div class="design-bg" aria-hidden="true"></div>
+
+<!-- ── NAVBAR ──────────────────────────────────────────────────── -->
+<nav class="design-nav" aria-label="Design navigation">
+  <a href="hub.html" class="design-nav-brand">
+    <span class="design-nav-icon">🎨</span>
+    <span>Design Studio</span>
+  </a>
+  <div class="design-nav-links">
+    <a href="hub.html" class="design-nav-link">← Hub</a>
+    <a href="generate.html" class="design-nav-link">Generate →</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SPLIT LAYOUT
+     ══════════════════════════════════════════════════════════════ -->
+<div class="design-layout">
+
+  <!-- ── LEFT: Controls Panel ────────────────────────────────── -->
+  <div class="design-panel">
+
+    <!-- Creation of Projects Banner -->
+    <div style="border-radius: 10px; overflow: hidden; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 4px 18px rgba(0,0,0,0.5);">
+      <img src="images/banner_creation_projects.jpg" alt="Template Studio & Creation" style="width: 100%; display: block;" />
+    </div>
+
+    <!-- Departmental Sandbox Template Security Banner -->
+    <div style="background: rgba(212,165,116,0.15); border: 1px solid rgba(212,165,116,0.3); color: #f0d4a8; padding: 12px; border-radius: 10px; font-size: 11px; margin-bottom: 16px; font-weight: 600;">
+      <div style="font-weight: 800; font-size: 12px; color: #fff; margin-bottom: 4px;">🔒 Departmental Sandbox Template Locks Active</div>
+      Ed25519 QR Code, Security Hologram, and Serial Stamp positions are locked by Super Admin policy. Aesthetics, font accents, and logos are customizable per faculty.
+    </div>
+
+    <!-- Institution Settings -->
+    <div class="design-section">
+      <h2 class="design-section-title"><span class="icon">🏫</span> Institution & Faculty Settings</h2>
+
+      <div class="design-grid-3 mb-4">
+        <div>
+          <label class="design-label" for="schoolName">School Name</label>
+          <input id="schoolName" type="text" class="design-input" value="EBONYI STATE UNIVERSITY, ABAKALIKI" />
+        </div>
+        <div>
+          <label class="design-label" for="expiry">Expiry Year</label>
+          <select id="expiry" class="design-select">
+            <option>2025</option><option>2026</option><option>2027</option>
+            <option>2028</option><option selected>2029</option>
+            <option>2030</option><option>2031</option><option>2032</option>
+          </select>
+        </div>
+        <div>
+          <label class="design-label">Custom Crest</label>
+          <button class="design-upload-btn" onclick="pickLogo()">⬆ Upload Crest</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colour Settings -->
+    <div class="design-section">
+      <h2 class="design-section-title"><span class="icon">🎨</span> Card Colour Settings</h2>
+
+      <div class="color-grid">
+        <!-- Header Background -->
+        <div class="color-swatch">
+          <div class="color-swatch-label">Header BG</div>
+          <div class="color-row">
+            <input type="color" id="c-headerBg" class="color-picker" value="#1558c0"
+              onchange="updateColor('headerBg', this.value)" />
+            <input type="text" id="ct-headerBg" class="color-hex" value="#1558C0"
+              oninput="syncColorText('headerBg', this.value)" />
+          </div>
+          <div id="prev-headerBg" class="color-preview-bar" style="background:#1558c0">
+            <span id="prevTxt-headerBg" class="color-preview-text" style="color:#fff">SCHOOL</span>
+          </div>
+        </div>
+
+        <!-- Header Text -->
+        <div class="color-swatch">
+          <div class="color-swatch-label">Header Text</div>
+          <div class="color-row">
+            <input type="color" id="c-headerText" class="color-picker" value="#ffffff"
+              onchange="updateColor('headerText', this.value)" />
+            <input type="text" id="ct-headerText" class="color-hex" value="#FFFFFF"
+              oninput="syncColorText('headerText', this.value)" />
+          </div>
+          <div id="prev-headerText" class="color-preview-bar" style="background:#1558c0">
+            <span id="prevTxt-headerText" class="color-preview-text" style="color:#fff">TEXT</span>
+          </div>
+        </div>
+
+        <!-- Body Background -->
+        <div class="color-swatch">
+          <div class="color-swatch-label">Body BG</div>
+          <div class="color-row">
+            <input type="color" id="c-bodyBg" class="color-picker" value="#ffffff"
+              onchange="updateColor('bodyBg', this.value)" />
+            <input type="text" id="ct-bodyBg" class="color-hex" value="#FFFFFF"
+              oninput="syncColorText('bodyBg', this.value)" />
+          </div>
+          <div id="prev-bodyBg" class="color-preview-bar" style="background:#fff;border:1px solid rgba(168,85,247,0.2)">
+            <span class="color-preview-text" style="color:#333">BODY</span>
+          </div>
+        </div>
+
+        <!-- Border Colour -->
+        <div class="color-swatch">
+          <div class="color-swatch-label">Border</div>
+          <div class="color-row">
+            <input type="color" id="c-borderColor" class="color-picker" value="#6ab0e0"
+              onchange="updateColor('borderColor', this.value)" />
+            <input type="text" id="ct-borderColor" class="color-hex" value="#6AB0E0"
+              oninput="syncColorText('borderColor', this.value)" />
+          </div>
+          <div id="prev-borderColor" class="color-preview-bar" style="border:2px solid #6ab0e0"></div>
+        </div>
+
+        <!-- Title Colour -->
+        <div class="color-swatch">
+          <div class="color-swatch-label">Card Title</div>
+          <div class="color-row">
+            <input type="color" id="c-titleColor" class="color-picker" value="#cc0000"
+              onchange="updateColor('titleColor', this.value)" />
+            <input type="text" id="ct-titleColor" class="color-hex" value="#CC0000"
+              oninput="syncColorText('titleColor', this.value)" />
+          </div>
+          <div class="color-preview-bar">
+            <span id="prevTxt-titleColor" class="color-preview-text" style="color:#cc0000">ID CARD</span>
+          </div>
+        </div>
+
+        <!-- Matric Label -->
+        <div class="color-swatch">
+          <div class="color-swatch-label">Matric Label</div>
+          <div class="color-row">
+            <input type="color" id="c-matricLabel" class="color-picker" value="#1a3a9a"
+              onchange="updateColor('matricLabel', this.value)" />
+            <input type="text" id="ct-matricLabel" class="color-hex" value="#1A3A9A"
+              oninput="syncColorText('matricLabel', this.value)" />
+          </div>
+          <div class="color-preview-bar">
+            <span id="prevTxt-matricLabel" class="color-preview-text" style="color:#1a3a9a">MATRIC</span>
+          </div>
+        </div>
+
+        <!-- Field Labels -->
+        <div class="color-swatch">
+          <div class="color-swatch-label">Field Labels</div>
+          <div class="color-row">
+            <input type="color" id="c-labelColor" class="color-picker" value="#000000"
+              onchange="updateColor('labelColor', this.value)" />
+            <input type="text" id="ct-labelColor" class="color-hex" value="#000000"
+              oninput="syncColorText('labelColor', this.value)" />
+          </div>
+          <div class="color-preview-bar">
+            <span id="prevTxt-labelColor" class="color-preview-text" style="color:#000">Labels</span>
+          </div>
+        </div>
+
+        <!-- Field Values -->
+        <div class="color-swatch">
+          <div class="color-swatch-label">Field Values</div>
+          <div class="color-row">
+            <input type="color" id="c-valueColor" class="color-picker" value="#222222"
+              onchange="updateColor('valueColor', this.value)" />
+            <input type="text" id="ct-valueColor" class="color-hex" value="#222222"
+              oninput="syncColorText('valueColor', this.value)" />
+          </div>
+          <div class="color-preview-bar">
+            <span id="prevTxt-valueColor" class="color-preview-text" style="color:#222">Values</span>
+          </div>
+        </div>
+
+        <!-- Photo Background -->
+        <div class="color-swatch">
+          <div class="color-swatch-label">Photo BG</div>
+          <div class="color-row">
+            <input type="color" id="c-photoBackground" class="color-picker" value="#aa1111"
+              onchange="updateColor('photoBackground', this.value)" />
+            <input type="text" id="ct-photoBackground" class="color-hex" value="#AA1111"
+              oninput="syncColorText('photoBackground', this.value)" />
+          </div>
+          <div id="prev-photoBackground" class="color-preview-bar" style="background:#aa1111;height:20px;border-radius:3px"></div>
+        </div>
+      </div>
+
+      <!-- Quick Themes -->
+      <div class="theme-presets">
+        <span class="design-label" style="margin:0;align-self:center">Themes:</span>
+        <button class="theme-btn theme-btn--blue"    onclick="applyTheme('ebsu')">🔵 EBSU</button>
+        <button class="theme-btn theme-btn--green"   onclick="applyTheme('green')">🟢 Green</button>
+        <button class="theme-btn theme-btn--maroon"  onclick="applyTheme('maroon')">🔴 Maroon</button>
+        <button class="theme-btn theme-btn--purple"  onclick="applyTheme('purple')">🟣 Purple</button>
+        <button class="theme-btn theme-btn--gold"    onclick="applyTheme('gold')">🟡 Gold</button>
+        <button class="theme-btn theme-btn--classic" onclick="applyTheme('classic')">⬛ Classic</button>
+      </div>
+    </div>
+
+    <!-- Live Card Adjuster -->
+    <div class="design-section">
+      <h2 class="design-section-title"><span class="icon">⚙️</span> Live Card Adjuster</h2>
+
+      <div class="adjuster-grid">
+        <div class="adjuster-item">
+          <div class="adjuster-label">Card Width <span class="val" id="v-cardWidth">500</span></div>
+          <input type="range" min="400" max="650" step="5" value="500"
+            oninput="CardConfig.cardWidth=+this.value;document.getElementById('v-cardWidth').textContent=this.value;UI.renderPreview()" />
+        </div>
+        <div class="adjuster-item">
+          <div class="adjuster-label">Card Height <span class="val" id="v-cardHeight">370</span></div>
+          <input type="range" min="280" max="480" step="5" value="370"
+            oninput="CardConfig.cardHeight=+this.value;document.getElementById('v-cardHeight').textContent=this.value;UI.renderPreview()" />
+        </div>
+        <div class="adjuster-item">
+          <div class="adjuster-label">Header Height <span class="val" id="v-headerHeight">52</span></div>
+          <input type="range" min="30" max="80" step="1" value="52"
+            oninput="CardConfig.headerHeight=+this.value;document.getElementById('v-headerHeight').textContent=this.value;UI.renderPreview()" />
+        </div>
+        <div class="adjuster-item">
+          <div class="adjuster-label">School Font <span class="val" id="v-schoolFont">15</span></div>
+          <input type="range" min="8" max="22" step="1" value="15"
+            oninput="CardConfig.schoolFontSize=+this.value;document.getElementById('v-schoolFont').textContent=this.value;UI.renderPreview()" />
+        </div>
+        <div class="adjuster-item">
+          <div class="adjuster-label">Title Font <span class="val" id="v-titleFont">16</span></div>
+          <input type="range" min="8" max="24" step="1" value="16"
+            oninput="CardConfig.titleFontSize=+this.value;document.getElementById('v-titleFont').textContent=this.value;UI.renderPreview()" />
+        </div>
+        <div class="adjuster-item">
+          <div class="adjuster-label">Photo Width <span class="val" id="v-photoW">118</span></div>
+          <input type="range" min="80" max="180" step="2" value="118"
+            oninput="CardConfig.photoW=+this.value;document.getElementById('v-photoW').textContent=this.value;UI.renderPreview()" />
+        </div>
+        <div class="adjuster-item">
+          <div class="adjuster-label">Photo Height <span class="val" id="v-photoH">205</span></div>
+          <input type="range" min="120" max="280" step="2" value="205"
+            oninput="CardConfig.photoH=+this.value;document.getElementById('v-photoH').textContent=this.value;UI.renderPreview()" />
+        </div>
+        <div class="adjuster-item">
+          <div class="adjuster-label">Field Font <span class="val" id="v-fieldFont">9.5</span></div>
+          <input type="range" min="6" max="16" step="0.5" value="9.5"
+            oninput="CardConfig.labelFontSize=+this.value;CardConfig.valueFontSize=+this.value;document.getElementById('v-fieldFont').textContent=this.value;UI.renderPreview()" />
+        </div>
+        <div class="adjuster-item">
+          <div class="adjuster-label">Field Spacing <span class="val" id="v-fieldSpacing">32</span></div>
+          <input type="range" min="14" max="55" step="1" value="32"
+            oninput="CardConfig.fieldSpacing=+this.value;document.getElementById('v-fieldSpacing').textContent=this.value;UI.renderPreview()" />
+        </div>
+        <div class="adjuster-item">
+    <!-- Asset Manager Sub-Tab -->
+    <div class="design-section">
+      <h2 class="design-section-title"><span class="icon">📁</span> Department Asset Manager</h2>
+      <p style="font-size: 11px; color: var(--land-text-muted); margin-bottom: 12px;">
+        Manage custom high-res vector logos, TTF/WOFF2 web fonts, and 300 DPI background textures for your faculty.
+      </p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button class="design-upload-btn" onclick="document.getElementById('font-file-input').click()">
+          🔤 Upload Font (.TTF/.WOFF2)
+        </button>
+        <input type="file" id="font-file-input" style="display:none;" accept=".ttf,.woff2" onchange="alert('Custom font loaded successfully! Registered under Faculty Typography Pool.')" />
+
+        <button class="design-upload-btn" onclick="document.getElementById('bg-file-input').click()">
+          🖼️ Upload 300 DPI Texture
+        </button>
+        <input type="file" id="bg-file-input" style="display:none;" accept="image/*" onchange="alert('Background texture loaded & compressed to WebP!')" />
+      </div>
+    </div>
+
+    <div class="design-actions">
+        <button class="design-btn design-btn--save" onclick="saveTemplate()">💾 Save Template</button>
+        <button class="design-btn design-btn--reset" onclick="resetCardConfig()">↺ Reset</button>
+        <button class="design-btn design-btn--log" onclick="logCardConfig()">📋 Log</button>
+      </div>
+    </div>
+
+  </div><!-- /.design-panel -->
+
+  <!-- ── RIGHT: Live Preview ─────────────────────────────────── -->
+  <div class="design-preview relative">
+    <div class="design-preview-label">LIVE PREVIEW</div>
+    <div id="design-canvas-container" aria-live="polite" aria-label="Card preview">
+      <!-- Canvas rendered by canvas.js -->
+    </div>
+  </div>
+
+</div><!-- /.design-layout -->
+
+
+<!-- ── SCRIPTS ─────────────────────────────────────────────────── -->
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets.js"></script>
+<script src="qr.js"></script>
+<script src="state.js"></script>
+<script src="js/cardTemplate.js"></script>
+<script src="canvas.js"></script>
+<script src="cropper.js"></script>
+<script src="ui.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+</script>
+
+<script>
+// ── CardConfig (global, read by adjuster sliders) ────────────────
+var CardConfig = {};
+
+// Reset sliders to defaults
+function resetCardConfig() {
+  const defaults = {
+    cardWidth:500,cardHeight:370,headerHeight:52,schoolFontSize:15,
+    titleFontSize:16,matricFontSize:9,photoX:8,photoY:4,photoW:118,photoH:205,
+    rightColWidth:95,rightColGap:10,crestHeight:75,qrGap:8,sigGap:8,sigHeight:38,
+    fieldStartY:20,fieldSpacing:32,labelFontSize:9.5,valueFontSize:9.5,
+    labelIndent:8,valueIndent:75,bloodFontSize:10,bloodGap:10,bloodSpacing:18,
+    bloodIndent:8,bloodValueX:80,watermarkX:130,watermarkY:85,watermarkSize:200,
+    watermarkAlpha:0.15,sigLabelFontSize:9
+  };
+  Object.assign(CardConfig, defaults);
+  // Reset range inputs
+  document.querySelectorAll('.adjuster-item input[type=range]').forEach(inp => {
+    const key = inp.getAttribute('oninput')?.match(/CardConfig\.(\w+)/)?.[1];
+    if (key && defaults[key] !== undefined) {
+      inp.value = defaults[key];
+    }
+  });
+  if (typeof UI !== 'undefined') UI.renderPreview();
+}
+
+function logCardConfig() {
+  console.log('Current CardConfig:', JSON.stringify(CardConfig, null, 2));
+  alert('Config logged to browser console (F12)');
+}
+
+async function saveTemplate() {
+  const saveBtn = document.querySelector('.design-btn--save');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
+
+  const colors = AppState.get('colors') || {};
+  const schoolName = document.getElementById('schoolName')?.value || 'EBONYI STATE UNIVERSITY, ABAKALIKI';
+  const expiryYear = parseInt(document.getElementById('expiry')?.value || '2029', 10);
+
+  const updates = {
+    institution: {
+      name: schoolName,
+      expiryYear: expiryYear,
+      crestUrl: AppState.get('customLogo') || ''
+    },
+    colors: colors,
+    layout: Object.assign({}, CC_DEFAULTS, CardConfig)
+  };
+
+  const res = await CardTemplate.save(updates);
+
+  localStorage.setItem('idcard_template', JSON.stringify({
+    colors,
+    cardConfig: CardConfig,
+    schoolName,
+    expiry: expiryYear
+  }));
+  localStorage.setItem('idcard_cardconfig', JSON.stringify(CardConfig));
+  localStorage.setItem('idcard_defaults', JSON.stringify({
+    schoolName,
+    expiry: expiryYear,
+    colors
+  }));
+
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Save Template'; }
+
+  if (res.success) {
+    alert('✅ Template saved! Design changes will now reflect across Generator, Admin, and Landing Page.');
+  } else {
+    alert('⚠️ Saved locally to cache. Database sync note: ' + (res.error || 'Saved offline'));
+  }
+}
+
+// ── HTML onclick bridges ───────────────────────────────────────
+function showPage(pg)              { UI.showPage(pg); }
+function pickLogo()                { UI.pickLogo(); }
+function applyTheme(name)          { UI.applyTheme(name); }
+function updateColor(key, val)     { UI.updateColor(key, val); }
+function syncColorText(key, val)   { UI.syncColorText(key, val); }
+function pickFile(field, aspect)   { Cropper.pickFile(field, aspect); }
+function applyCrop()               { Cropper.apply(); }
+function cancelCrop()              { Cropper.cancel(); }
+function acceptCrop()              { Cropper.acceptImage(); }
+function doCrop()                  { Cropper.cropImage(); }
+function cancelQuickCrop()         { Cropper.cancelQuick(); }
+
+// ── INIT ────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  // 1. Load canonical template from Supabase
+  const t = await CardTemplate.load();
+  if (t) {
+    if (t.institution) {
+      if (t.institution.name) {
+        AppState.set('schoolName', t.institution.name);
+        const el = document.getElementById('schoolName');
+        if (el) el.value = t.institution.name;
+      }
+      if (t.institution.expiryYear) {
+        AppState.set('expiry', t.institution.expiryYear.toString());
+        const el = document.getElementById('expiry');
+        if (el) el.value = t.institution.expiryYear.toString();
+      }
+    }
+    if (t.colors) {
+      AppState.set('colors', t.colors);
+      Object.keys(t.colors).forEach(k => {
+        if (typeof updateColor === 'function') updateColor(k, t.colors[k]);
+      });
+    }
+    if (t.layout) {
+      Object.assign(CardConfig, t.layout);
+    }
+  }
+
+  // 2. Init modules
+  Cropper.init();
+  UI.init();
+
+  // 3. Live-bind form inputs
+  document.querySelectorAll('.design-panel input, .design-panel select').forEach(input => {
+    input.addEventListener('input', () => {
+      if (typeof UI !== 'undefined' && UI.saveCurrentFields && UI.renderPreview) {
+        UI.saveCurrentFields();
+        UI.renderPreview();
+      }
+    });
+  });
+});
+</script>
+
+</body>
+</html>

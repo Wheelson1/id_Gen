@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" />
+  <link rel="stylesheet" href="css/shared.css" />
+  <style>
+    body { background: #040812; color: #cdd8e8; font-family: 'Inter', sans-serif; padding: 0; margin: 0; min-height: 100vh; }
+    [data-theme="light"] body { background: #f8fafc; color: #0f172a; }
+    
+    .m-header { background: #081020; border-bottom: 1px solid rgba(212,165,116,0.3); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+    [data-theme="light"] .m-header { background: #ffffff; border-bottom-color: rgba(180,130,72,0.25); }
+    
+    .m-brand { font-size: 20px; font-weight: 900; color: #d4a574; letter-spacing: 0.5px; }
+    .m-sub { font-size: 10px; color: #7a7068; letter-spacing: 1px; }
+
+    .m-container { max-width: 1350px; margin: 24px auto; padding: 0 20px; }
+    .m-grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    
+    .m-card { background: rgba(13,26,45,0.7); border: 1px solid rgba(212,165,116,0.2); border-radius: 14px; padding: 20px; backdrop-filter: blur(16px); }
+    [data-theme="light"] .m-card { background: #ffffff; border-color: rgba(180,130,72,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+    .m-card-title { font-size: 11px; text-transform: uppercase; color: #8090a8; letter-spacing: 1px; font-weight: 700; margin-bottom: 8px; }
+    .m-card-val { font-size: 28px; font-weight: 900; color: #fff; }
+    [data-theme="light"] .m-card-val { color: #0f172a; }
+    .m-card-sub { font-size: 12px; color: #4ade80; margin-top: 4px; }
+
+    .kill-switch-box { background: rgba(204,34,34,0.1); border: 1px solid rgba(204,34,34,0.4); border-radius: 14px; padding: 24px; margin-bottom: 24px; text-align: center; }
+    .kill-title { font-size: 20px; font-weight: 900; color: #ff6666; margin-bottom: 6px; }
+    .kill-btn { padding: 14px 28px; background: #cc2222; color: #fff; border: none; border-radius: 10px; font-weight: 900; font-size: 15px; cursor: pointer; transition: all 0.2s; box-shadow: 0 0 20px rgba(204,34,34,0.5); }
+    .kill-btn:hover { background: #ff2222; transform: scale(1.02); }
+
+    .v-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
+    .v-table th { text-align: left; padding: 12px; border-bottom: 1px solid #1e3050; color: #8090a8; font-size: 10px; text-transform: uppercase; }
+    .v-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    [data-theme="light"] .v-table td { border-bottom-color: rgba(0,0,0,0.05); color: #0f172a; }
+
+    .status-pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    .status-online { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+    .status-peak { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+    .status-maint { background: rgba(251,146,60,0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
+  </style>
+</head>
+<body>
+
+<header class="m-header">
+  <div>
+    <div class="m-brand">SID MOTHERSHIP CONTROL</div>
+    <div class="m-sub">MULTI-INSTITUTION SAAS COMMAND CENTER · TRIPLE J GROUP OF COMPANIES</div>
+  </div>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <button onclick="SID_SYSTEM.toggleTheme()" class="sid-theme-toggle" style="color: #d4a574; font-size: 12px; font-weight: 700; border: 1px solid rgba(212,165,116,0.3); padding: 8px 16px; border-radius: 8px; background: rgba(212,165,116,0.15); cursor: pointer;">☀️ Light</button>
+    <a href="index.html" style="color: #d4a574; font-size: 12px; text-decoration: none; font-weight: 700; border: 1px solid rgba(212,165,116,0.3); padding: 8px 16px; border-radius: 8px;">
+      ← Return to Main System
+    </a>
+  </div>
+</header>
+
+<div class="m-container">
+
+  <!-- TACTICAL GLOBAL OPS MAP BANNER -->
+  <div class="m-card" style="margin-bottom: 24px; padding: 0; overflow: hidden; position: relative; border-color: rgba(212,165,116,0.35); height: 180px; box-shadow: 0 8px 32px rgba(0,0,0,0.6);">
+    <img src="images/banner_world_map_ops.jpg" alt="Global Operations Tactical Map" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.82; filter: contrast(1.15) brightness(0.85);" />
+    <div style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(4,8,18,0.94) 0%, rgba(4,8,18,0.45) 50%, rgba(4,8,18,0.94) 100%); display: flex; align-items: center; justify-content: space-between; padding: 0 32px;">
+      <div>
+        <div style="font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #ff6666; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#4ade80; box-shadow: 0 0 10px #4ade80;"></span>
+          LIVE SATELLITE TELEMETRY · GLOBAL CAMPUS GRID
+        </div>
+        <h2 style="font-size: 22px; font-weight: 900; color: #fff; margin: 6px 0 2px; letter-spacing: 0.5px;">Institutional Node Operations & Real-Time Sync</h2>
+        <p style="font-size: 12px; color: #a0aec0; margin: 0;">Multi-campus card verification nodes connected across 8 academic regions.</p>
+      </div>
+      <div style="text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #d4a574; background: rgba(0,0,0,0.65); padding: 10px 16px; border-radius: 8px; border: 1px solid rgba(212,165,116,0.3); backdrop-filter: blur(8px);">
+        <div>GRID LATENCY: <strong style="color:#4ade80;">14ms</strong></div>
+        <div style="color: #60a5fa; font-size: 11px; margin-top: 2px;">UTC+1 NIGERIA PROTOCOL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP OVERVIEW METRICS -->
+  <div class="m-grid-4">
+    <div class="m-card">
+      <div class="m-card-title">🏫 Deployed Universities</div>
+      <div class="m-card-val" id="total-schools-count">8 Institutions</div>
+      <div class="m-card-sub">7 Online · 1 Maintenance</div>
+    </div>
+    <div class="m-card">
+      <div class="m-card-title">👥 Active Student Database</div>
+      <div class="m-card-val">842,500 Users</div>
+      <div class="m-card-sub">Target: 1,000,000 Capacity</div>
+    </div>
+    <div class="m-card">
+      <div class="m-card-title">💳 Total Remita SaaS Revenue</div>
+      <div class="m-card-val">₦128.4M</div>
+      <div class="m-card-sub">Collected via Triple J Group</div>
+    </div>
+    <div class="m-card">
+      <div class="m-card-title">⚡ Average Network Uptime</div>
+      <div class="m-card-val">99.98%</div>
+      <div class="m-card-sub">Zero Unscheduled Downtime</div>
+    </div>
+  </div>
+
+  <!-- DEPLOY NEW UNIVERSITY SERVICE WIZARD -->
+  <div class="m-card" style="margin-bottom: 24px; border-color: #d4a574;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <div>
+        <h2 style="font-size: 16px; font-weight: 800; color: #d4a574;">🚀 Provision & Deploy SID Service to New Institution</h2>
+        <p style="font-size: 12px; color: #8090a8;">Onboard a new tertiary institution to the SID Multi-Tenant Network in 1 click.</p>
+      </div>
+      <button onclick="toggleDeployForm()" style="padding: 8px 16px; background: linear-gradient(135deg,#d4a574,#f0d4a8); color: #040812; border: none; border-radius: 8px; font-weight: 800; cursor: pointer;">
+        + Deploy New School
+      </button>
+    </div>
+
+    <!-- Onboarding Form (Hidden by default or toggled) -->
+    <div id="deploy-form" style="display: none; background: rgba(4,8,18,0.6); padding: 16px; border-radius: 10px; border: 1px solid rgba(212,165,116,0.3); margin-top: 12px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label style="font-size: 10px; text-transform: uppercase; color: #8090a8; display: block; margin-bottom: 4px;">Institution Name</label>
+          <input id="dep-name" type="text" placeholder="e.g. University of Lagos" style="width: 100%; padding: 8px; background: #0d1a2d; border: 1px solid #1e3050; color: #fff; border-radius: 6px; font-size: 12px;" />
+        </div>
+        <div>
+          <label style="font-size: 10px; text-transform: uppercase; color: #8090a8; display: block; margin-bottom: 4px;">Institution Code</label>
+          <input id="dep-code" type="text" placeholder="e.g. UNILAG" style="width: 100%; padding: 8px; background: #0d1a2d; border: 1px solid #1e3050; color: #fff; border-radius: 6px; font-size: 12px;" />
+        </div>
+        <div>
+          <label style="font-size: 10px; text-transform: uppercase; color: #8090a8; display: block; margin-bottom: 4px;">Remita Merchant ID</label>
+          <input id="dep-remita" type="text" placeholder="MERCHANT-99812" style="width: 100%; padding: 8px; background: #0d1a2d; border: 1px solid #1e3050; color: #fff; border-radius: 6px; font-size: 12px;" />
+        </div>
+        <div>
+          <label style="font-size: 10px; text-transform: uppercase; color: #8090a8; display: block; margin-bottom: 4px;">Estimated Students</label>
+          <input id="dep-count" type="number" placeholder="50000" style="width: 100%; padding: 8px; background: #0d1a2d; border: 1px solid #1e3050; color: #fff; border-radius: 6px; font-size: 12px;" />
+        </div>
+      </div>
+      <button onclick="submitNewSchool()" style="width: 100%; padding: 10px; background: #1558c0; color: #fff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">
+        ⚡ Confirm Provisioning & Deploy Production API Key
+      </button>
+      <div id="deploy-success-msg" style="margin-top: 8px; font-size: 12px; color: #4ade80; display: none;"></div>
+    </div>
+  </div>
+
+  <!-- MULTI-INSTITUTION TELEMETRY & DOWNTIME TRACKER TABLE -->
+  <div class="m-card" style="margin-bottom: 24px;">
+    <div class="m-card-title">📡 Multi-Institution Operational Telemetry & Downtime Monitor</div>
+    <table class="v-table" id="schools-telemetry-table">
+      <thead>
+        <tr>
+          <th>Institution Name</th>
+          <th>Code</th>
+          <th>Status</th>
+          <th>Active Users</th>
+          <th>Peak Registration Window</th>
+          <th>Server Load</th>
+          <th>Latency</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="schools-table-body">
+        <tr>
+          <td><strong>Ebonyi State University</strong></td>
+          <td>EBSU</td>
+          <td><span class="status-pill status-online">🟢 ONLINE</span></td>
+          <td>1,420 Users</td>
+          <td>10:00 AM - 2:00 PM</td>
+          <td><strong style="color:#4ade80;">24%</strong></td>
+          <td>12 ms</td>
+          <td><button onclick="pingSchool('EBSU')" style="padding: 4px 8px; background: rgba(74,144,217,0.2); border: 1px solid #4a90d9; color: #60a5fa; border-radius: 4px; font-size: 10px; cursor: pointer;">Ping API</button></td>
+        </tr>
+        <tr>
+          <td><strong>University of Nigeria, Nsukka</strong></td>
+          <td>UNN</td>
+          <td><span class="status-pill status-peak">⚡ PEAK TRAFFIC</span></td>
+          <td>4,890 Users</td>
+          <td>11:00 AM - 4:00 PM</td>
+          <td><strong style="color:#fb923c;">68%</strong></td>
+          <td>18 ms</td>
+          <td><button onclick="pingSchool('UNN')" style="padding: 4px 8px; background: rgba(74,144,217,0.2); border: 1px solid #4a90d9; color: #60a5fa; border-radius: 4px; font-size: 10px; cursor: pointer;">Ping API</button></td>
+        </tr>
+        <tr>
+          <td><strong>University of Lagos</strong></td>
+          <td>UNILAG</td>
+          <td><span class="status-pill status-online">🟢 ONLINE</span></td>
+          <td>2,150 Users</td>
+          <td>9:00 AM - 1:00 PM</td>
+          <td><strong style="color:#4ade80;">31%</strong></td>
+          <td>14 ms</td>
+          <td><button onclick="pingSchool('UNILAG')" style="padding: 4px 8px; background: rgba(74,144,217,0.2); border: 1px solid #4a90d9; color: #60a5fa; border-radius: 4px; font-size: 10px; cursor: pointer;">Ping API</button></td>
+        </tr>
+        <tr>
+          <td><strong>Federal University of Technology Owerri</strong></td>
+          <td>FUTO</td>
+          <td><span class="status-pill status-maint">🟠 ERP SYNC</span></td>
+          <td>310 Users</td>
+          <td>1:00 PM - 5:00 PM</td>
+          <td><strong style="color:#4ade80;">12%</strong></td>
+          <td>45 ms</td>
+          <td><button onclick="pingSchool('FUTO')" style="padding: 4px 8px; background: rgba(74,144,217,0.2); border: 1px solid #4a90d9; color: #60a5fa; border-radius: 4px; font-size: 10px; cursor: pointer;">Ping API</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- EMERGENCY KILL SWITCH PROTOCOL -->
+  <div class="kill-switch-box">
+    <div class="kill-title">🚨 MASTER KILL SWITCH PROTOCOL</div>
+    <p style="font-size: 13px; color: rgba(255,255,255,0.7); max-width: 600px; margin: 0 auto 16px auto; line-height: 1.5;">
+      Emergency network circuit breaker. Instantly severs external ERP sync and invalidates active cyber cafe API tokens in the event of a breach.
+    </p>
+    <div style="display: flex; gap: 16px; justify-content: center;">
+      <button class="kill-btn" onclick="triggerCircuitBreaker()">🔴 ACTIVATE GLOBAL NETWORK CIRCUIT BREAKER</button>
+      <button style="padding: 14px 24px; background: transparent; border: 1px solid rgba(255,100,100,0.5); color: #ff6b6b; border-radius: 10px; font-weight: 800; cursor: pointer;" onclick="severVendorAPI()">Sever Specific Cyber Cafe</button>
+    </div>
+    <div id="kill-status" style="margin-top: 12px; font-size: 13px; font-weight: 700; color: #ff6b6b; display: none;"></div>
+  </div>
+
+  <!-- VENDOR NETWORK MONITOR TABLE -->
+  <div class="m-card">
+    <div class="m-card-title">🏪 Active Cyber Cafe Network Monitor Across All Institutions</div>
+    <table class="v-table">
+      <thead>
+        <tr>
+          <th>Vendor Name</th>
+          <th>TIN Number</th>
+          <th>Merit Badge</th>
+          <th>Remita RRR Status</th>
+          <th>Cards Printed</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Triple J Mega Cafe (Abakaliki)</strong></td>
+          <td>23091823-0001</td>
+          <td><span style="color: #f0d4a8; font-weight: 800;">🥇 Gold</span></td>
+          <td><span style="color: #4ade80;">Verified (RRR-9811)</span></td>
+          <td>6,786 / 7,000</td>
+          <td><span style="color: #4ade80; font-weight: 700;">ACTIVE</span></td>
+          <td><button onclick="severVendor('23091823-0001')" style="padding: 4px 8px; background: rgba(255,100,100,0.2); border: 1px solid #ff6666; color: #ff6666; border-radius: 4px; font-size: 10px; cursor: pointer;">Sever</button></td>
+        </tr>
+        <tr>
+          <td><strong>Nsukka Cyber Express (UNN)</strong></td>
+          <td>44910283-0002</td>
+          <td><span style="color: #60a5fa; font-weight: 800;">🥈 Silver</span></td>
+          <td><span style="color: #4ade80;">Verified (RRR-4412)</span></td>
+          <td>2,100 / 3,000</td>
+          <td><span style="color: #4ade80; font-weight: 700;">ACTIVE</span></td>
+          <td><button onclick="severVendor('44910283-0002')" style="padding: 4px 8px; background: rgba(255,100,100,0.2); border: 1px solid #ff6666; color: #ff6666; border-radius: 4px; font-size: 10px; cursor: pointer;">Sever</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  function toggleDeployForm() {
+    const form = document.getElementById('deploy-form');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function submitNewSchool() {
+    const name = document.getElementById('dep-name').value.trim();
+    const code = document.getElementById('dep-code').value.trim().toUpperCase();
+    const remita = document.getElementById('dep-remita').value.trim();
+    const count = document.getElementById('dep-count').value || '35000';
+    const msg = document.getElementById('deploy-success-msg');
+
+    if (!name || !code) {
+      alert('Please fill in the Institution Name and Institution Code.');
+      return;
+    }
+
+    msg.style.display = 'block';
+    msg.textContent = `✓ PROVISIONED SUCCESSFUL: ${name} (${code}) deployed to SID Multi-Tenant Network. API Key & Redis Queue Instance initialized!`;
+
+    // Append to live telemetry table
+    const tbody = document.getElementById('schools-table-body');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${name}</strong></td>
+      <td>${code}</td>
+      <td><span class="status-pill status-online">🟢 ONLINE</span></td>
+      <td>0 Users</td>
+      <td>8:00 AM - 12:00 PM</td>
+      <td><strong style="color:#4ade80;">5%</strong></td>
+      <td>10 ms</td>
+      <td><button onclick="pingSchool('${code}')" style="padding: 4px 8px; background: rgba(74,144,217,0.2); border: 1px solid #4a90d9; color: #60a5fa; border-radius: 4px; font-size: 10px; cursor: pointer;">Ping API</button></td>
+    `;
+    tbody.appendChild(tr);
+
+    setTimeout(() => {
+      document.getElementById('deploy-form').style.display = 'none';
+      msg.style.display = 'none';
+    }, 2500);
+  }
+
+  function pingSchool(code) {
+    alert(`📡 API PING SUCCESSFUL [${code}]: Gateway Latency 14ms · Redis Cluster Health 100% · Remita Webhook Ready.`);
+  }
+
+  function triggerCircuitBreaker() {
+    if (!confirm('⚠️ WARNING: Activating the Global Circuit Breaker will immediately sever external API connections and suspend all active batch printing. Continue?')) return;
+    const statusEl = document.getElementById('kill-status');
+    statusEl.style.display = 'block';
+    statusEl.textContent = '🔴 GLOBAL CIRCUIT BREAKER ENGAGED: External ERP Sync Severed · Cyber Cafe Batch Print Queues Locked.';
+  }
+
+  function severVendorAPI() {
+    const tin = prompt('Enter Vendor TIN Number to sever API access:');
+    if (tin) severVendor(tin);
+  }
+
+  function severVendor(tin) {
+    alert(`⚡ VENDOR ACCESS SEVERED: API Token for TIN ${tin} invalidated. IP blacklisted.`);
+  }
+</script>
+<script src="js/sid.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
+

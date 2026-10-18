@@ -1,0 +1,542 @@
+/* ═══════════════════════════════════════════════════════════════
+   HUB.CSS — Hub/Router Page Theme
+   Glassmorphism · Frosted cards · Animated gradients · Cyan
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --hub-bg:          #0a0f1a;
+  --hub-surface:     rgba(255,255,255,0.04);
+  --hub-frost:       rgba(255,255,255,0.07);
+  --hub-frost-border:rgba(255,255,255,0.12);
+  --hub-cyan:        #22d3ee;
+  --hub-cyan-dim:    #0891b2;
+  --hub-teal:        #14b8a6;
+  --hub-text:        #e0f2fe;
+  --hub-text-muted:  #64748b;
+  --hub-purple:      #8b5cf6;
+  --hub-blue:        #3b82f6;
+  --hub-green:       #22c55e;
+}
+
+body {
+  background: var(--hub-bg);
+  color: var(--hub-text);
+  min-height: 100vh;
+}
+
+
+/* ── ANIMATED GRADIENT BACKGROUND ──────────────────────────────── */
+.hub-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hub-bg::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(34,211,238,0.08) 0deg,
+    rgba(139,92,246,0.06) 90deg,
+    rgba(20,184,166,0.05) 180deg,
+    rgba(59,130,246,0.06) 270deg,
+    rgba(34,211,238,0.08) 360deg
+  );
+  animation: bgRotate 30s linear infinite;
+}
+
+@keyframes bgRotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Floating glass orbs */
+.hub-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(34,211,238,0.06);
+  border: 1px solid rgba(34,211,238,0.08);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+}
+
+.hub-orb-1 {
+  width: 400px; height: 400px;
+  top: -100px; right: -100px;
+  animation: orbFloat 15s ease-in-out infinite;
+}
+
+.hub-orb-2 {
+  width: 250px; height: 250px;
+  bottom: -50px; left: -50px;
+  animation: orbFloat 12s ease-in-out infinite reverse;
+}
+
+.hub-orb-3 {
+  width: 180px; height: 180px;
+  top: 40%; left: 60%;
+  animation: orbFloat 10s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%      { transform: translate(30px, -40px) scale(1.05); }
+  50%      { transform: translate(-20px, 30px) scale(0.95); }
+  75%      { transform: translate(25px, 15px) scale(1.02); }
+}
+
+
+/* ── NAVBAR ────────────────────────────────────────────────────── */
+.hub-nav {
+  position: relative;
+  z-index: 10;
+  padding: var(--sp-4) var(--sp-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(10,15,26,0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--hub-frost-border);
+}
+
+.hub-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.hub-nav-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  object-fit: contain;
+}
+
+.hub-nav-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--hub-cyan);
+}
+
+.hub-nav-right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.hub-user-badge {
+  display: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--hub-cyan);
+  background: rgba(34,211,238,0.1);
+  border: 1px solid rgba(34,211,238,0.2);
+  border-radius: var(--r-full);
+  padding: var(--sp-1) var(--sp-3);
+}
+
+.hub-nav-link {
+  font-size: 13px;
+  color: var(--hub-text-muted);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  transition: all var(--t-fast);
+}
+
+.hub-nav-link:hover {
+  color: var(--hub-text);
+  background: var(--hub-frost);
+}
+
+.hub-logout-btn {
+  font-size: 12px;
+  color: var(--hub-text-muted);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--r-md);
+  transition: all var(--t-fast);
+  display: none;
+}
+
+.hub-logout-btn:hover {
+  color: #ef4444;
+  border-color: rgba(239,68,68,0.3);
+  background: rgba(239,68,68,0.08);
+}
+
+
+/* ── MAIN CONTENT ──────────────────────────────────────────────── */
+.hub-content {
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-10) var(--sp-6);
+}
+
+.hub-header {
+  text-align: center;
+  margin-bottom: var(--sp-12);
+  animation: fadeInUp 0.6s var(--ease-out);
+}
+
+.hub-greeting {
+  font-size: 14px;
+  color: var(--hub-text-muted);
+  margin-bottom: var(--sp-2);
+  letter-spacing: 1px;
+}
+
+.hub-title {
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: var(--sp-3);
+}
+
+.hub-subtitle {
+  font-size: 16px;
+  color: var(--hub-text-muted);
+}
+
+
+/* ── MODULE CARDS (Glass) ──────────────────────────────────────── */
+.hub-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-6);
+  max-width: 1000px;
+  width: 100%;
+}
+
+.hub-card {
+  position: relative;
+  background: var(--hub-frost);
+  border: 1px solid var(--hub-frost-border);
+  border-radius: var(--r-xl);
+  padding: var(--sp-10) var(--sp-6);
+  text-align: center;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: all var(--t-norm) var(--ease-out);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+}
+
+.hub-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-xl);
+  padding: 1px;
+  background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity var(--t-norm);
+}
+
+.hub-card:hover::before {
+  opacity: 1;
+}
+
+.hub-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(255,255,255,0.2);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+/* Card colour accents */
+.hub-card--design:hover {
+  box-shadow: 0 20px 60px rgba(139,92,246,0.15), 0 0 40px rgba(139,92,246,0.1);
+  border-color: rgba(139,92,246,0.3);
+}
+
+.hub-card--generate:hover {
+  box-shadow: 0 20px 60px rgba(59,130,246,0.15), 0 0 40px rgba(59,130,246,0.1);
+  border-color: rgba(59,130,246,0.3);
+}
+
+.hub-card--validate:hover {
+  box-shadow: 0 20px 60px rgba(34,197,94,0.15), 0 0 40px rgba(34,197,94,0.1);
+  border-color: rgba(34,197,94,0.3);
+}
+
+.hub-card-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto var(--sp-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-xl);
+  font-size: 32px;
+  transition: transform var(--t-norm) var(--ease-spring);
+}
+
+.hub-card:hover .hub-card-icon {
+  transform: scale(1.15);
+}
+
+.hub-card--design .hub-card-icon {
+  background: rgba(139,92,246,0.12);
+  border: 1px solid rgba(139,92,246,0.2);
+}
+
+.hub-card--generate .hub-card-icon {
+  background: rgba(59,130,246,0.12);
+  border: 1px solid rgba(59,130,246,0.2);
+}
+
+.hub-card--validate .hub-card-icon {
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.2);
+}
+
+.hub-card-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: var(--sp-3);
+}
+
+.hub-card-desc {
+  font-size: 14px;
+  color: var(--hub-text-muted);
+  line-height: 1.7;
+  margin-bottom: var(--sp-6);
+}
+
+.hub-card-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all var(--t-fast);
+}
+
+.hub-card--design .hub-card-arrow  { color: var(--hub-purple); }
+.hub-card--generate .hub-card-arrow { color: var(--hub-blue); }
+.hub-card--validate .hub-card-arrow { color: var(--hub-green); }
+
+.hub-card:hover .hub-card-arrow {
+  gap: var(--sp-3);
+}
+
+
+/* ── LOGIN OVERLAY ─────────────────────────────────────────────── */
+.hub-login-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10,15,26,0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: var(--sp-5);
+}
+
+.hub-login-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--hub-frost-border);
+  border-radius: var(--r-xl);
+  padding: var(--sp-10) var(--sp-8);
+  width: 100%;
+  max-width: 450px;
+  max-height: 92vh;
+  overflow-y: auto;
+  text-align: center;
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  animation: scaleIn var(--t-norm) var(--ease-spring);
+}
+
+.hub-login-icon {
+  font-size: 48px;
+  margin-bottom: var(--sp-4);
+}
+
+.hub-login-title {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: var(--sp-2);
+}
+
+.hub-login-subtitle {
+  font-size: 13px;
+  color: var(--hub-text-muted);
+  margin-bottom: var(--sp-6);
+  line-height: 1.6;
+}
+
+.hub-login-input {
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--r-md);
+  color: var(--hub-text);
+  font-size: 14px;
+  margin-bottom: var(--sp-3);
+  transition: border-color var(--t-fast);
+}
+
+.hub-login-input::placeholder {
+  color: var(--hub-text-muted);
+}
+
+.hub-login-input:focus {
+  border-color: var(--hub-cyan);
+  box-shadow: 0 0 0 3px rgba(34,211,238,0.1);
+}
+
+.hub-login-error {
+  display: none;
+  color: #f87171;
+  font-size: 12px;
+  margin-bottom: var(--sp-3);
+  text-align: left;
+  line-height: 1.5;
+}
+
+.hub-login-btn {
+  width: 100%;
+  padding: var(--sp-3) var(--sp-6);
+  background: linear-gradient(135deg, var(--hub-cyan-dim), var(--hub-cyan));
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  border-radius: var(--r-md);
+  transition: all var(--t-norm) var(--ease-out);
+  box-shadow: 0 4px 16px rgba(34,211,238,0.25);
+  margin-bottom: var(--sp-4);
+}
+
+.hub-login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(34,211,238,0.35);
+}
+
+.hub-login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.hub-login-links {
+  display: flex;
+  gap: var(--sp-3);
+  justify-content: center;
+  margin-top: var(--sp-4);
+}
+
+.hub-login-links a {
+  font-size: 12px;
+  color: var(--hub-text-muted);
+  transition: color var(--t-fast);
+}
+
+.hub-login-links a:hover { color: var(--hub-cyan); }
+
+
+/* ── GOOGLE LINK OVERLAY ───────────────────────────────────────── */
+.hub-google-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9001;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10,15,26,0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: var(--sp-5);
+}
+
+.hub-google-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--hub-frost-border);
+  border-radius: var(--r-xl);
+  padding: var(--sp-10) var(--sp-8);
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  animation: scaleIn var(--t-norm) var(--ease-spring);
+}
+
+.hub-google-btn {
+  width: 100%;
+  padding: var(--sp-3) var(--sp-6);
+  background: transparent;
+  color: var(--hub-text);
+  border: 1px solid var(--hub-frost-border);
+  border-radius: var(--r-md);
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  transition: all var(--t-fast);
+}
+
+.hub-google-btn:hover {
+  background: var(--hub-frost);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.hub-google-cancel {
+  width: 100%;
+  padding: var(--sp-3);
+  color: #f87171;
+  font-weight: 600;
+  font-size: 13px;
+  margin-top: var(--sp-3);
+  transition: background var(--t-fast);
+  border-radius: var(--r-md);
+}
+
+.hub-google-cancel:hover {
+  background: rgba(248,113,113,0.08);
+}
+
+
+/* ── RESPONSIVE ────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .hub-cards {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+  .hub-card { padding: var(--sp-8) var(--sp-5); }
+}
+
+@media (max-width: 480px) {
+  .hub-login-card,
+  .hub-google-card {
+    padding: var(--sp-8) var(--sp-5);
+  }
+}

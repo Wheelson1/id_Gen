@@ -220,26 +220,104 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
   otpInput.value = '';
 });
 
+// ── 1-CLICK DEMO STUDENT LOGIN ────────────────────────────────
+window.loginAsDemoStudent = function(key) {
+  if (typeof DemoAuthSuite !== 'undefined') {
+    const persona = DemoAuthSuite.getPersona(key);
+    if (!persona) return;
+    DemoAuthSuite.setMockSession(key);
+
+    const gradYear = (typeof ACADEMIC_RULES !== 'undefined')
+      ? ACADEMIC_RULES.calculateGraduationYear(persona.matric || persona.jamb_no, persona.faculty, persona.dept, persona.session)
+      : (persona.expiry || 2029);
+
+    currentStudent = {
+      id: 'demo-student-' + persona.key,
+      name: persona.name,
+      matric: persona.matric,
+      jamb_no: persona.jamb_no,
+      faculty: persona.faculty,
+      dept: persona.dept,
+      level: persona.level,
+      session: persona.session,
+      blood: persona.blood,
+      genotype: persona.genotype,
+      expiry: gradYear,
+      status: persona.status,
+      status_reason: persona.status_reason || null,
+      fees_paid: persona.fees_paid,
+      photo_url: 'images/demo_user_face.jpg',
+      signature_url: 'images/demo_user_sig.jpg'
+    };
+
+    authSec.className = 'auth-section';
+    dashSec.className = 'dashboard-section active-section';
+    document.getElementById('dash-name').textContent = currentStudent.name.split(' ')[0];
+
+    // Status / Fee handling
+    const banner = document.getElementById('fee-banner');
+    if (banner) {
+      if (!currentStudent.fees_paid) {
+        banner.style.display = 'block';
+        banner.style.background = '#fffbeb';
+        banner.style.borderColor = '#f59e0b';
+        banner.style.color = '#b45309';
+        banner.innerHTML = '<strong>⚠️ Tuition Fees Outstanding:</strong> Digital ID download is temporarily locked until full tuition payment is confirmed via Remita / Paystack.';
+      } else if (currentStudent.status === 'revoked') {
+        banner.style.display = 'block';
+        banner.style.background = '#fef2f2';
+        banner.style.borderColor = '#ef4444';
+        banner.style.color = '#b91c1c';
+        banner.innerHTML = `<strong>🚨 CARD REVOKED / REPORTED LOST:</strong> Incident Ref: <code>${currentStudent.status_reason || 'Lost'}</code>. Please visit the ID Card Bureau for a physical replacement.`;
+      } else {
+        banner.style.display = 'none';
+      }
+    }
+
+    renderLiveCard();
+    playSnap();
+    showToast(`Logged in as demo student: ${currentStudent.name}`);
+  }
+};
+
 // ── SESSION & DASHBOARD ────────────────────────────────────────
 
 async function checkSession() {
-  const { data: { session } } = await ebsuSupabase.auth.getSession();
-  if (session) {
+  let hasSession = false;
+  try {
+    const { data: { session } } = await ebsuSupabase.auth.getSession();
+    if (session) hasSession = true;
+  } catch(e) {}
+
+  if (!hasSession) {
+    const mockSession = localStorage.getItem('ebsu_mock_session');
+    const mockStudent = localStorage.getItem('ebsu_active_student');
+    if (mockSession && mockStudent) {
+      hasSession = true;
+    }
+  }
+
+  if (hasSession) {
     authSec.className = 'auth-section';
     dashSec.className = 'dashboard-section active-section';
     loadDashboard();
-    loadFaceModels(); // Load AI weights in background
   }
 }
 
 async function loadDashboard() {
   try {
-    const { data: student, error } = await ebsuSupabase
-      .from('students')
-      .select('*')
-      .single(); // RLS ensures this only returns THEIR record
+    let student = null;
+    try {
+      const res = await ebsuSupabase.from('students').select('*').single();
+      student = res.data;
+    } catch(e) {}
 
-    if (error || !student) {
+    if (!student) {
+      const mock = localStorage.getItem('ebsu_active_student');
+      if (mock) student = JSON.parse(mock);
+    }
+
+    if (!student) {
       showToast('Error loading your student profile.', true);
       return;
     }
@@ -332,20 +410,25 @@ function renderLiveCard() {
 
   const renderData = {
     ...currentStudent,
+    name: currentStudent.name,
+    fullName: currentStudent.name,
+    matric: currentStudent.matric || currentStudent.school_reg_no || currentStudent.jamb_no,
+    faculty: currentStudent.faculty,
+    department: currentStudent.dept || currentStudent.department,
+    level: currentStudent.level,
+    session: currentStudent.session,
+    blood: currentStudent.blood || currentStudent.blood_group,
+    genotype: currentStudent.genotype,
     photo: currentStudent.photo_url,
-    sig: currentStudent.sig_url,
+    sig: currentStudent.sig_url || currentStudent.signature_url,
     qrString: liveQr
   };
 
-  // Temporarily set layout properties used by canvas.js
-  window.AppState = window.AppState || {
-    get: (k) => k === 'colors' ? {
-      headerBg: '#1558c0', headerText: '#ffffff', bodyBg: '#ffffff', borderColor: '#6ab0e0',
-      titleColor: '#cc0000', matricLabel: '#1a3a9a', labelColor: '#000000', valueColor: '#222222', photoBackground: '#aa1111'
-    } : k === 'schoolName' ? 'Ebonyi State University' : ''
-  };
+  const template = (typeof CardTemplate !== 'undefined' && CardTemplate.get)
+    ? CardTemplate.get()
+    : null;
 
-  drawCard(cvs, renderData, 1.0); // Draw at full scale, CSS will max-width it
+  drawCard(cvs, template, renderData, 0.48);
 }
 
 document.getElementById('btn-report-lost').addEventListener('click', async () => {
@@ -384,22 +467,47 @@ document.getElementById('btn-pay-now').addEventListener('click', () => {
   }, 2000);
 });
 
-// ── FACIAL RECOGNITION (face-api.js) ──────────────────────────
+// ── FACIAL RECOGNITION (face-api.js - On-Demand Lazy Loaded) ──────
 
 let modelsLoaded = false;
-async function loadFaceModels() {
-  if (modelsLoaded) return;
+let modelsLoading = false;
+
+async function ensureFaceApiLoaded() {
+  if (typeof faceapi !== 'undefined') return true;
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => reject(new Error('Failed to load Face Recognition library. Check your internet connection.'));
+    document.head.appendChild(script);
+  });
+}
+
+async function loadFaceModels(statusCallback) {
+  if (modelsLoaded) return true;
+  if (modelsLoading) {
+    while (modelsLoading) {
+      await new Promise(r => setTimeout(r, 200));
+    }
+    return modelsLoaded;
+  }
+  modelsLoading = true;
+  if (statusCallback) statusCallback('Downloading AI verification models (first time only)...');
   const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
   try {
+    await ensureFaceApiLoaded();
     await Promise.all([
       faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
       faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
       faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
     ]);
     modelsLoaded = true;
-    console.log('Face models loaded!');
+    modelsLoading = false;
+    return true;
   } catch (err) {
+    modelsLoading = false;
     console.error('Error loading face models', err);
+    throw err;
   }
 }
 
@@ -417,8 +525,13 @@ document.getElementById('photo-upload').addEventListener('change', async (e) => 
   if (!file) return;
 
   if (!modelsLoaded) {
-    showStatus('photo-status', 'Still loading AI models, please wait a moment...', true);
-    return;
+    showStatus('photo-status', 'Initializing AI Facial Recognition models on demand...', false);
+    try {
+      await loadFaceModels(msg => showStatus('photo-status', msg, false));
+    } catch (err) {
+      showStatus('photo-status', 'Failed to load AI models: ' + err.message, true);
+      return;
+    }
   }
 
   showStatus('photo-status', 'Running AI Facial Recognition analysis...', false);

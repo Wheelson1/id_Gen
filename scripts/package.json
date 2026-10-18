@@ -5,11 +5,14 @@
   "main": "sync_students.js",
   "type": "module",
   "scripts": {
-    "sync": "node sync_students.js"
+    "sync": "node sync_students.js",
+    "seed:qa": "node seed_test_accounts.js",
+    "test:qa": "node run_qa_tests.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
     "csv-parser": "^3.0.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "sharp": "^0.35.5"
   }
 }

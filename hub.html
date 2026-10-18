@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>System Hub — EBSU Digital ID</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" />
+  <link rel="stylesheet" href="css/shared.css" />
+  <link rel="stylesheet" href="css/hub.css" />
+</head>
+<body>
+
+<!-- ── ANIMATED BACKGROUND ─────────────────────────────────────── -->
+<div class="hub-bg" aria-hidden="true">
+  <div class="hub-orb hub-orb-1"></div>
+  <div class="hub-orb hub-orb-2"></div>
+  <div class="hub-orb hub-orb-3"></div>
+</div>
+
+<!-- ── LOGIN OVERLAY ───────────────────────────────────────────── -->
+<div id="hub-login-overlay" class="hub-login-overlay" role="dialog" aria-modal="true" aria-label="Sign In">
+  <div class="hub-login-card">
+    <div style="border-radius: 12px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+      <img src="images/banner_think_different.jpg" alt="Think Different" style="width: 100%; display: block;" />
+    </div>
+    <div class="hub-login-icon">🪪</div>
+    <h1 class="hub-login-title">Welcome Back</h1>
+    <p class="hub-login-subtitle">
+      Sign in with your JAMB Reg No. or School Reg No. to access the system.
+    </p>
+
+    <input id="hub-email" type="text" class="hub-login-input"
+      placeholder="JAMB Reg No. or School Reg No." autocomplete="username" />
+    <input id="hub-pass" type="password" class="hub-login-input"
+      placeholder="Password" autocomplete="current-password" />
+
+    <div id="hub-login-error" class="hub-login-error"></div>
+
+    <button id="hub-login-btn" class="hub-login-btn">Sign In</button>
+
+    <!-- ── 1-CLICK DEMO LOGIN SUITE ──────────────────────────────── -->
+    <div class="demo-login-box">
+      <div class="demo-box-header">
+        <span class="demo-box-title">⚡ 1-Click Demo Logins</span>
+        <span class="demo-box-badge">Test Personas</span>
+      </div>
+      <p class="demo-box-sub">Click any role below to sign in instantly and see its attached modules &amp; permissions:</p>
+
+      <div class="demo-roles-list">
+        <!-- Super Admin -->
+        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('superadmin', { emailInputId: 'hub-email', passInputId: 'hub-pass', submitBtnId: 'hub-login-btn', redirect: false })">
+          <div class="demo-role-top">
+            <div class="demo-role-name">
+              <span>👑</span>
+              <strong>Super Admin</strong>
+            </div>
+            <span class="demo-badge demo-badge-super">ROOT SAAS</span>
+          </div>
+          <div class="demo-role-meta">
+            <span class="demo-role-id">superadmin+test@example.com</span>
+          </div>
+          <div class="demo-role-attached">
+            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
+            <ul class="demo-attached-items">
+              <li>Mothership SaaS Grid &amp; Multi-University Node Monitor</li>
+              <li>Global Emergency Killswitch (Instantly disables compromised nodes)</li>
+              <li>Database Root, Multi-Campus Telemetry &amp; Full Portal Access</li>
+            </ul>
+          </div>
+          <div class="demo-role-action">
+            <span>⚡ 1-Click Sign In</span>
+            <span class="demo-arrow">→</span>
+          </div>
+        </div>
+
+        <!-- University Admin -->
+        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('admin', { emailInputId: 'hub-email', passInputId: 'hub-pass', submitBtnId: 'hub-login-btn', redirect: false })">
+          <div class="demo-role-top">
+            <div class="demo-role-name">
+              <span>🏛️</span>
+              <strong>University Admin</strong>
+            </div>
+            <span class="demo-badge demo-badge-admin">ADMIN</span>
+          </div>
+          <div class="demo-role-meta">
+            <span class="demo-role-id">admin+test@example.com</span>
+          </div>
+          <div class="demo-role-attached">
+            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
+            <ul class="demo-attached-items">
+              <li>Full Administrative Control Center &amp; Revocation Desk</li>
+              <li>Interactive Drag-and-Drop ID Card Layout Canvas Editor</li>
+              <li>School Defaults (EBSU Crest, Expiry Years, Institutional Colors)</li>
+            </ul>
+          </div>
+          <div class="demo-role-action">
+            <span>⚡ 1-Click Sign In</span>
+            <span class="demo-arrow">→</span>
+          </div>
+        </div>
+
+        <!-- Card Operator -->
+        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('operator', { emailInputId: 'hub-email', passInputId: 'hub-pass', submitBtnId: 'hub-login-btn', redirect: false })">
+          <div class="demo-role-top">
+            <div class="demo-role-name">
+              <span>🪪</span>
+              <strong>Card Operator</strong>
+            </div>
+            <span class="demo-badge demo-badge-operator">OPERATOR</span>
+          </div>
+          <div class="demo-role-meta">
+            <span class="demo-role-id">editor+test@example.com</span>
+          </div>
+          <div class="demo-role-attached">
+            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
+            <ul class="demo-attached-items">
+              <li>Bulk ID Generator (CSV Student Roster Batch Processing)</li>
+              <li>Manual Form Fill &amp; Photo/Signature Webcam Capture Desk</li>
+              <li>300 DPI CR80 Dual-Sided Card Rendering &amp; Print Slips</li>
+            </ul>
+          </div>
+          <div class="demo-role-action">
+            <span>⚡ 1-Click Sign In</span>
+            <span class="demo-arrow">→</span>
+          </div>
+        </div>
+
+        <!-- Security Guard -->
+        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('verifier', { emailInputId: 'hub-email', passInputId: 'hub-pass', submitBtnId: 'hub-login-btn', redirect: false })">
+          <div class="demo-role-top">
+            <div class="demo-role-name">
+              <span>🛡️</span>
+              <strong>Security Verifier</strong>
+            </div>
+            <span class="demo-badge demo-badge-verifier">VERIFIER</span>
+          </div>
+          <div class="demo-role-meta">
+            <span class="demo-role-id">verifier+test@example.com</span>
+          </div>
+          <div class="demo-role-attached">
+            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
+            <ul class="demo-attached-items">
+              <li>Live Camera Scanner Viewport for Gate &amp; Exam Hall Clearance</li>
+              <li>Dual Online &amp; Offline Cryptographic Ed25519 Decryption</li>
+              <li>Immediate Revocation Alert Flagging &amp; Gate Count Audit</li>
+            </ul>
+          </div>
+          <div class="demo-role-action">
+            <span>⚡ 1-Click Sign In</span>
+            <span class="demo-arrow">→</span>
+          </div>
+        </div>
+
+        <!-- Student -->
+        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('student_active', { emailInputId: 'hub-email', passInputId: 'hub-pass', submitBtnId: 'hub-login-btn', redirect: false })">
+          <div class="demo-role-top">
+            <div class="demo-role-name">
+              <span>🎓</span>
+              <strong>Student (Wilson)</strong>
+            </div>
+            <span class="demo-badge demo-badge-student">STUDENT</span>
+          </div>
+          <div class="demo-role-meta">
+            <span class="demo-role-id">EBSU/2024/900001 (09035005623)</span>
+          </div>
+          <div class="demo-role-attached">
+            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
+            <ul class="demo-attached-items">
+              <li>Student Portal, Active ID Card &amp; Dynamic 30s Anti-Screenshot QR</li>
+              <li>Tuition Payment Status: PAID (Unrestricted Access)</li>
+              <li>Personal Exam Invigilation Pass &amp; Campus Verification Token</li>
+            </ul>
+          </div>
+          <div class="demo-role-action">
+            <span>⚡ 1-Click Sign In</span>
+            <span class="demo-arrow">→</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hub-login-links">
+      <a href="index.html">← Back to Home</a>
+      <span style="color:rgba(255,255,255,0.15)">·</span>
+      <a href="admin.html">Admin Panel</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── GOOGLE LINK OVERLAY ─────────────────────────────────────── -->
+<div id="hub-google-overlay" class="hub-google-overlay" role="dialog" aria-modal="true" aria-label="Link Google Account">
+  <div class="hub-google-card">
+    <div class="hub-login-icon">🔗</div>
+    <h2 class="hub-login-title">Link Google Account</h2>
+    <p class="hub-login-subtitle">
+      For security and advanced features, link your official school Google account.
+    </p>
+    <button id="hub-google-btn" class="hub-google-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Link Google Account
+    </button>
+    <button id="hub-google-cancel" class="hub-google-cancel">Cancel & Log Out</button>
+  </div>
+</div>
+
+<!-- ── NAVBAR ──────────────────────────────────────────────────── -->
+<nav class="hub-nav" aria-label="Hub navigation">
+  <a href="index.html" class="hub-nav-brand">
+    <div style="font-size: 20px; font-weight: 900; color: #d4a574; font-family: var(--font-heading);">SID</div>
+    <span class="hub-nav-title">SID System Hub · Triple J Group</span>
+  </a>
+  <div class="hub-nav-right">
+    <span id="hub-user-badge" class="hub-user-badge"></span>
+    <a href="qa-dashboard.html" class="hub-nav-link hide-mobile" style="color: #63b3ed; font-weight: bold;">🧪 QA Suite</a>
+    <a href="manual-entry.html" class="hub-nav-link hide-mobile" style="color: #ffd700;">Manual Form Center</a>
+    <a href="admin.html" class="hub-nav-link hide-mobile">Staff / Admin</a>
+    <a href="student-portal.html" class="hub-nav-link hide-mobile">Student Portal</a>
+    <button id="hub-logout-btn" class="hub-logout-btn">Sign Out</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN CONTENT — Module Selection Cards
+     ══════════════════════════════════════════════════════════════ -->
+<main class="hub-content">
+  <div class="hub-header">
+    <p class="hub-greeting">Choose a module</p>
+    <h1 class="hub-title">What would you like to do?</h1>
+    <p class="hub-subtitle">Select one of the modules below to get started.</p>
+  </div>
+
+  <div class="hub-cards">
+    <!-- Design ID Card -->
+    <a href="design.html" class="hub-card hub-card--design animate-fade-in-up delay-1">
+      <div class="hub-card-icon">🎨</div>
+      <h2 class="hub-card-title">Design ID</h2>
+      <p class="hub-card-desc">
+        Customise your card template — colours, fonts, dimensions, university crest, and theme presets.
+      </p>
+      <span class="hub-card-arrow">Open Studio →</span>
+    </a>
+
+    <!-- Generate ID Card -->
+    <a href="generate.html" class="hub-card hub-card--generate animate-fade-in-up delay-2">
+      <div class="hub-card-icon">🪪</div>
+      <h2 class="hub-card-title">Generate ID</h2>
+      <p class="hub-card-desc">
+        Enter student data, upload photos, and generate cryptographically signed ID cards with QR codes.
+      </p>
+      <span class="hub-card-arrow">Create Cards →</span>
+    </a>
+
+    <!-- Manual Form Fill Center -->
+    <a href="manual-entry.html" class="hub-card hub-card--manual animate-fade-in-up delay-2" style="border-color: rgba(212,165,116,0.35); background: rgba(14,28,50,0.75);">
+      <div class="hub-card-icon">📝</div>
+      <h2 class="hub-card-title" style="color: #ffd700;">Manual Form Center</h2>
+      <p class="hub-card-desc">
+        Student self-service capture — key in name, school reg no, department, faculty, vitals, passport &amp; signature tied to a secure QR code.
+      </p>
+      <span class="hub-card-arrow" style="color: #ffd700;">Open Form Center →</span>
+    </a>
+
+    <!-- Validate ID Card -->
+    <a href="validate.html" class="hub-card hub-card--validate animate-fade-in-up delay-3">
+      <div class="hub-card-icon">🔍</div>
+      <h2 class="hub-card-title">Validate ID</h2>
+      <p class="hub-card-desc">
+        Scan QR codes to verify card authenticity. Instant cryptographic check + live database lookup.
+      </p>
+      <span class="hub-card-arrow">Start Scanner →</span>
+    </a>
+
+    <!-- Admin Panel (Role Gated) -->
+    <a href="admin.html" id="hub-card-admin" class="hub-card animate-fade-in-up delay-4" style="display:none; border-color: rgba(99,179,237,0.3); background: rgba(13,26,45,0.7);">
+      <div class="hub-card-icon">⚙️</div>
+      <h2 class="hub-card-title" style="color: #63b3ed;">Admin Panel</h2>
+      <p class="hub-card-desc">
+        Student status management, immutable audit logs, staff profiles, and layout drag-editor.
+      </p>
+      <span class="hub-card-arrow" style="color: #63b3ed;">Admin Control →</span>
+    </a>
+
+    <!-- Mothership (Super Admin Only) -->
+    <a href="mothership.html" id="hub-card-mothership" class="hub-card animate-fade-in-up delay-5" style="display:none; border-color: rgba(212,165,116,0.4); background: rgba(13,26,45,0.7);">
+      <div class="hub-card-icon">🛸</div>
+      <h2 class="hub-card-title" style="color: #d4a574;">Mothership SaaS</h2>
+      <p class="hub-card-desc">
+        Multi-tenant university deployments, network telemetry, revenue metrics, and kill-switch.
+      </p>
+      <span class="hub-card-arrow" style="color: #d4a574;">Mothership Hub →</span>
+    </a>
+  </div>
+</main>
+
+<!-- ── SCRIPTS ─────────────────────────────────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/demo-suite.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+</script>
+
+<script>
+(function() {
+  AuthManager.init();
+
+  // ── DOM refs ─────────────────────────────────────────────────
+  const loginOverlay  = document.getElementById('hub-login-overlay');
+  const googleOverlay = document.getElementById('hub-google-overlay');
+  const emailInp      = document.getElementById('hub-email');
+  const passInp       = document.getElementById('hub-pass');
+  const loginBtn      = document.getElementById('hub-login-btn');
+  const errorEl       = document.getElementById('hub-login-error');
+  const userBadge     = document.getElementById('hub-user-badge');
+  const logoutBtn     = document.getElementById('hub-logout-btn');
+  const googleBtn     = document.getElementById('hub-google-btn');
+  const googleCancel  = document.getElementById('hub-google-cancel');
+
+  function showLogin()  { loginOverlay.style.display = 'flex'; }
+  function hideLogin()  { loginOverlay.style.display = 'none'; }
+  function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.style.display = msg ? 'block' : 'none';
+  }
+
+  function setUserBadge(user) {
+    if (!user) {
+      userBadge.style.display = 'none';
+      logoutBtn.style.display = 'none';
+      return;
+    }
+    const role = (user.user_metadata?.role || 'staff').toLowerCase();
+    const email = user.email || '';
+    userBadge.textContent = role.toUpperCase() + ' · ' + email;
+    userBadge.style.display = 'inline';
+    logoutBtn.style.display = 'inline-block';
+
+    // Role-gated module cards
+    const adminCard = document.getElementById('hub-card-admin');
+    const mothershipCard = document.getElementById('hub-card-mothership');
+    
+    if (adminCard) {
+      const canAccessAdmin = ['super_admin', 'registrar', 'admin', 'operator'].includes(role);
+      adminCard.style.display = canAccessAdmin ? 'flex' : 'none';
+    }
+    if (mothershipCard) {
+      const canAccessMothership = ['super_admin'].includes(role);
+      mothershipCard.style.display = canAccessMothership ? 'flex' : 'none';
+    }
+  }
+
+  async function handleLogin() {
+    const raw  = emailInp.value.trim();
+    const pass = passInp.value;
+    showError('');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Signing in...';
+
+    try {
+      const { user } = await AuthManager.login(raw, pass);
+      await checkGoogleAndGrant(user, raw);
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Sign In';
+    }
+  }
+
+  async function checkGoogleAndGrant(user, rawInput) {
+    const email = user?.email || '';
+    const loginCount = AuthManager.getLoginCount(email);
+    const isLinked = await AuthManager.isGoogleLinked();
+
+    if (loginCount <= 3 || isLinked) {
+      // Grant access
+      googleOverlay.style.display = 'none';
+      setUserBadge(user);
+      hideLogin();
+    } else {
+      // Force Google linking after 3rd login
+      hideLogin();
+      googleOverlay.style.display = 'flex';
+    }
+  }
+
+  async function handleLogout() {
+    await AuthManager.logout();
+    setUserBadge(null);
+    googleOverlay.style.display = 'none';
+    showLogin();
+    if (passInp) passInp.value = '';
+  }
+
+  // ── Wire events ──────────────────────────────────────────────
+  loginBtn.addEventListener('click', handleLogin);
+  passInp.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+  logoutBtn.addEventListener('click', handleLogout);
+
+  googleBtn.addEventListener('click', async () => {
+    try { await AuthManager.linkGoogle(); } catch(e) { alert(e.message); }
+  });
+
+  googleCancel.addEventListener('click', async () => {
+    await handleLogout();
+    googleOverlay.style.display = 'none';
+    showLogin();
+  });
+
+  // ── Check session on load ────────────────────────────────────
+  (async () => {
+    const session = await AuthManager.getSession();
+    if (session) {
+      await checkGoogleAndGrant(session.user, '');
+    } else {
+      showLogin();
+      if (emailInp) emailInp.focus();
+    }
+  })();
+})();
+</script>
+
+</body>
+</html>

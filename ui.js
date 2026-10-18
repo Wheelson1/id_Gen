@@ -343,9 +343,12 @@ const UI = (() => {
           ctx.drawImage(fc, 0, 0);
           ctx.drawImage(bc, fc.width, 0);
           const link = document.createElement('a');
+          link.style.display = 'none';
           link.download = baseName + '_Front+Back.png';
           link.href = combined.toDataURL('image/png', 1.0);
+          document.body.appendChild(link);
           link.click();
+          setTimeout(() => { if (link.parentNode) link.parentNode.removeChild(link); }, 1500);
           hideToast();
         } catch (err) {
           showToast('Download failed.', 3000, true);
@@ -357,9 +360,12 @@ const UI = (() => {
       setTimeout(() => {
         try {
           const link = document.createElement('a');
+          link.style.display = 'none';
           link.download = baseName + '_Back.png';
           link.href = hiCvs.toDataURL('image/png', 1.0);
+          document.body.appendChild(link);
           link.click();
+          setTimeout(() => { if (link.parentNode) link.parentNode.removeChild(link); }, 1500);
           hideToast();
         } catch (err) {
           showToast('Download failed.', 3000, true);
@@ -371,9 +377,12 @@ const UI = (() => {
       setTimeout(() => {
         try {
           const link = document.createElement('a');
+          link.style.display = 'none';
           link.download = baseName + '_Front.png';
           link.href = hiCvs.toDataURL('image/png', 1.0);
+          document.body.appendChild(link);
           link.click();
+          setTimeout(() => { if (link.parentNode) link.parentNode.removeChild(link); }, 1500);
           hideToast();
         } catch (err) {
           showToast('Download failed.', 3000, true);

@@ -1,0 +1,526 @@
+/* ═══════════════════════════════════════════════════════════════
+   VALIDATE.CSS — QR Scanner + Verification Theme
+   Terminal/Hacker · Green-on-black · Scan lines · Monospaced
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --val-bg:         #050505;
+  --val-bg-2:       #0a120a;
+  --val-surface:    #0d1a0d;
+  --val-surface-2:  #112211;
+  --val-green:      #22c55e;
+  --val-green-dim:  #16a34a;
+  --val-green-lt:   #86efac;
+  --val-green-pale: #dcfce7;
+  --val-text:       #c8e6c9;
+  --val-text-muted: #4a6a4a;
+  --val-border:     rgba(34,197,94,0.15);
+  --val-red:        #ef4444;
+  --val-amber:      #f59e0b;
+  --val-blue:       #3b82f6;
+}
+
+body {
+  background: var(--val-bg);
+  color: var(--val-text);
+  font-family: var(--font-mono);
+}
+
+
+/* ── CRT SCAN-LINE OVERLAY ─────────────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,255,0,0.015) 2px,
+    rgba(0,255,0,0.015) 4px
+  );
+}
+
+
+/* ── AMBIENT BACKGROUND ────────────────────────────────────────── */
+.val-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(34,197,94,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 20% 100%, rgba(34,197,94,0.03) 0%, transparent 50%);
+}
+
+.val-bg .matrix-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(34,197,94,0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+
+/* ── HEADER ────────────────────────────────────────────────────── */
+.val-header {
+  position: relative;
+  z-index: 10;
+  background: rgba(5,5,5,0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 2px solid var(--val-border);
+  padding: var(--sp-3) var(--sp-5);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-shrink: 0;
+}
+
+.val-header-brand {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--val-green);
+  letter-spacing: 0.5px;
+}
+
+.val-header-sub {
+  font-size: 10px;
+  color: var(--val-text-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.val-header-nav {
+  margin-left: auto;
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+}
+
+.val-header-nav a {
+  color: var(--val-text-muted);
+  font-size: 12px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--val-border);
+  transition: all var(--t-fast);
+}
+
+.val-header-nav a:hover {
+  color: var(--val-green);
+  border-color: rgba(34,197,94,0.4);
+}
+
+.val-user-badge {
+  font-size: 10px;
+  color: var(--val-green);
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-3);
+  display: none;
+}
+
+
+/* ── SCREEN SYSTEM ─────────────────────────────────────────────── */
+.val-screen {
+  display: none;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6) var(--sp-4);
+}
+
+.val-screen.active {
+  display: flex;
+}
+
+
+/* ── LOGIN CARD ────────────────────────────────────────────────── */
+.val-login-card {
+  background: var(--val-surface);
+  border: 1px solid var(--val-border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-10) var(--sp-8);
+  width: 100%;
+  max-width: 440px;
+  max-height: 92vh;
+  overflow-y: auto;
+  text-align: center;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.5), 0 0 30px rgba(34,197,94,0.05);
+}
+
+.val-login-icon {
+  font-size: 48px;
+  margin-bottom: var(--sp-4);
+  filter: drop-shadow(0 0 20px rgba(34,197,94,0.3));
+}
+
+.val-login-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--val-green);
+  margin-bottom: var(--sp-2);
+}
+
+.val-login-subtitle {
+  font-size: 12px;
+  color: var(--val-text-muted);
+  margin-bottom: var(--sp-6);
+  line-height: 1.6;
+}
+
+.val-login-input {
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--val-bg);
+  border: 1px solid var(--val-border);
+  border-radius: var(--r-sm);
+  color: var(--val-green);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  margin-bottom: var(--sp-3);
+  transition: border-color var(--t-fast);
+}
+
+.val-login-input::placeholder {
+  color: var(--val-text-muted);
+}
+
+.val-login-input:focus {
+  border-color: var(--val-green);
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.1);
+  animation: borderGlow 2s ease-in-out infinite;
+}
+
+.val-login-error {
+  display: none;
+  color: var(--val-red);
+  font-size: 12px;
+  margin-bottom: var(--sp-3);
+  text-align: left;
+}
+
+.val-login-btn {
+  width: 100%;
+  padding: var(--sp-3) var(--sp-6);
+  background: var(--val-green-dim);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  font-family: var(--font-mono);
+  border-radius: var(--r-sm);
+  transition: all var(--t-fast);
+  box-shadow: 0 0 20px rgba(34,197,94,0.2);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.val-login-btn:hover {
+  background: var(--val-green);
+  box-shadow: 0 0 30px rgba(34,197,94,0.35);
+}
+
+
+/* ── SCANNER SCREEN ────────────────────────────────────────────── */
+.val-scanner-layout {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.val-scanner-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--val-green);
+  text-align: center;
+}
+
+.val-scanner-sub {
+  font-size: 12px;
+  color: var(--val-text-muted);
+  text-align: center;
+  margin-top: var(--sp-1);
+}
+
+/* Camera viewport */
+.val-camera-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  max-height: 400px;
+  background: var(--val-bg);
+  border: 2px solid var(--val-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.val-camera-box video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Green scan line animation */
+.val-scan-line {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: var(--val-green);
+  box-shadow: 0 0 12px var(--val-green), 0 0 30px rgba(34,197,94,0.3);
+  animation: scanLine 2.5s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes scanLine {
+  0%   { top: 10%; opacity: 1; }
+  50%  { top: 85%; opacity: 0.6; }
+  100% { top: 10%; opacity: 1; }
+}
+
+/* Corner brackets */
+.val-camera-box::before,
+.val-camera-box::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-color: var(--val-green);
+  border-style: solid;
+  z-index: 2;
+}
+
+.val-camera-box::before {
+  top: 12px; left: 12px;
+  border-width: 2px 0 0 2px;
+}
+
+.val-camera-box::after {
+  bottom: 12px; right: 12px;
+  border-width: 0 2px 2px 0;
+}
+
+/* Manual entry */
+.val-manual-entry {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.val-manual-input {
+  flex: 1;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--val-bg);
+  border: 1px solid var(--val-border);
+  border-radius: var(--r-sm);
+  color: var(--val-green);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.val-manual-input:focus {
+  border-color: var(--val-green);
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.1);
+}
+
+.val-manual-input::placeholder { color: var(--val-text-muted); }
+
+.val-manual-btn {
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--val-green-dim);
+  color: #fff;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  border-radius: var(--r-sm);
+  letter-spacing: 0.5px;
+  transition: all var(--t-fast);
+}
+
+.val-manual-btn:hover {
+  background: var(--val-green);
+  box-shadow: 0 0 16px rgba(34,197,94,0.3);
+}
+
+
+/* ── RESULT CARDS ──────────────────────────────────────────────── */
+.val-result {
+  padding: var(--sp-6);
+  border-radius: var(--r-lg);
+  text-align: center;
+  animation: scaleIn var(--t-norm) var(--ease-spring);
+}
+
+/* Verified */
+.val-result--verified {
+  background: rgba(34,197,94,0.08);
+  border: 2px solid rgba(34,197,94,0.4);
+  box-shadow: 0 0 40px rgba(34,197,94,0.1);
+}
+
+.val-result--verified .val-result-icon { color: var(--val-green); }
+
+/* Revoked */
+.val-result--revoked {
+  background: rgba(239,68,68,0.08);
+  border: 2px solid rgba(239,68,68,0.4);
+  box-shadow: 0 0 40px rgba(239,68,68,0.1);
+}
+
+.val-result--revoked .val-result-icon { color: var(--val-red); }
+
+/* Invalid */
+.val-result--invalid {
+  background: rgba(245,158,11,0.08);
+  border: 2px solid rgba(245,158,11,0.4);
+  box-shadow: 0 0 40px rgba(245,158,11,0.1);
+}
+
+.val-result--invalid .val-result-icon { color: var(--val-amber); }
+
+/* Offline */
+.val-result--offline {
+  background: rgba(245,158,11,0.06);
+  border: 2px solid rgba(245,158,11,0.3);
+}
+
+.val-result--offline .val-result-icon { color: var(--val-amber); }
+
+.val-result-icon {
+  font-size: 56px;
+  margin-bottom: var(--sp-4);
+}
+
+.val-result-status {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: var(--sp-2);
+}
+
+.val-result-message {
+  font-size: 13px;
+  color: var(--val-text-muted);
+  margin-bottom: var(--sp-5);
+}
+
+/* Student info grid */
+.val-student-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+  text-align: left;
+  padding: var(--sp-4);
+  background: rgba(0,0,0,0.3);
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-4);
+}
+
+.val-info-label {
+  font-size: 10px;
+  color: var(--val-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.val-info-value {
+  font-size: 14px;
+  color: var(--val-green-lt);
+  font-weight: 600;
+}
+
+/* Student photo in result */
+.val-result-photo {
+  width: 100px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  border: 2px solid var(--val-green);
+  margin: 0 auto var(--sp-4);
+}
+
+.val-scan-again-btn {
+  padding: var(--sp-3) var(--sp-8);
+  background: var(--val-surface);
+  color: var(--val-green);
+  border: 1px solid var(--val-border);
+  border-radius: var(--r-sm);
+  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  transition: all var(--t-fast);
+}
+
+.val-scan-again-btn:hover {
+  background: rgba(34,197,94,0.08);
+  border-color: var(--val-green);
+}
+
+
+/* ── SCAN LOG (Terminal) ───────────────────────────────────────── */
+.val-log {
+  background: var(--val-bg);
+  border: 1px solid var(--val-border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  max-height: 150px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.val-log-title {
+  font-size: 10px;
+  color: var(--val-text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: var(--sp-2);
+}
+
+.val-log-entry {
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(34,197,94,0.05);
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.val-log-time {
+  color: var(--val-text-muted);
+  flex-shrink: 0;
+}
+
+.val-log-status--ok { color: var(--val-green); }
+.val-log-status--fail { color: var(--val-red); }
+.val-log-status--warn { color: var(--val-amber); }
+
+/* Blinking cursor for inputs */
+.val-login-input:focus::after,
+.val-manual-input:focus::after {
+  animation: blink 1s step-end infinite;
+}
+
+
+/* ── RESPONSIVE ────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .val-header { flex-wrap: wrap; gap: var(--sp-2); }
+  .val-header-nav { margin-left: 0; width: 100%; justify-content: flex-end; }
+  .val-scanner-layout { max-width: 100%; }
+  .val-student-info { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .val-login-card { padding: var(--sp-8) var(--sp-5); }
+  .val-manual-entry { flex-direction: column; }
+}

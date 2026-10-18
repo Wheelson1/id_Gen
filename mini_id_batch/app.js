@@ -519,9 +519,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (wasHidden) cardElement.classList.add('hidden-card');
 
       const link = document.createElement('a');
+      link.style.display = 'none';
       link.download = `${filename}.png`;
       link.href = canvas.toDataURL('image/png');
+      document.body.appendChild(link);
       link.click();
+      setTimeout(() => { if (link.parentNode) link.parentNode.removeChild(link); }, 1500);
 
       // Log generation & increment counter
       logGeneratedCard(inpMatric.value, inpName.value, 'PNG 300DPI');
