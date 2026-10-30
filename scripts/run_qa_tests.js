@@ -23,7 +23,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qsrfvfdojtmsinewxetz.supabase.co';
-const ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_xA_kHJ598AoX62iZZHGEww_DRoS0eyZ';
+const ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFzcmZ2ZmRvanRtc2luZXd4ZXR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNTE4MzgsImV4cCI6MjA5NTYyNzgzOH0.xi_5AayCMDLMI3cXHt1eaYXO0M-9E86H1hFKE92Hdso';
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const PWD = 'QaTest@2026!Secured';

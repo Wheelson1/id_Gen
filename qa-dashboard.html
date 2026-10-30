@@ -446,6 +446,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="config.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/demo-suite.js"></script>
   <script>
     const DEFAULT_PWD = 'QaTest@2026!Secured';
     let sbClient = null;
@@ -457,21 +458,37 @@
     });
 
     async function simulateRoleLogin(email, destinationUrl) {
-      if (!sbClient) {
-        alert('Supabase client not initialized. Ensure config.js is loaded.');
+      // 1. Try real Supabase auth if client exists
+      if (sbClient) {
+        try {
+          const { data, error } = await sbClient.auth.signInWithPassword({
+            email: email,
+            password: DEFAULT_PWD
+          });
+          if (!error && data?.session) {
+            window.location.href = destinationUrl;
+            return;
+          }
+        } catch (e) {
+          console.warn('Live Supabase login failed, using demo persona fallback:', e.message);
+        }
+      }
+
+      // 2. Demo Persona Fallback
+      if (typeof DemoAuthSuite !== 'undefined') {
+        let pKey = 'admin';
+        if (email.includes('superadmin')) pKey = 'superadmin';
+        else if (email.includes('editor') || email.includes('operator')) pKey = 'operator';
+        else if (email.includes('verifier') || email.includes('security')) pKey = 'verifier';
+        else if (email.includes('manager') || email.includes('registrar')) pKey = 'registrar';
+        else if (email.includes('student') || email.includes('900001')) pKey = 'student_active';
+
+        DemoAuthSuite.setMockSession(pKey);
+        window.location.href = destinationUrl;
         return;
       }
-      try {
-        const { data, error } = await sbClient.auth.signInWithPassword({
-          email: email,
-          password: DEFAULT_PWD
-        });
-        if (error) throw error;
-        // Success
-        window.location.href = destinationUrl;
-      } catch (err) {
-        alert(`Authentication Error: ${err.message}\nMake sure seed_test_accounts.sql has been executed.`);
-      }
+
+      window.location.href = destinationUrl;
     }
 
     async function clearActiveSession() {

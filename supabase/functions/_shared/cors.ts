@@ -20,10 +20,16 @@ const ALLOWED_ORIGINS: string[] = [
 ];
 
 export function corsHeaders(requestOrigin: string | null): Record<string, string> {
-  const origin =
-    requestOrigin && ALLOWED_ORIGINS.includes(requestOrigin)
-      ? requestOrigin
-      : ALLOWED_ORIGINS[0];
+  const isAllowed = Boolean(
+    requestOrigin && (
+      ALLOWED_ORIGINS.includes(requestOrigin) ||
+      requestOrigin.endsWith('.vercel.app') ||
+      requestOrigin.startsWith('http://localhost') ||
+      requestOrigin.startsWith('http://127.0.0.1')
+    )
+  );
+
+  const origin = isAllowed && requestOrigin ? requestOrigin : ALLOWED_ORIGINS[0];
 
   return {
     'Access-Control-Allow-Origin':  origin,
