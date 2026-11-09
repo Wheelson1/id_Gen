@@ -11,6 +11,11 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" />
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/hub.css" />
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/guard.js" data-allowed-roles="operator,scanner,registrar,admin,super_admin,staff"></script>
+  <script>window.location.replace('app.html#/overview');</script>
 </head>
 <body>
 
@@ -41,147 +46,6 @@
     <div id="hub-login-error" class="hub-login-error"></div>
 
     <button id="hub-login-btn" class="hub-login-btn">Sign In</button>
-
-    <!-- ── 1-CLICK DEMO LOGIN SUITE ──────────────────────────────── -->
-    <div class="demo-login-box">
-      <div class="demo-box-header">
-        <span class="demo-box-title">⚡ 1-Click Demo Logins</span>
-        <span class="demo-box-badge">Test Personas</span>
-      </div>
-      <p class="demo-box-sub">Click any role below to sign in instantly and see its attached modules &amp; permissions:</p>
-
-      <div class="demo-roles-list">
-        <!-- Super Admin -->
-        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('superadmin', { emailInputId: 'hub-email', passInputId: 'hub-pass', submitBtnId: 'hub-login-btn', redirect: false })">
-          <div class="demo-role-top">
-            <div class="demo-role-name">
-              <span>👑</span>
-              <strong>Super Admin</strong>
-            </div>
-            <span class="demo-badge demo-badge-super">ROOT SAAS</span>
-          </div>
-          <div class="demo-role-meta">
-            <span class="demo-role-id">superadmin+test@example.com</span>
-          </div>
-          <div class="demo-role-attached">
-            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
-            <ul class="demo-attached-items">
-              <li>Mothership SaaS Grid &amp; Multi-University Node Monitor</li>
-              <li>Global Emergency Killswitch (Instantly disables compromised nodes)</li>
-              <li>Database Root, Multi-Campus Telemetry &amp; Full Portal Access</li>
-            </ul>
-          </div>
-          <div class="demo-role-action">
-            <span>⚡ 1-Click Sign In</span>
-            <span class="demo-arrow">→</span>
-          </div>
-        </div>
-
-        <!-- University Admin -->
-        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('admin', { emailInputId: 'hub-email', passInputId: 'hub-pass', submitBtnId: 'hub-login-btn', redirect: false })">
-          <div class="demo-role-top">
-            <div class="demo-role-name">
-              <span>🏛️</span>
-              <strong>University Admin</strong>
-            </div>
-            <span class="demo-badge demo-badge-admin">ADMIN</span>
-          </div>
-          <div class="demo-role-meta">
-            <span class="demo-role-id">admin+test@example.com</span>
-          </div>
-          <div class="demo-role-attached">
-            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
-            <ul class="demo-attached-items">
-              <li>Full Administrative Control Center &amp; Revocation Desk</li>
-              <li>Interactive Drag-and-Drop ID Card Layout Canvas Editor</li>
-              <li>School Defaults (EBSU Crest, Expiry Years, Institutional Colors)</li>
-            </ul>
-          </div>
-          <div class="demo-role-action">
-            <span>⚡ 1-Click Sign In</span>
-            <span class="demo-arrow">→</span>
-          </div>
-        </div>
-
-        <!-- Card Operator -->
-        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('operator', { emailInputId: 'hub-email', passInputId: 'hub-pass', submitBtnId: 'hub-login-btn', redirect: false })">
-          <div class="demo-role-top">
-            <div class="demo-role-name">
-              <span>🪪</span>
-              <strong>Card Operator</strong>
-            </div>
-            <span class="demo-badge demo-badge-operator">OPERATOR</span>
-          </div>
-          <div class="demo-role-meta">
-            <span class="demo-role-id">editor+test@example.com</span>
-          </div>
-          <div class="demo-role-attached">
-            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
-            <ul class="demo-attached-items">
-              <li>Bulk ID Generator (CSV Student Roster Batch Processing)</li>
-              <li>Manual Form Fill &amp; Photo/Signature Webcam Capture Desk</li>
-              <li>300 DPI CR80 Dual-Sided Card Rendering &amp; Print Slips</li>
-            </ul>
-          </div>
-          <div class="demo-role-action">
-            <span>⚡ 1-Click Sign In</span>
-            <span class="demo-arrow">→</span>
-          </div>
-        </div>
-
-        <!-- Security Guard -->
-        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('verifier', { emailInputId: 'hub-email', passInputId: 'hub-pass', submitBtnId: 'hub-login-btn', redirect: false })">
-          <div class="demo-role-top">
-            <div class="demo-role-name">
-              <span>🛡️</span>
-              <strong>Security Verifier</strong>
-            </div>
-            <span class="demo-badge demo-badge-verifier">VERIFIER</span>
-          </div>
-          <div class="demo-role-meta">
-            <span class="demo-role-id">verifier+test@example.com</span>
-          </div>
-          <div class="demo-role-attached">
-            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
-            <ul class="demo-attached-items">
-              <li>Live Camera Scanner Viewport for Gate &amp; Exam Hall Clearance</li>
-              <li>Dual Online &amp; Offline Cryptographic Ed25519 Decryption</li>
-              <li>Immediate Revocation Alert Flagging &amp; Gate Count Audit</li>
-            </ul>
-          </div>
-          <div class="demo-role-action">
-            <span>⚡ 1-Click Sign In</span>
-            <span class="demo-arrow">→</span>
-          </div>
-        </div>
-
-        <!-- Student -->
-        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('student_active', { emailInputId: 'hub-email', passInputId: 'hub-pass', submitBtnId: 'hub-login-btn', redirect: false })">
-          <div class="demo-role-top">
-            <div class="demo-role-name">
-              <span>🎓</span>
-              <strong>Student (Wilson)</strong>
-            </div>
-            <span class="demo-badge demo-badge-student">STUDENT</span>
-          </div>
-          <div class="demo-role-meta">
-            <span class="demo-role-id">EBSU/2024/900001 (09035005623)</span>
-          </div>
-          <div class="demo-role-attached">
-            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
-            <ul class="demo-attached-items">
-              <li>Student Portal, Active ID Card &amp; Dynamic 30s Anti-Screenshot QR</li>
-              <li>Tuition Payment Status: PAID (Unrestricted Access)</li>
-              <li>Personal Exam Invigilation Pass &amp; Campus Verification Token</li>
-            </ul>
-          </div>
-          <div class="demo-role-action">
-            <span>⚡ 1-Click Sign In</span>
-            <span class="demo-arrow">→</span>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <div class="hub-login-links">
       <a href="index.html">← Back to Home</a>
@@ -297,10 +161,6 @@
 </main>
 
 <!-- ── SCRIPTS ─────────────────────────────────────────────────── -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="config.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/demo-suite.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -311,45 +171,34 @@
 
 <script>
 (function() {
-  AuthManager.init();
-
-  // ── DOM refs ─────────────────────────────────────────────────
   const loginOverlay  = document.getElementById('hub-login-overlay');
   const googleOverlay = document.getElementById('hub-google-overlay');
-  const emailInp      = document.getElementById('hub-email');
-  const passInp       = document.getElementById('hub-pass');
-  const loginBtn      = document.getElementById('hub-login-btn');
-  const errorEl       = document.getElementById('hub-login-error');
   const userBadge     = document.getElementById('hub-user-badge');
   const logoutBtn     = document.getElementById('hub-logout-btn');
-  const googleBtn     = document.getElementById('hub-google-btn');
-  const googleCancel  = document.getElementById('hub-google-cancel');
 
-  function showLogin()  { loginOverlay.style.display = 'flex'; }
-  function hideLogin()  { loginOverlay.style.display = 'none'; }
-  function showError(msg) {
-    errorEl.textContent = msg;
-    errorEl.style.display = msg ? 'block' : 'none';
-  }
+  if (loginOverlay) loginOverlay.style.display = 'none';
+  if (googleOverlay) googleOverlay.style.display = 'none';
 
   function setUserBadge(user) {
     if (!user) {
-      userBadge.style.display = 'none';
-      logoutBtn.style.display = 'none';
+      if (userBadge) userBadge.style.display = 'none';
+      if (logoutBtn) logoutBtn.style.display = 'none';
       return;
     }
-    const role = (user.user_metadata?.role || 'staff').toLowerCase();
+    const role = (user.app_metadata?.role || 'staff').toLowerCase();
     const email = user.email || '';
-    userBadge.textContent = role.toUpperCase() + ' · ' + email;
-    userBadge.style.display = 'inline';
-    logoutBtn.style.display = 'inline-block';
+    if (userBadge) {
+      userBadge.textContent = role.toUpperCase() + ' · ' + email;
+      userBadge.style.display = 'inline';
+    }
+    if (logoutBtn) logoutBtn.style.display = 'inline-block';
 
     // Role-gated module cards
     const adminCard = document.getElementById('hub-card-admin');
     const mothershipCard = document.getElementById('hub-card-mothership');
-    
+
     if (adminCard) {
-      const canAccessAdmin = ['super_admin', 'registrar', 'admin', 'operator'].includes(role);
+      const canAccessAdmin = ['super_admin', 'registrar', 'admin'].includes(role);
       adminCard.style.display = canAccessAdmin ? 'flex' : 'none';
     }
     if (mothershipCard) {
@@ -358,74 +207,15 @@
     }
   }
 
-  async function handleLogin() {
-    const raw  = emailInp.value.trim();
-    const pass = passInp.value;
-    showError('');
-    loginBtn.disabled = true;
-    loginBtn.textContent = 'Signing in...';
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => Guard.signOut());
+  }
 
-    try {
-      const { user } = await AuthManager.login(raw, pass);
-      await checkGoogleAndGrant(user, raw);
-    } catch (err) {
-      showError(err.message);
-    } finally {
-      loginBtn.disabled = false;
-      loginBtn.textContent = 'Sign In';
+  Guard.ready().then(ctx => {
+    if (ctx && ctx.user) {
+      setUserBadge(ctx.user);
     }
-  }
-
-  async function checkGoogleAndGrant(user, rawInput) {
-    const email = user?.email || '';
-    const loginCount = AuthManager.getLoginCount(email);
-    const isLinked = await AuthManager.isGoogleLinked();
-
-    if (loginCount <= 3 || isLinked) {
-      // Grant access
-      googleOverlay.style.display = 'none';
-      setUserBadge(user);
-      hideLogin();
-    } else {
-      // Force Google linking after 3rd login
-      hideLogin();
-      googleOverlay.style.display = 'flex';
-    }
-  }
-
-  async function handleLogout() {
-    await AuthManager.logout();
-    setUserBadge(null);
-    googleOverlay.style.display = 'none';
-    showLogin();
-    if (passInp) passInp.value = '';
-  }
-
-  // ── Wire events ──────────────────────────────────────────────
-  loginBtn.addEventListener('click', handleLogin);
-  passInp.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
-  logoutBtn.addEventListener('click', handleLogout);
-
-  googleBtn.addEventListener('click', async () => {
-    try { await AuthManager.linkGoogle(); } catch(e) { alert(e.message); }
   });
-
-  googleCancel.addEventListener('click', async () => {
-    await handleLogout();
-    googleOverlay.style.display = 'none';
-    showLogin();
-  });
-
-  // ── Check session on load ────────────────────────────────────
-  (async () => {
-    const session = await AuthManager.getSession();
-    if (session) {
-      await checkGoogleAndGrant(session.user, '');
-    } else {
-      showLogin();
-      if (emailInp) emailInp.focus();
-    }
-  })();
 })();
 </script>
 

@@ -1,17 +1,28 @@
-# Real config — contains keys, never commit
-config.js
+# Note: config.js contains ONLY public client config (SUPABASE_URL, public anon key,
+# and Ed25519 verify public key) and MUST be tracked so Vercel deployments work.
 
-# Environment secrets
+# Environment secrets (NEVER commit service_role or private signing keys)
 .env
 .env.local
+.env.*
+!.env.example
 
-# Supabase local dev
-supabase/.branches
-supabase/.temp
+# Excluded from frontend deployment repository
+supabase/
+scripts/
+mini_id_batch/
+tests/
+*.bat
+*.csv
+*.log
+test_students_24.csv
+project_digest.txt
 
-# Node / Deno
+# Node / Deno / Python
 node_modules/
 .deno/
+__pycache__/
+*.pyc
 
 # OS
 .DS_Store

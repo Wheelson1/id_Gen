@@ -1,0 +1,19 @@
+# Vercel Deployment Exclusions
+# Exclude server-side code, database migrations, dev scripts, local batch runners, CSV test files and logs
+.git/
+.env*
+!.env.example
+supabase/
+scripts/
+mini_id_batch/
+tests/
+*.bat
+*.csv
+*.log
+test_students_24.csv
+project_digest.txt
+package-lock.json
+node_modules/
+.DS_Store
+Thumbs.db
+

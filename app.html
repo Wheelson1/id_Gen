@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Command Console — EBSU Digital ID</title>
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#FAF9F5" />
+  <script>
+    (function() {
+      try {
+        var p = localStorage.getItem('theme') || 'system';
+        var d = p === 'dark' || (p === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme-preference', p);
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.setAttribute('content', d ? '#262624' : '#FAF9F5');
+      } catch(e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/shared.css" />
+  <link rel="stylesheet" href="css/shell.css" />
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/guard.js" data-allowed-roles="operator,scanner,registrar,admin,super_admin,staff" data-allow-student-session="true"></script>
+</head>
+<body class="shell-body">
+
+  <!-- Mobile Slide-Over Backdrop -->
+  <div id="shell-drawer-backdrop" class="shell-drawer-backdrop" aria-hidden="true"></div>
+
+  <div class="shell-root">
+    <!-- ── LEFT SIDEBAR (Chat-history style) ───────────────────── -->
+    <aside id="shell-sidebar" class="shell-sidebar" aria-label="Main Navigation">
+      <div class="sb-brand">
+        <img id="sb-school-logo" src="crest_large.png.jpeg" alt="School Crest" class="sb-logo" />
+        <div class="sb-school-meta sb-hide-collapsed">
+          <div id="sb-school-name" class="sb-school-name">EBONYI STATE UNIVERSITY</div>
+          <div id="sb-school-code" class="sb-school-code">EBSU TENANT</div>
+        </div>
+      </div>
+
+      <div class="sb-scroll">
+        <!-- Dynamic Role-to-Menu items -->
+        <nav id="sb-nav-container" aria-label="Workspace Views"></nav>
+
+        <!-- Recent 20 Actions from activity_log -->
+        <div class="sb-hide-collapsed" style="margin-top:16px;">
+          <div class="sb-group-label">Recent (Last 20 Actions)</div>
+          <div id="sb-recent-list" class="sb-recent-list">
+            <div class="sb-recent-item">Loading recent actions…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pinned User Badge, Settings & Sign-Out -->
+      <div class="sb-footer">
+        <div class="sb-user-row">
+          <div id="sb-avatar" class="sb-avatar" aria-hidden="true">ST</div>
+          <div class="sb-user-meta sb-hide-collapsed">
+            <div id="sb-user-role" class="sb-user-role">STAFF</div>
+            <div id="sb-user-email" class="sb-user-email">staff@ebsu.edu.ng</div>
+          </div>
+        </div>
+        <div class="sb-footer-actions sb-hide-collapsed">
+          <button type="button" id="btn-settings-shortcut" class="sb-footer-btn">⚙️ Settings</button>
+          <button type="button" id="btn-signout" class="sb-footer-btn danger">Sign Out</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── RIGHT CONTENT COLUMN ────────────────────────────────── -->
+    <div class="shell-content-col">
+      <header class="shell-topbar">
+        <div class="topbar-left">
+          <button type="button" id="btn-sidebar-toggle" class="icon-btn" aria-label="Toggle Sidebar">☰</button>
+          <h1 id="topbar-title" class="topbar-title">Overview</h1>
+        </div>
+
+        <div class="topbar-right">
+          <button type="button" id="btn-cmdk" class="cmdk-trigger" aria-label="Open Command Palette">
+            <span>🔍 Quick Jump…</span>
+            <kbd>Ctrl+K</kbd>
+          </button>
+          <button type="button" id="btn-theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme"></button>
+        </div>
+      </header>
+
+      <main id="shell-main" class="shell-main" role="main" tabindex="-1">
+        <!-- Active view module mounts here -->
+      </main>
+    </div>
+  </div>
+
+  <!-- ── CTRL+K COMMAND PALETTE DIALOG ───────────────────────── -->
+  <div id="cmdk-backdrop" class="cmdk-backdrop" role="dialog" aria-modal="true" aria-label="Command Palette">
+    <div class="cmdk-dialog">
+      <input id="cmdk-input" type="text" class="cmdk-input" placeholder="Type a view or command (e.g. Generate, Scanner, Audit Log)…" autocomplete="off" />
+      <div id="cmdk-list" class="cmdk-list" role="listbox"></div>
+    </div>
+  </div>
+
+  <!-- Shared Canvas, QR, Template & Bulk Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="assets.js"></script>
+  <script src="qr.js"></script>
+  <script src="state.js"></script>
+  <script src="js/academicRules.js"></script>
+  <script src="js/cardTemplate.js"></script>
+  <script src="canvas.js"></script>
+  <script src="cropper.js"></script>
+  <script src="js/card3d.js"></script>
+  <script src="js/bulkStudio.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/theme.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      ShellApp.init();
+    });
+  </script>
+</body>
+</html>
+

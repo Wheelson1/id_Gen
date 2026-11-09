@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Sign In — EBSU Digital ID</title>
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#FAF9F5" />
+  <script>
+    (function() {
+      try {
+        var p = localStorage.getItem('theme') || 'system';
+        var d = p === 'dark' || (p === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme-preference', p);
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.setAttribute('content', d ? '#262624' : '#FAF9F5');
+      } catch(e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/shared.css" />
+  <style>
+    :root {
+      --bg: var(--bg, #FAF9F5);
+      --surface: var(--surface, #FFFFFF);
+      --surface-2: var(--sunken, #F3F1EA);
+      --border: var(--line, #E4E0D8);
+      --gold: var(--warning, #A15C07);
+      --blue: var(--accent, #1558C0);
+      --blue-lt: var(--accent, #1558C0);
+      --text: var(--ink, #1F1E1B);
+      --muted: var(--muted, #6B675F);
+      --green: var(--success, #1F7A4D);
+      --red: var(--error, #B3261E);
+      --amber: var(--warning, #A15C07);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .login-shell {
+      width: 100%;
+      max-width: 440px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 32px 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .brand-crest {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: 0.3px;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 6px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0 0 20px;
+    }
+
+    .field-group { margin-bottom: 14px; }
+
+    .field-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.15s;
+    }
+
+    .field-input:focus {
+      outline: 2px solid var(--blue) !important;
+      outline-offset: 2px !important;
+      border-color: var(--blue);
+    }
+
+    .code-input {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      letter-spacing: 6px;
+      text-align: center;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 13px 16px;
+      background: linear-gradient(135deg, #1558c0, #0f4396);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn-submit:hover:not(:disabled) { opacity: 0.94; }
+    .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 10px 14px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn-secondary:hover { color: #fff; border-color: var(--muted); }
+
+    .alert-box {
+      display: none;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+
+    .alert-error {
+      display: block;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .alert-success {
+      display: block;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #86efac;
+    }
+
+    .alert-info {
+      display: block;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+    }
+
+    .qr-enroll-box {
+      background: #fff;
+      padding: 14px;
+      border-radius: 12px;
+      width: 190px;
+      height: 190px;
+      margin: 0 auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-enroll-box img, .qr-enroll-box svg {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .secret-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: #060e1a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      text-align: center;
+      color: var(--gold);
+      word-break: break-all;
+      margin-bottom: 16px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+    }
+
+    .footer-links a, .link-btn {
+      color: var(--blue-lt);
+      text-decoration: none;
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .footer-links a:hover, .link-btn:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; width:100%; max-width:440px; margin-bottom:12px;">
+    <a href="index.html" style="font-size:12px; color:var(--muted); text-decoration:none;">← Student Portal</a>
+    <button type="button" class="theme-toggle-btn" aria-label="Toggle Theme"></button>
+  </div>
+
+  <main class="login-shell" role="main">
+    <div class="brand-row">
+      <img src="crest_large.png.jpeg" alt="EBSU Crest" class="brand-crest" />
+      <div>
+        <div class="brand-title">EBSU Identity Bureau</div>
+        <div class="brand-sub">Authorized Staff Portal</div>
+      </div>
+    </div>
+
+    <div id="global-alert" class="alert-box" role="alert"></div>
+
+    <!-- ── VIEW 1: EMAIL + PASSWORD LOGIN ──────────────────────── -->
+    <section id="view-login" class="view-panel active" aria-label="Staff Sign In">
+      <h1>Staff Sign In</h1>
+      <p class="subtitle">
+        Sign in with your official staff email, Reg No (1234567890) or Matric No (EBSU/2021/101397).
+      </p>
+
+      <!-- Active Test Credentials Callout -->
+      <div style="background: rgba(212,165,116,0.12); border: 1px solid rgba(212,165,116,0.3); border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; font-size: 12px; line-height: 1.5;">
+        <div style="font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+          <span>⚡ Universal Test Credentials:</span>
+          <span style="font-size: 10px; background: #1558c0; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 700;">ACTIVE</span>
+        </div>
+        <div style="color: #cdd8e8;">
+          Reg No: <strong class="mono" style="color: #ffd700;">1234567890</strong> · Matric: <strong class="mono" style="color: #ffd700;">EBSU/2021/101397</strong>
+        </div>
+        <div style="color: #94a3b8; font-size: 11px; margin-top: 2px;">
+          Date of Birth: <strong class="mono" style="color: #cdd8e8;">26th Feb 2003 (2003-02-26)</strong>
+        </div>
+        <button type="button" id="btn-quick-fill-admin" style="margin-top: 8px; width: 100%; background: linear-gradient(135deg, #1558c0, #3b82f6); color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 800; cursor: pointer;">
+          ⚡ 1-Click Fast Sign In as Admin →
+        </button>
+      </div>
+
+      <form id="form-login" novalidate>
+        <div class="field-group">
+          <label class="field-label" for="login-email">Staff Email, Reg No or Matric No</label>
+          <input id="login-email" type="text" class="field-input" value="1234567890" placeholder="1234567890 or EBSU/2021/101397" autocomplete="username" required />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="login-password">Password</label>
+          <input id="login-password" type="password" class="field-input" value="1234567890" placeholder="••••••••••••" autocomplete="current-password" required />
+        </div>
+
+        <button id="btn-login" type="submit" class="btn-submit">Sign In →</button>
+      </form>
+
+      <div class="footer-links">
+        <a href="index.html">← Public Home</a>
+        <button type="button" id="btn-goto-reset" class="link-btn">Forgot password?</button>
+      </div>
+    </section>
+
+    <!-- ── VIEW 2: TOTP MFA CHALLENGE (aal1 -> aal2) ───────────── -->
+    <section id="view-mfa-verify" class="view-panel" aria-label="Two-Factor Verification">
+      <h1>Two-Factor Authentication</h1>
+      <p class="subtitle">
+        Your role requires Two-Factor Authentication (TOTP). Enter the 6-digit code from your authenticator app.
+      </p>
+
+      <form id="form-mfa-verify" novalidate>
+        <div class="field-group">
+          <label class="field-label" for="mfa-verify-code">6-Digit Authenticator Code</label>
+          <input id="mfa-verify-code" type="text" inputmode="numeric" maxlength="6" class="field-input code-input" placeholder="000000" autocomplete="one-time-code" required />
+        </div>
+
+        <button id="btn-mfa-verify" type="submit" class="btn-submit">Verify Code</button>
+        <button type="button" id="btn-mfa-cancel" class="btn-secondary">Sign Out &amp; Cancel</button>
+      </form>
+    </section>
+
+    <!-- ── VIEW 3: TOTP MFA ENROLLMENT (first-time setup) ──────── -->
+    <section id="view-mfa-enroll" class="view-panel" aria-label="Enroll Two-Factor Authenticator">
+      <h1>Set Up Authenticator (2FA)</h1>
+      <p class="subtitle">
+        Registrar, Admin, and Super Admin accounts must enroll a TOTP authenticator (Google Authenticator, Authy, or 1Password) before accessing the console.
+      </p>
+
+      <div id="mfa-qr-container" class="qr-enroll-box" aria-label="TOTP QR Code"></div>
+      <div id="mfa-secret-text" class="secret-pill">Loading secret…</div>
+
+      <form id="form-mfa-enroll" novalidate>
+        <div class="field-group">
+          <label class="field-label" for="mfa-enroll-code">Confirm 6-Digit Code</label>
+          <input id="mfa-enroll-code" type="text" inputmode="numeric" maxlength="6" class="field-input code-input" placeholder="000000" autocomplete="one-time-code" required />
+        </div>
+
+        <button id="btn-mfa-enroll" type="submit" class="btn-submit">Activate 2FA &amp; Continue</button>
+        <button type="button" id="btn-enroll-cancel" class="btn-secondary">Sign Out &amp; Cancel</button>
+      </form>
+    </section>
+
+    <!-- ── VIEW 4: PASSWORD RESET REQUEST ──────────────────────── -->
+    <section id="view-reset-request" class="view-panel" aria-label="Reset Password">
+      <h1>Reset Staff Password</h1>
+      <p class="subtitle">
+        Enter your staff email address. If an authorized account exists, a password recovery link will be sent.
+      </p>
+
+      <form id="form-reset-request" novalidate>
+        <div class="field-group">
+          <label class="field-label" for="reset-email">Staff Email</label>
+          <input id="reset-email" type="email" class="field-input" placeholder="staff@ebsu.edu.ng" autocomplete="email" required />
+        </div>
+
+        <button id="btn-reset-request" type="submit" class="btn-submit">Send Recovery Link</button>
+        <button type="button" id="btn-back-to-login" class="btn-secondary">← Back to Sign In</button>
+      </form>
+    </section>
+
+    <!-- ── VIEW 5: PASSWORD RECOVERY CALLBACK (set new password) ─ -->
+    <section id="view-recovery-callback" class="view-panel" aria-label="Set New Password">
+      <h1>Set New Password</h1>
+      <p class="subtitle">
+        Choose a strong new password (at least 10 characters) for your staff account.
+      </p>
+
+      <form id="form-recovery-callback" novalidate>
+        <div class="field-group">
+          <label class="field-label" for="recovery-pass">New Password</label>
+          <input id="recovery-pass" type="password" class="field-input" placeholder="Minimum 10 characters" autocomplete="new-password" required />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="recovery-pass-confirm">Confirm New Password</label>
+          <input id="recovery-pass-confirm" type="password" class="field-input" placeholder="Re-enter new password" autocomplete="new-password" required />
+        </div>
+
+        <button id="btn-recovery-save" type="submit" class="btn-submit">Update Password</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+  (function () {
+    const client = AuthManager.init();
+    const alertBox = document.getElementById('global-alert');
+    let activeFactorId = null;
+    let pendingRole = null;
+
+    const views = {
+      login: document.getElementById('view-login'),
+      mfaVerify: document.getElementById('view-mfa-verify'),
+      mfaEnroll: document.getElementById('view-mfa-enroll'),
+      resetRequest: document.getElementById('view-reset-request'),
+      recoveryCallback: document.getElementById('view-recovery-callback'),
+    };
+
+    function showView(name) {
+      Object.keys(views).forEach(k => {
+        if (views[k]) views[k].classList.toggle('active', k === name);
+      });
+    }
+
+    function setAlert(message, type) {
+      if (!message) {
+        alertBox.className = 'alert-box';
+        alertBox.textContent = '';
+        return;
+      }
+      alertBox.textContent = message;
+      alertBox.className = 'alert-box alert-' + (type || 'error');
+    }
+
+    // Validate ?next= parameter to prevent open redirects
+    function getSafeNextUrl(role) {
+      const params = new URLSearchParams(window.location.search);
+      const rawNext = (params.get('next') || '').trim();
+      if (
+        rawNext &&
+        !rawNext.startsWith('http://') &&
+        !rawNext.startsWith('https://') &&
+        !rawNext.startsWith('//') &&
+        !rawNext.includes('javascript:') &&
+        !rawNext.startsWith('login.html')
+      ) {
+        return rawNext;
+      }
+      return AuthManager.defaultHomeForRole(role);
+    }
+
+    async function handlePostPasswordFlow(role) {
+      pendingRole = role;
+      if (!AuthManager.requiresMfa(role)) {
+        window.location.replace(getSafeNextUrl(role));
+        return;
+      }
+
+      const mfa = await AuthManager.getMfaStatus();
+      if (mfa.currentLevel === 'aal2') {
+        window.location.replace(getSafeNextUrl(role));
+        return;
+      }
+
+      if (mfa.verifiedTotpFactors && mfa.verifiedTotpFactors.length > 0) {
+        activeFactorId = mfa.verifiedTotpFactors[0].id;
+        setAlert('', '');
+        showView('mfaVerify');
+        document.getElementById('mfa-verify-code')?.focus();
+      } else {
+        // Need first-time TOTP enrollment
+        const enrollData = await AuthManager.enrollTotp();
+        activeFactorId = enrollData.id;
+        const qrContainer = document.getElementById('mfa-qr-container');
+        const secretEl = document.getElementById('mfa-secret-text');
+        if (qrContainer && enrollData.totp?.qr_code) {
+          const img = document.createElement('img');
+          img.src = enrollData.totp.qr_code;
+          img.alt = 'TOTP Authenticator QR Code';
+          qrContainer.innerHTML = '';
+          qrContainer.appendChild(img);
+        }
+        if (secretEl && enrollData.totp?.secret) {
+          secretEl.textContent = 'Secret: ' + enrollData.totp.secret;
+        }
+        setAlert('', '');
+        showView('mfaEnroll');
+        document.getElementById('mfa-enroll-code')?.focus();
+      }
+    }
+
+    // Quick Test Fill Button
+    document.getElementById('btn-quick-fill-admin')?.addEventListener('click', () => {
+      document.getElementById('login-email').value = '1234567890';
+      document.getElementById('login-password').value = '1234567890';
+      document.getElementById('form-login').dispatchEvent(new Event('submit', { cancelable: true }));
+    });
+
+    // 1. Login Form Submit
+    document.getElementById('form-login').addEventListener('submit', async e => {
+      e.preventDefault();
+      setAlert('', '');
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const btn = document.getElementById('btn-login');
+
+      btn.disabled = true;
+      btn.textContent = 'Signing in…';
+      try {
+        const res = await AuthManager.login(email, password);
+        await handlePostPasswordFlow(res.role);
+      } catch (err) {
+        setAlert(err.message || 'Invalid email or password.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Sign In →';
+      }
+    });
+
+    // 2. MFA Verify Submit
+    document.getElementById('form-mfa-verify').addEventListener('submit', async e => {
+      e.preventDefault();
+      setAlert('', '');
+      const code = document.getElementById('mfa-verify-code').value;
+      const btn = document.getElementById('btn-mfa-verify');
+
+      btn.disabled = true;
+      btn.textContent = 'Verifying…';
+      try {
+        await AuthManager.verifyTotp(activeFactorId, code);
+        window.location.replace(getSafeNextUrl(pendingRole));
+      } catch (err) {
+        setAlert(err.message || 'Invalid 6-digit code.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Verify Code';
+      }
+    });
+
+    // 3. MFA Enroll Submit
+    document.getElementById('form-mfa-enroll').addEventListener('submit', async e => {
+      e.preventDefault();
+      setAlert('', '');
+      const code = document.getElementById('mfa-enroll-code').value;
+      const btn = document.getElementById('btn-mfa-enroll');
+
+      btn.disabled = true;
+      btn.textContent = 'Activating 2FA…';
+      try {
+        await AuthManager.verifyTotp(activeFactorId, code);
+        window.location.replace(getSafeNextUrl(pendingRole));
+      } catch (err) {
+        setAlert(err.message || 'Invalid 6-digit code.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Activate 2FA & Continue';
+      }
+    });
+
+    // Cancel MFA / Sign Out
+    async function cancelAndSignOut() {
+      await AuthManager.logout();
+      setAlert('Signed out.', 'info');
+      showView('login');
+    }
+    document.getElementById('btn-mfa-cancel').addEventListener('click', cancelAndSignOut);
+    document.getElementById('btn-enroll-cancel').addEventListener('click', cancelAndSignOut);
+
+    // 4. Password Reset Request
+    document.getElementById('btn-goto-reset').addEventListener('click', () => {
+      setAlert('', '');
+      showView('resetRequest');
+      document.getElementById('reset-email')?.focus();
+    });
+
+    document.getElementById('btn-back-to-login').addEventListener('click', () => {
+      setAlert('', '');
+      showView('login');
+    });
+
+    document.getElementById('form-reset-request').addEventListener('submit', async e => {
+      e.preventDefault();
+      setAlert('', '');
+      const email = document.getElementById('reset-email').value;
+      const btn = document.getElementById('btn-reset-request');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      try {
+        await AuthManager.requestPasswordReset(
+          email,
+          window.location.origin + window.location.pathname + '?type=recovery'
+        );
+        setAlert(
+          'If an authorized staff account matches that email, a password reset link has been sent.',
+          'success'
+        );
+      } catch (err) {
+        setAlert(err.message || 'Unable to process request.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Recovery Link';
+      }
+    });
+
+    // 5. Password Recovery Callback Submit
+    document.getElementById('form-recovery-callback').addEventListener('submit', async e => {
+      e.preventDefault();
+      setAlert('', '');
+      const p1 = document.getElementById('recovery-pass').value;
+      const p2 = document.getElementById('recovery-pass-confirm').value;
+      if (p1 !== p2) {
+        setAlert('Passwords do not match.', 'error');
+        return;
+      }
+      const btn = document.getElementById('btn-recovery-save');
+      btn.disabled = true;
+      btn.textContent = 'Updating…';
+      try {
+        await AuthManager.updatePassword(p1);
+        await AuthManager.logout();
+        setAlert('Password updated. Please sign in with your new password.', 'success');
+        showView('login');
+      } catch (err) {
+        setAlert(err.message || 'Failed to update password.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Update Password';
+      }
+    });
+
+    // Listen for Supabase PASSWORD_RECOVERY event
+    if (client) {
+      client.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setAlert('Enter your new password below.', 'info');
+          showView('recoveryCallback');
+        }
+      });
+    }
+
+    // Initial load checks (?reason=, ?type=recovery, or existing session)
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const hash = window.location.hash || '';
+      const reason = params.get('reason');
+
+      if (params.get('type') === 'recovery' || hash.includes('type=recovery')) {
+        showView('recoveryCallback');
+        return;
+      }
+
+      if (reason === 'timeout') {
+        setAlert('Your session expired after 30 minutes of inactivity. Please sign in again.', 'info');
+      } else if (reason === 'forbidden') {
+        setAlert('Your account does not have permission to view that page.', 'error');
+      } else if (reason === 'signed_out') {
+        setAlert('You have been signed out.', 'success');
+      }
+
+      const session = await AuthManager.getSession();
+      if (session && session.user) {
+        const role = session.user.app_metadata?.role || '';
+        if (AuthManager.ALLOWED_STAFF_ROLES.includes(role) && reason !== 'forbidden') {
+          try {
+            await handlePostPasswordFlow(role);
+            return;
+          } catch (e) {}
+        }
+      }
+    })();
+  })();
+  </script>
+  <script src="js/theme.js"></script>
+</body>
+</html>
+

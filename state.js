@@ -5,21 +5,29 @@
 const AppState = (() => {
   function newStudent() {
     return {
-      name: 'Wilson Somtochukwu Nnaji', matric: '09035005623', faculty: 'Science', dept: 'Computer Science',
-      level: '100 Level', session: '2024/2025',
-      blood: 'A+', genotype: 'AA',
-      photo: null, sig: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="50"><text x="10" y="40" font-family="cursive" font-size="40" fill="black">WSN</text></svg>',
+      name: 'NNAJI WILSON SOMTOCHUKWU',
+      matric: 'EBSU/2021/101397',
+      regNo: '1234567890',
+      dob: '2003-02-26',
+      faculty: 'Faculty of Science',
+      dept: 'Computer Science',
+      level: '400 Level',
+      session: '2024/2025',
+      blood: 'O+',
+      genotype: 'AA',
+      photo: 'images/demo_user_photo.jpg',
+      sig: 'images/demo_user_sig.png',
       // Set by the issue-card Edge Function after a successful card issuance.
       // cardId  = UUID stored in the database (the card's unique identifier)
       // qrString = opaque token "EBSU1:<cardId>:<ed25519Sig>" encoded in the QR
-      cardId:   null,
-      qrString: null,
+      cardId:   'ebsu-student-2021-101397',
+      qrString: 'EBSU1:EBSU/2021/101397:ED25519_SIG_1234567890',
     };
   }
 
   const state = {
     schoolName: 'EBONYI STATE UNIVERSITY, ABAKALIKI',
-    expiry: '2029',
+    expiry: '2025',
     customLogo: null,
     students: [newStudent()],
     activeIdx: 0,

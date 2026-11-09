@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Registration &amp; Student Support Desk | EBSU SID Platform</title>
+    <meta name="description" content="Public student helpdesk for Ebonyi State University (EBSU). Submit a manual registration request if your JAMB record is missing, track approval status, or open a support ticket.">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#FAF9F5">
+    <script>
+      (function() {
+        try {
+          var p = localStorage.getItem('theme') || 'system';
+          var d = p === 'dark' || (p === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme-preference', p);
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', d ? '#262624' : '#FAF9F5');
+        } catch(e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/landing-pro.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+</head>
+<body class="mc-body">
+
+    <!-- Top Status Bar -->
+    <div class="mc-topbar">
+        <div class="mc-container mc-topbar-inner">
+            <div class="mc-topbar-badge">
+                <span class="mc-status-dot" aria-hidden="true"></span>
+                <span>PUBLIC STUDENT SUPPORT &amp; MANUAL REGISTRATION DESK · NO STAFF LOGIN REQUIRED</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <span>Helpdesk: <a href="tel:09016054526" class="mono" style="color:inherit; font-weight:700;">09016054526</a> · <a href="tel:09035005623" class="mono" style="color:inherit; font-weight:700;">09035005623</a></span>
+                <a href="index.html" style="color:var(--mc-gold); font-weight:700;">← Back to Student Onboarding</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="mc-header">
+        <div class="mc-container mc-header-inner">
+            <a href="index.html" class="mc-brand">
+                <img src="images/ebsu_logo.png" alt="Ebonyi State University Crest" class="mc-brand-logo" onerror="this.style.display='none'">
+                <div>
+                    <span class="mc-brand-title">EBSU Student Support Desk</span>
+                    <span class="mc-brand-sub">Manual Registration &amp; Issue Resolution</span>
+                </div>
+            </a>
+
+            <nav class="mc-nav" aria-label="Support Navigation">
+                <a href="index.html" class="mc-nav-link">← Student Portal</a>
+                <a href="verify.html" class="mc-nav-link mc-nav-verify">🛡️ Verify Card</a>
+                <a href="invest.html" class="mc-nav-link mc-nav-pitch">For Institutions</a>
+                <a href="login.html" class="mc-nav-link mc-nav-staff">Staff Login</a>
+                <button type="button" class="theme-toggle-btn" aria-label="Toggle Theme"></button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="mc-section" style="padding-top:40px;">
+        <div class="mc-container" style="max-width:960px;">
+
+            <div style="margin-bottom:28px;">
+                <div class="mc-eyebrow">PUBLIC STUDENT HELPDESK</div>
+                <h1 class="mc-section-title" style="margin-bottom:8px;">Manual Registration &amp; Support</h1>
+                <p class="mc-section-desc">
+                    If your JAMB or Matriculation record is not yet in the onboarding database, submit a <strong>Manual Registration Request</strong> below for Registrar verification, or open a support ticket.
+                </p>
+            </div>
+
+            <!-- 4 Action Tabs -->
+            <div class="mc-tab-bar" role="tablist">
+                <button type="button" class="mc-tab-btn active" id="sup-tab-reg" onclick="switchSupportTab('reg')">
+                    📝 1. Submit Manual Registration
+                </button>
+                <button type="button" class="mc-tab-btn" id="sup-tab-check" onclick="switchSupportTab('check')">
+                    🔎 2. Track Registration Status
+                </button>
+                <button type="button" class="mc-tab-btn" id="sup-tab-ticket" onclick="switchSupportTab('ticket')">
+                    📩 3. Open Support Ticket
+                </button>
+                <button type="button" class="mc-tab-btn" id="sup-tab-thread" onclick="switchSupportTab('thread')">
+                    💬 4. View / Reply to Ticket
+                </button>
+            </div>
+
+            <!-- ==================== TAB 1: SUBMIT MANUAL REGISTRATION ==================== -->
+            <section id="sup-panel-reg" class="mc-portal-card">
+                <div class="mc-portal-header">
+                    <div>
+                        <h2 class="mc-portal-header-title">📝 Missing From System? Submit Manual Registration</h2>
+                        <p class="mc-portal-header-sub">Upload your admission proof so the Registrar can add your record to the onboarding portal</p>
+                    </div>
+                    <span class="mc-fee-chip">REGISTRAR REVIEW</span>
+                </div>
+                <div class="mc-portal-body">
+                    <div id="sup-reg-alert" class="onb-alert"></div>
+
+                    <form id="sup-reg-form" style="display:flex; flex-direction:column; gap:16px;">
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+                            <div>
+                                <label class="onb-label" for="reg-jamb">JAMB Registration Number *</label>
+                                <input type="text" id="reg-jamb" class="onb-input mono" placeholder="e.g. 2026104928BA" required style="text-transform:uppercase;">
+                            </div>
+                            <div>
+                                <label class="onb-label" for="reg-matric">Matriculation Number (if assigned)</label>
+                                <input type="text" id="reg-matric" class="onb-input mono" placeholder="e.g. EBSU/2026/..." style="text-transform:uppercase;">
+                            </div>
+                            <div>
+                                <label class="onb-label" for="reg-dob">Date of Birth *</label>
+                                <input type="date" id="reg-dob" class="onb-input" required>
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+                            <div>
+                                <label class="onb-label" for="reg-name">Full Name (Surname First) *</label>
+                                <input type="text" id="reg-name" class="onb-input" placeholder="e.g. OKOROFOR CHINEDU EMEKA" required style="text-transform:uppercase;">
+                            </div>
+                            <div>
+                                <label class="onb-label" for="reg-faculty">Faculty *</label>
+                                <input type="text" id="reg-faculty" class="onb-input" placeholder="e.g. Physical Sciences" required>
+                            </div>
+                            <div>
+                                <label class="onb-label" for="reg-dept">Department *</label>
+                                <input type="text" id="reg-dept" class="onb-input" placeholder="e.g. Computer Science" required>
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px;">
+                            <div>
+                                <label class="onb-label" for="reg-level">Academic Level *</label>
+                                <select id="reg-level" class="onb-select" required>
+                                    <option value="100L">100 Level</option>
+                                    <option value="200L">200 Level</option>
+                                    <option value="300L">300 Level</option>
+                                    <option value="400L">400 Level</option>
+                                    <option value="500L">500 Level</option>
+                                    <option value="600L">600 Level / PG</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="onb-label" for="reg-phone">Phone / WhatsApp Number *</label>
+                                <input type="tel" id="reg-phone" class="onb-input mono" placeholder="080..." required>
+                            </div>
+                            <div>
+                                <label class="onb-label" for="reg-email">Email Address</label>
+                                <input type="email" id="reg-email" class="onb-input" placeholder="student@example.com">
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; padding:16px; border-radius:12px; background:var(--mc-bg-elevated); border:1px solid var(--mc-border);">
+                            <div>
+                                <label class="onb-label" for="reg-photo">Passport Photo (JPG/PNG, max 3MB)</label>
+                                <input type="file" id="reg-photo" accept="image/jpeg,image/png" class="onb-input" style="font-size:0.8rem; padding:8px;">
+                            </div>
+                            <div>
+                                <label class="onb-label" for="reg-admission">Admission Letter (JPG/PNG/PDF)</label>
+                                <input type="file" id="reg-admission" accept="image/jpeg,image/png,application/pdf" class="onb-input" style="font-size:0.8rem; padding:8px;">
+                            </div>
+                            <div>
+                                <label class="onb-label" for="reg-receipt">Fee / Screening Receipt (Optional)</label>
+                                <input type="file" id="reg-receipt" accept="image/jpeg,image/png,application/pdf" class="onb-input" style="font-size:0.8rem; padding:8px;">
+                            </div>
+                        </div>
+
+                        <div id="sup-turnstile-reg" style="min-height:6px; display:flex; justify-content:center;"></div>
+
+                        <button type="submit" id="reg-submit-btn" class="onb-btn onb-btn-primary">
+                            📤 Submit Manual Registration Request
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ==================== TAB 2: TRACK MANUAL REGISTRATION ==================== -->
+            <section id="sup-panel-check" class="mc-portal-card" style="display:none;">
+                <div class="mc-portal-header">
+                    <div>
+                        <h2 class="mc-portal-header-title">🔎 Track Manual Registration Request</h2>
+                        <p class="mc-portal-header-sub">Enter your Tracking Code (`EBSU-REG-...`) and JAMB Number to check Registrar approval</p>
+                    </div>
+                </div>
+                <div class="mc-portal-body">
+                    <div id="sup-check-alert" class="onb-alert"></div>
+                    <form id="sup-check-form" style="display:flex; flex-direction:column; gap:14px;">
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+                            <div>
+                                <label class="onb-label" for="check-code">Tracking Code *</label>
+                                <input type="text" id="check-code" class="onb-input mono" placeholder="e.g. EBSU-REG-2026..." required style="text-transform:uppercase;">
+                            </div>
+                            <div>
+                                <label class="onb-label" for="check-jamb">JAMB Registration Number *</label>
+                                <input type="text" id="check-jamb" class="onb-input mono" placeholder="e.g. 2026104928BA" required style="text-transform:uppercase;">
+                            </div>
+                        </div>
+                        <button type="submit" id="check-submit-btn" class="onb-btn onb-btn-primary">
+                            🔍 Check Approval Status
+                        </button>
+                    </form>
+                    <div id="sup-check-result" style="display:none; margin-top:18px;" class="onb-student-card"></div>
+                </div>
+            </section>
+
+            <!-- ==================== TAB 3: OPEN SUPPORT TICKET ==================== -->
+            <section id="sup-panel-ticket" class="mc-portal-card" style="display:none;">
+                <div class="mc-portal-header">
+                    <div>
+                        <h2 class="mc-portal-header-title">📩 Open a Student Support Ticket</h2>
+                        <p class="mc-portal-header-sub">Report wrong biodata, payment reconciliation issues, or lost/damaged cards</p>
+                    </div>
+                </div>
+                <div class="mc-portal-body">
+                    <div id="sup-ticket-alert" class="onb-alert"></div>
+                    <form id="sup-ticket-form" style="display:flex; flex-direction:column; gap:14px;">
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+                            <div>
+                                <label class="onb-label" for="tkt-jamb">JAMB or Matric Number *</label>
+                                <input type="text" id="tkt-jamb" class="onb-input mono" placeholder="e.g. 2026104928BA" required style="text-transform:uppercase;">
+                            </div>
+                            <div>
+                                <label class="onb-label" for="tkt-name">Your Full Name *</label>
+                                <input type="text" id="tkt-name" class="onb-input" placeholder="Surname First" required>
+                            </div>
+                            <div>
+                                <label class="onb-label" for="tkt-category">Issue Category *</label>
+                                <select id="tkt-category" class="onb-select" required>
+                                    <option value="wrong_details">Wrong Name / Department / Level</option>
+                                    <option value="payment_issue">ID Card Payment Issue</option>
+                                    <option value="missing_record">Record Not Found</option>
+                                    <option value="lost_card">Report Lost or Stolen ID Card</option>
+                                    <option value="frozen_account">DOB Lockout / Frozen Account</option>
+                                    <option value="other">Other Inquiry</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+                            <div>
+                                <label class="onb-label" for="tkt-phone">Phone / WhatsApp Number *</label>
+                                <input type="tel" id="tkt-phone" class="onb-input mono" placeholder="080..." required>
+                            </div>
+                            <div>
+                                <label class="onb-label" for="tkt-email">Email Address</label>
+                                <input type="email" id="tkt-email" class="onb-input" placeholder="student@example.com">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="onb-label" for="tkt-subject">Brief Subject *</label>
+                            <input type="text" id="tkt-subject" class="onb-input" placeholder="e.g. Spelling correction on middle name" required>
+                        </div>
+
+                        <div>
+                            <label class="onb-label" for="tkt-message">Detailed Description *</label>
+                            <textarea id="tkt-message" class="onb-input" rows="4" placeholder="Explain how we can help you..." required></textarea>
+                        </div>
+
+                        <div id="sup-turnstile-tkt" style="min-height:6px; display:flex; justify-content:center;"></div>
+
+                        <button type="submit" id="tkt-submit-btn" class="onb-btn onb-btn-primary">
+                            📩 Submit Support Ticket
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ==================== TAB 4: VIEW / REPLY TO TICKET ==================== -->
+            <section id="sup-panel-thread" class="mc-portal-card" style="display:none;">
+                <div class="mc-portal-header">
+                    <div>
+                        <h2 class="mc-portal-header-title">💬 View &amp; Reply to Support Ticket</h2>
+                        <p class="mc-portal-header-sub">Enter your Ticket Number (`EBSU-TKT-...`) and JAMB/Matric Number</p>
+                    </div>
+                </div>
+                <div class="mc-portal-body">
+                    <div id="sup-thread-alert" class="onb-alert"></div>
+                    <form id="sup-thread-lookup-form" style="display:flex; flex-direction:column; gap:14px;">
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+                            <div>
+                                <label class="onb-label" for="thr-ticket">Ticket Number *</label>
+                                <input type="text" id="thr-ticket" class="onb-input mono" placeholder="e.g. EBSU-TKT-2026..." required style="text-transform:uppercase;">
+                            </div>
+                            <div>
+                                <label class="onb-label" for="thr-jamb">JAMB or Matric Number *</label>
+                                <input type="text" id="thr-jamb" class="onb-input mono" placeholder="e.g. 2026104928BA" required style="text-transform:uppercase;">
+                            </div>
+                        </div>
+                        <button type="submit" id="thr-lookup-btn" class="onb-btn onb-btn-primary">
+                            🔍 Load Ticket Conversation
+                        </button>
+                    </form>
+
+                    <div id="sup-thread-box" style="display:none; margin-top:20px;">
+                        <div id="sup-thread-header" class="onb-student-card"></div>
+                        <div id="sup-thread-messages" style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;"></div>
+
+                        <form id="sup-thread-reply-form" style="display:flex; flex-direction:column; gap:10px;">
+                            <label class="onb-label" for="thr-reply-text">Send a Reply to Support Staff</label>
+                            <textarea id="thr-reply-text" class="onb-input" rows="3" placeholder="Type your follow-up message..." required></textarea>
+                            <button type="submit" id="thr-reply-btn" class="onb-btn onb-btn-success">
+                                💬 Send Reply
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mc-footer">
+        <div class="mc-container">
+            <div class="mc-footer-inner">
+                <div>
+                    <div style="font-family:var(--font-display); font-weight:800; font-size:0.95rem; color:#F8FAFC; margin-bottom:4px;">
+                        Ebonyi State University (EBSU) · Student Support &amp; Registration Desk
+                    </div>
+                    <div>Direct Lines: <a href="tel:09016054526" class="mono">09016054526</a> · <a href="tel:09035005623" class="mono">09035005623</a></div>
+                </div>
+                <div class="mc-footer-links">
+                    <a href="index.html">Student Portal</a>
+                    <a href="verify.html">Verify Card</a>
+                    <a href="invest.html">For Institutions</a>
+                    <a href="login.html">Staff Login</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="js/theme.js"></script>
+    <script>
+
+        // Tab Switching
+        function switchSupportTab(tab) {
+            ['reg', 'check', 'ticket', 'thread'].forEach(function (k) {
+                const btn = document.getElementById('sup-tab-' + k);
+                const panel = document.getElementById('sup-panel-' + k);
+                if (btn) btn.classList.toggle('active', k === tab);
+                if (panel) panel.style.display = k === tab ? 'block' : 'none';
+            });
+        }
+
+        // Turnstile Token Management
+        let regTurnstileToken = '';
+        let tktTurnstileToken = '';
+        let regTurnstileId = null;
+        let tktTurnstileId = null;
+
+        function renderSupportTurnstile(theme) {
+            const cfg = window.APP_CONFIG || {};
+            if (!window.turnstile || !cfg.TURNSTILE_SITE_KEY) return;
+            const regBox = document.getElementById('sup-turnstile-reg');
+            const tktBox = document.getElementById('sup-turnstile-tkt');
+
+            if (regBox) {
+                try {
+                    if (regTurnstileId !== null) window.turnstile.remove(regTurnstileId);
+                    regBox.innerHTML = '';
+                    regTurnstileId = window.turnstile.render('#sup-turnstile-reg', {
+                        sitekey: cfg.TURNSTILE_SITE_KEY,
+                        theme: theme || 'auto',
+                        callback: function (t) { regTurnstileToken = t; }
+                    });
+                } catch (_) {}
+            }
+
+            if (tktBox) {
+                try {
+                    if (tktTurnstileId !== null) window.turnstile.remove(tktTurnstileId);
+                    tktBox.innerHTML = '';
+                    tktTurnstileId = window.turnstile.render('#sup-turnstile-tkt', {
+                        sitekey: cfg.TURNSTILE_SITE_KEY,
+                        theme: theme || 'auto',
+                        callback: function (t) { tktTurnstileToken = t; }
+                    });
+                } catch (_) {}
+            }
+        }
+
+        window.addEventListener('load', function () {
+            const cur = (window.ThemeManager && window.ThemeManager.getResolvedTheme()) || 'auto';
+            renderSupportTurnstile(cur);
+            if (window.ThemeManager) {
+                window.ThemeManager.onThemeChange(function (ev) {
+                    renderSupportTurnstile(ev.resolved);
+                });
+            }
+        });
+
+        function fileToBase64(file) {
+            return new Promise(function (resolve, reject) {
+                if (!file) return resolve(null);
+                const reader = new FileReader();
+                reader.onload = function () { resolve(reader.result); };
+                reader.onerror = function (e) { reject(e); };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function callSupportDesk(payload) {
+            const cfg = window.APP_CONFIG || {};
+            const res = await fetch((cfg.SUPABASE_URL || '').replace(/\/$/, '') + '/functions/v1/support-desk', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': cfg.SUPABASE_ANON_KEY || '',
+                    'Authorization': 'Bearer ' + (cfg.SUPABASE_ANON_KEY || '')
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) {
+                throw new Error(data.error || 'Request failed');
+            }
+            return data;
+        }
+
+        function setAlert(id, type, html) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.className = 'onb-alert onb-alert-' + type;
+            el.innerHTML = html;
+            el.style.display = 'block';
+        }
+
+        // 1. Submit Manual Registration
+        document.getElementById('sup-reg-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('reg-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Uploading & Submitting...';
+
+            try {
+                const photoFile = document.getElementById('reg-photo').files[0];
+                const admFile = document.getElementById('reg-admission').files[0];
+                const recFile = document.getElementById('reg-receipt').files[0];
+
+                const [photoB64, admB64, recB64] = await Promise.all([
+                    fileToBase64(photoFile),
+                    fileToBase64(admFile),
+                    fileToBase64(recFile)
+                ]);
+
+                const data = await callSupportDesk({
+                    action: 'submit_registration',
+                    turnstile_token: regTurnstileToken || 'local-bypass',
+                    jamb_no: document.getElementById('reg-jamb').value.trim(),
+                    matric: document.getElementById('reg-matric').value.trim(),
+                    dob: document.getElementById('reg-dob').value.trim(),
+                    full_name: document.getElementById('reg-name').value.trim(),
+                    faculty: document.getElementById('reg-faculty').value.trim(),
+                    department: document.getElementById('reg-dept').value.trim(),
+                    level: document.getElementById('reg-level').value,
+                    phone: document.getElementById('reg-phone').value.trim(),
+                    email: document.getElementById('reg-email').value.trim(),
+                    photo_b64: photoB64,
+                    admission_letter_b64: admB64,
+                    fee_receipt_b64: recB64
+                });
+
+                setAlert(
+                    'sup-reg-alert',
+                    'success',
+                    '✅ <strong>Manual Registration Submitted!</strong> Your Tracking Code is <strong class="mono">' +
+                        data.tracking_code +
+                        '</strong>. Save this code to check your approval status in Tab 2.'
+                );
+                e.target.reset();
+            } catch (err) {
+                setAlert('sup-reg-alert', 'error', '⚠️ ' + (err.message || 'Could not submit registration.'));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📤 Submit Manual Registration Request';
+            }
+        });
+
+        // 2. Check Registration Status
+        document.getElementById('sup-check-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('check-submit-btn');
+            const box = document.getElementById('sup-check-result');
+            btn.disabled = true;
+            box.style.display = 'none';
+
+            try {
+                const data = await callSupportDesk({
+                    action: 'check_registration',
+                    tracking_code: document.getElementById('check-code').value.trim(),
+                    jamb_no: document.getElementById('check-jamb').value.trim()
+                });
+                const r = data.request;
+                document.getElementById('sup-check-alert').style.display = 'none';
+                box.style.display = 'block';
+                box.innerHTML =
+                    '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">' +
+                    '<strong class="mono" style="color:var(--mc-gold);">' + r.tracking_code + '</strong>' +
+                    '<span class="mc-sample-badge">' + String(r.status || 'pending').toUpperCase() + '</span>' +
+                    '</div>' +
+                    '<div style="font-size:1.05rem; font-weight:800; margin-bottom:6px;">' + r.full_name + ' (' + r.jamb_no + ')</div>' +
+                    '<div style="font-size:0.85rem; color:var(--mc-text-muted);">' + r.department + ' · ' + r.faculty + '</div>' +
+                    (r.reviewer_note ? '<div style="margin-top:10px; padding:10px; border-radius:8px; background:var(--mc-surface); font-size:0.84rem;"><strong>Registrar Note:</strong> ' + r.reviewer_note + '</div>' : '');
+            } catch (err) {
+                setAlert('sup-check-alert', 'error', '⚠️ ' + (err.message || 'No matching request found.'));
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // 3. Create Support Ticket
+        document.getElementById('sup-ticket-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('tkt-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Opening Ticket...';
+
+            try {
+                const data = await callSupportDesk({
+                    action: 'create_ticket',
+                    turnstile_token: tktTurnstileToken || 'local-bypass',
+                    jamb_no: document.getElementById('tkt-jamb').value.trim(),
+                    student_name: document.getElementById('tkt-name').value.trim(),
+                    category: document.getElementById('tkt-category').value,
+                    contact_phone: document.getElementById('tkt-phone').value.trim(),
+                    contact_email: document.getElementById('tkt-email').value.trim(),
+                    subject: document.getElementById('tkt-subject').value.trim(),
+                    message: document.getElementById('tkt-message').value.trim()
+                });
+
+                setAlert(
+                    'sup-ticket-alert',
+                    'success',
+                    '✅ <strong>Support Ticket Opened!</strong> Your Ticket Number is <strong class="mono">' +
+                        data.ticket_no +
+                        '</strong>. Use Tab 4 to view replies from the ICT Support Desk.'
+                );
+                e.target.reset();
+            } catch (err) {
+                setAlert('sup-ticket-alert', 'error', '⚠️ ' + (err.message || 'Could not create ticket.'));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📩 Submit Support Ticket';
+            }
+        });
+
+        // 4. Lookup & Reply to Ticket
+        let activeTicketNo = '';
+        let activeTicketJamb = '';
+
+        async function loadTicketThread(ticketNo, jambNo) {
+            const data = await callSupportDesk({
+                action: 'lookup_ticket',
+                ticket_no: ticketNo,
+                jamb_no: jambNo
+            });
+            activeTicketNo = data.ticket.ticket_no;
+            activeTicketJamb = data.ticket.jamb_no;
+
+            document.getElementById('sup-thread-alert').style.display = 'none';
+            const box = document.getElementById('sup-thread-box');
+            box.style.display = 'block';
+
+            document.getElementById('sup-thread-header').innerHTML =
+                '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">' +
+                '<div><strong class="mono" style="color:var(--mc-gold);">' + data.ticket.ticket_no + '</strong> · <strong>' + data.ticket.subject + '</strong></div>' +
+                '<span class="mc-sample-badge">' + String(data.ticket.status).toUpperCase() + '</span>' +
+                '</div>';
+
+            const msgList = document.getElementById('sup-thread-messages');
+            msgList.innerHTML = (data.messages || []).map(function (m) {
+                const isStaff = m.sender_role !== 'student';
+                return (
+                    '<div style="padding:12px 14px; border-radius:10px; border:1px solid var(--mc-border); background:' +
+                    (isStaff ? 'var(--mc-blue-soft)' : 'var(--mc-bg-elevated)') +
+                    ';">' +
+                    '<div style="font-size:0.74rem; color:var(--mc-text-muted); margin-bottom:4px;"><strong>' +
+                    (isStaff ? '🛡️ Support Staff (' + (m.sender_name || 'ICT Desk') + ')' : '🎓 ' + (m.sender_name || 'Student')) +
+                    '</strong> · ' + new Date(m.created_at).toLocaleString() + '</div>' +
+                    '<div style="font-size:0.88rem; color:var(--mc-text);">' + m.body + '</div>' +
+                    '</div>'
+                );
+            }).join('');
+        }
+
+        document.getElementById('sup-thread-lookup-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            try {
+                await loadTicketThread(
+                    document.getElementById('thr-ticket').value.trim(),
+                    document.getElementById('thr-jamb').value.trim()
+                );
+            } catch (err) {
+                setAlert('sup-thread-alert', 'error', '⚠️ ' + (err.message || 'Ticket not found.'));
+            }
+        });
+
+        document.getElementById('sup-thread-reply-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            if (!activeTicketNo || !activeTicketJamb) return;
+            const btn = document.getElementById('thr-reply-btn');
+            btn.disabled = true;
+            try {
+                await callSupportDesk({
+                    action: 'reply_ticket',
+                    ticket_no: activeTicketNo,
+                    jamb_no: activeTicketJamb,
+                    message: document.getElementById('thr-reply-text').value.trim()
+                });
+                document.getElementById('thr-reply-text').value = '';
+                await loadTicketThread(activeTicketNo, activeTicketJamb);
+            } catch (err) {
+                setAlert('sup-thread-alert', 'error', '⚠️ ' + (err.message || 'Could not send reply.'));
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
+

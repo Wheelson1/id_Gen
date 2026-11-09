@@ -111,17 +111,11 @@ Create at least three users in **Authentication → Users → Invite user**:
 | `operator` | Issue ID cards in the generator |
 | `verifier` | Scan and verify cards (guards) |
 
-After creating each user, set their role in **user_metadata** via the Supabase dashboard:
-
-1. Go to **Authentication → Users** → click the user.
-2. In **User Metadata** paste: `{ "role": "operator" }` (or `admin` / `verifier`).
-3. Click **Save**.
-
-Or use the Supabase Admin API / service-role client:
+After creating each user, set their role in **app_metadata** (never `user_metadata`) via the Supabase Admin API / service-role client and insert their row into `public.staff_profiles`:
 
 ```js
 await supabaseAdmin.auth.admin.updateUserById(userId, {
-  user_metadata: { role: 'operator' }
+  app_metadata: { role: 'operator', school_id: '00000000-0000-4000-8000-000000000001' }
 });
 ```
 

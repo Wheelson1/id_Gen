@@ -11,6 +11,11 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" />
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/generate.css" />
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/guard.js" data-allowed-roles="operator,registrar,admin,super_admin"></script>
+  <script>window.location.replace('app.html#/generate');</script>
 </head>
 <body>
 
@@ -81,89 +86,6 @@
       cursor:pointer;margin-bottom:8px;
     ">Sign In</button>
 
-    <!-- ── 1-CLICK DEMO LOGIN SUITE ──────────────────────────────── -->
-    <div class="demo-login-box">
-      <div class="demo-box-header">
-        <span class="demo-box-title">⚡ 1-Click Demo Logins</span>
-        <span class="demo-box-badge">Generator Personas</span>
-      </div>
-      <p class="demo-box-sub">Sign in with an authorized account to generate cards or inspect attached tools:</p>
-
-      <div class="demo-roles-list">
-        <!-- Card Operator -->
-        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('operator', { emailInputId: 'ag-email', passInputId: 'ag-pass', submitBtnId: 'ag-login-btn', redirect: false })">
-          <div class="demo-role-top">
-            <div class="demo-role-name">
-              <span>🪪</span>
-              <strong>Card Operator</strong>
-            </div>
-            <span class="demo-badge demo-badge-operator">OPERATOR</span>
-          </div>
-          <div class="demo-role-meta">
-            <span class="demo-role-id">editor+test@example.com</span>
-          </div>
-          <div class="demo-role-attached">
-            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
-            <ul class="demo-attached-items">
-              <li>Full Batch ID Card Studio &amp; High-Resolution 300 DPI Export</li>
-              <li>Dual Front/Back Card Rendering with Ed25519 QR Embed</li>
-            </ul>
-          </div>
-          <div class="demo-role-action">
-            <span>⚡ 1-Click Access</span>
-            <span class="demo-arrow">→</span>
-          </div>
-        </div>
-
-        <!-- University Admin -->
-        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('admin', { emailInputId: 'ag-email', passInputId: 'ag-pass', submitBtnId: 'ag-login-btn', redirect: false })">
-          <div class="demo-role-top">
-            <div class="demo-role-name">
-              <span>🏛️</span>
-              <strong>University Admin</strong>
-            </div>
-            <span class="demo-badge demo-badge-admin">ADMIN</span>
-          </div>
-          <div class="demo-role-meta">
-            <span class="demo-role-id">admin+test@example.com</span>
-          </div>
-          <div class="demo-role-attached">
-            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
-            <ul class="demo-attached-items">
-              <li>Institutional Theme Editor &amp; Department Roster Control</li>
-            </ul>
-          </div>
-          <div class="demo-role-action">
-            <span>⚡ 1-Click Access</span>
-            <span class="demo-arrow">→</span>
-          </div>
-        </div>
-
-        <!-- Student Self-Generator -->
-        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('student_active', { emailInputId: 'ag-email', passInputId: 'ag-pass', submitBtnId: 'ag-login-btn', redirect: false, useMatric: true })">
-          <div class="demo-role-top">
-            <div class="demo-role-name">
-              <span>🎓</span>
-              <strong>Student (Wilson)</strong>
-            </div>
-            <span class="demo-badge demo-badge-student">STUDENT</span>
-          </div>
-          <div class="demo-role-meta">
-            <span class="demo-role-id">EBSU/2024/900001 (09035005623)</span>
-          </div>
-          <div class="demo-role-attached">
-            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
-            <ul class="demo-attached-items">
-              <li>Personal Student Digital ID Generation &amp; Download</li>
-            </ul>
-          </div>
-          <div class="demo-role-action">
-            <span>⚡ 1-Click Access</span>
-            <span class="demo-arrow">→</span>
-          </div>
-        </div>
-      </div>
-    </div>
     <div style="margin-top:20px;font-size:11px;color:#3a5070">
       <a href="hub.html" style="color:#3a5070">← Back to Hub</a>
       &nbsp;·&nbsp;
@@ -367,10 +289,7 @@
 
 
 <!-- ── SCRIPTS ─────────────────────────────────────────────────── -->
-<script src="config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/academicRules.js"></script>
-<script src="js/demo-suite.js"></script>
 <script src="assets.js"></script>
 <script src="qr.js"></script>
 <script src="state.js"></script>
@@ -440,32 +359,23 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<!-- Auth Gate Logic -->
+<!-- Auth Gate Logic (Protected by js/guard.js) -->
 <script>
 (function () {
-  let _client = null;
-  if (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.SUPABASE_URL) {
-    _client = supabase.createClient(EBSU_CONFIG.SUPABASE_URL, EBSU_CONFIG.SUPABASE_ANON_KEY);
-  }
-  window.ebsuSupabase = _client;
-
   const gate       = document.getElementById('auth-gate');
-  const emailInp   = document.getElementById('ag-email');
-  const passInp    = document.getElementById('ag-pass');
-  const loginBtn   = document.getElementById('ag-login-btn');
-  const errorEl    = document.getElementById('ag-error');
+  const googleGate = document.getElementById('link-google-gate');
   const userBadge  = document.getElementById('auth-user-badge');
   const logoutBtn  = document.getElementById('auth-logout-btn');
+  const layout     = document.querySelector('.gen-layout');
 
-  function showGate()  { if (gate) gate.style.display = 'flex'; }
-  function hideGate()  { if (gate) gate.style.display = 'none';  }
-  function setError(msg) {
-    if (errorEl) { errorEl.textContent = msg; errorEl.style.display = msg ? 'block' : 'none'; }
-  }
+  if (gate) gate.style.display = 'none';
+  if (googleGate) googleGate.style.display = 'none';
+  if (layout) layout.classList.remove('privacy-blurred');
+
   function setUserBadge(user) {
     if (!userBadge) return;
     if (user) {
-      const role = user.user_metadata?.role || 'unknown';
+      const role = user.app_metadata?.role || 'unknown';
       const email = user.email || '';
       userBadge.textContent = role.toUpperCase() + ' · ' + email;
       userBadge.style.display = 'inline';
@@ -475,110 +385,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (logoutBtn) logoutBtn.style.display = 'none';
     }
   }
-  function isValidIdentifier(value) {
-    const c = value.trim();
-    if (c.length < 5 || c.length > 30) return false;
-    return /^[A-Za-z0-9/\-_@\.]+$/.test(c);
-  }
-  function checkRateLimit() {
-    const now = Date.now();
-    let a = JSON.parse(localStorage.getItem('loginAttempts') || '[]');
-    a = a.filter(t => now - t < 60000);
-    if (a.length >= 5) return false;
-    a.push(now);
-    localStorage.setItem('loginAttempts', JSON.stringify(a));
-    return true;
-  }
-
-  async function doLogin() {
-    if (!_client) { setError('config.js not loaded — copy config.example.js first.'); return; }
-    let rawInput = emailInp ? emailInp.value.trim() : '';
-    const pass = passInp ? passInp.value : '';
-    if (!rawInput || !pass) { setError('Enter your Registration Number and password.'); return; }
-    if (!isValidIdentifier(rawInput)) { setError('Invalid Registration Number or Email format.'); return; }
-    if (!checkRateLimit()) { setError('Too many login attempts. Please wait 60 seconds.'); return; }
-    setError('');
-    if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Signing in...'; }
-    try {
-      let authEmail = rawInput;
-      if (!rawInput.includes('@')) {
-        const { data: sr } = await _client.from('students')
-          .select('jamb_no, school_reg_no, linked_email')
-          .or(`jamb_no.eq.${rawInput},school_reg_no.eq.${rawInput}`)
-          .maybeSingle();
-        if (sr && sr.jamb_no) authEmail = `${sr.jamb_no}@ebsu.edu.ng`;
-        else authEmail = `${rawInput.replace(/[^a-zA-Z0-9]/g, '_')}@ebsu.edu.ng`;
-      }
-      let { data, error } = await _client.auth.signInWithPassword({ email: authEmail, password: pass });
-      if (error) {
-        if (rawInput.includes('test') || pass === 'QaTest@2026!Secured' || authEmail.includes('test')) {
-          let pKey = 'operator';
-          if (authEmail.includes('admin')) pKey = 'admin';
-          else if (authEmail.includes('student') || rawInput.includes('EBSU') || rawInput.includes('0903')) pKey = 'student_active';
-          DemoAuthSuite.setMockSession(pKey);
-          hideGate();
-          return;
-        }
-        if (error.message.includes('Invalid login credentials')) {
-          const { data: student } = await _client.from('students').select('*')
-            .or(`jamb_no.eq.${rawInput},school_reg_no.eq.${rawInput}`).maybeSingle();
-          if (student) setError('Account credentials invalid or pending setup.');
-          else setError('Registration Number not found in database.');
-          return;
-        } else if (error.message?.toLowerCase().includes('failed to fetch')) {
-          setError('Network error. Check your internet connection.');
-          return;
-        } else throw error;
-      }
-      const loginKey = `ebsu_login_count_${authEmail}`;
-      let lc = parseInt(localStorage.getItem(loginKey) || '0', 10) + 1;
-      localStorage.setItem(loginKey, lc.toString());
-      checkGoogleLink();
-    } catch (err) { setError(err.message); }
-    finally { if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Sign In'; } }
-  }
-
-  async function checkGoogleLink() {
-    const { data: { session } } = await _client.auth.getSession();
-    if (!session) return;
-    const email = session.user.email || '';
-    const lc = parseInt(localStorage.getItem(`ebsu_login_count_${email}`) || '1', 10);
-    const isLinked = session.user.app_metadata?.providers?.includes('google');
-    const layout = document.querySelector('.gen-layout');
-    if (lc <= 3) {
-      document.getElementById('link-google-gate').style.display = 'none';
-      setUserBadge(session.user); hideGate();
-      if (layout) layout.classList.remove('privacy-blurred');
-    } else {
-      if (!isLinked) {
-        hideGate(); document.getElementById('link-google-gate').style.display = 'flex';
-        if (layout) layout.classList.add('privacy-blurred');
-      } else {
-        document.getElementById('link-google-gate').style.display = 'none';
-        setUserBadge(session.user); hideGate();
-        if (layout) layout.classList.remove('privacy-blurred');
-      }
-    }
-  }
-
-  async function doLogout() {
-    if (_client) await _client.auth.signOut();
-    setUserBadge(null); showGate();
-    if (passInp) passInp.value = '';
-  }
-
-  async function doGoogleAuth() {
-    if (!_client) return;
-    try { const { error } = await _client.auth.signInWithOAuth({ provider: 'google' }); if (error) throw error; }
-    catch (err) { alert(err.message); }
-  }
 
   // ── Faculty → Department cascade ─────────────────────────────
   const EBSU_DEPTS = {
     'Science': ['Applied Biology','Applied Microbiology and Brewing','Biochemistry','Biotechnology','Computer Science','Geology and Exploration Geophysics','Industrial Chemistry','Industrial Mathematics and Statistics','Industrial Physics'],
     'Agricultural and Natural Resource Management': ['Agricultural Economics and Extension','Animal Science','Fishery and Aqua-Culture','Food Science and Technology','Soil Science and Environmental Management'],
     'Health Science and Technology': ['Medical Laboratory Science','Nursing Science'],
-    'Social Sciences and Humanities': ['Economics','English Language and Literature','History and International Relations','Language and Linguistics','Library and Information Science','Mass Communication','Philosophy and Religion','Political Science','Psychology','Social Works','Sociology and Anthropology'],
+    'Social Sciences and Humanities': ['Economics','English Language and Literature','History and International Relations','Language and Linguistics','Library and Information Science','Mass Communication','Philosophy and Religion','Public Administration','Political Science','Psychology','Social Works','Sociology and Anthropology'],
     'Basic Medical Sciences': ['Anatomy','Medicine and Surgery','Physiology'],
     'Clinical Medicine': ['Community Medicine','Internal Medicine','Pharmacology','Surgery'],
     'Education': ['Arts and Social Science Education','Business Education','Educational Foundations','Guidance and Counselling','Home Economics Education','Human Kinetics and Health Education','Science Education','Technology and Vocational Education'],
@@ -595,22 +408,15 @@ document.addEventListener('DOMContentLoaded', () => {
     EBSU_DEPTS[fac].forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; dept.appendChild(o); });
   };
 
-  // ── Wire buttons ──────────────────────────────────────────────
-  if (loginBtn) loginBtn.addEventListener('click', doLogin);
-  const linkBtn = document.getElementById('ag-link-google-btn');
-  if (linkBtn) linkBtn.addEventListener('click', doGoogleAuth);
-  const cancelBtn = document.getElementById('ag-logout-cancel-btn');
-  if (cancelBtn) cancelBtn.addEventListener('click', async () => { await doLogout(); document.getElementById('link-google-gate').style.display='none'; showGate(); });
-  if (logoutBtn) logoutBtn.addEventListener('click', doLogout);
-  if (passInp) passInp.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => Guard.signOut());
+  }
 
-  (async () => {
-    if (!_client) { showGate(); return; }
-    const { data: { session } } = await _client.auth.getSession();
-    if (session) { checkGoogleLink(); return; }
-    showGate();
-    if (emailInp) emailInp.focus();
-  })();
+  Guard.ready().then(ctx => {
+    if (ctx && ctx.user) {
+      setUserBadge(ctx.user);
+    }
+  });
 
   document.getElementById('header-logo').src = typeof CREST_SMALL !== 'undefined' ? CREST_SMALL : 'crest_small.png.jpeg';
 })();

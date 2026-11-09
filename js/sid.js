@@ -39,11 +39,9 @@ const SID_SYSTEM = (() => {
     if (navigator.vibrate) navigator.vibrate([15, 30, 15]);
   }
 
-  // Lookup student asynchronously via StudentDataSource
-  async function lookupStudent(regNo) {
-    if (typeof StudentDataSource !== 'undefined' && StudentDataSource.resolve) {
-      return await StudentDataSource.resolve(regNo);
-    }
+  // Client-side student lookups on public pages are disabled (Phase 2);
+  // student onboarding uses server-side Edge Functions in Phase 3.
+  async function lookupStudent() {
     return null;
   }
 
@@ -155,7 +153,7 @@ const SID_SYSTEM = (() => {
           stepDob.classList.add('sid-fade-in');
         }
         if (dobInput) {
-          dobInput.value = (currentPendingStudent && currentPendingStudent.dob) ? currentPendingStudent.dob : '2003-02-26';
+          dobInput.value = '';
           try {
             dobInput.focus({ preventScroll: true });
           } catch (e) {
@@ -181,55 +179,22 @@ const SID_SYSTEM = (() => {
       });
     }
 
-    // Step 3: Verify DOB & Render Card
+    // Step 3: Client-side DOB verification is disabled until Phase 3 server-side onboarding
     if (btnVerifyDob) {
       btnVerifyDob.addEventListener('click', () => {
-        const inputDob = dobInput ? dobInput.value.trim() : '';
-        if (!inputDob) {
-          if (dobError) {
-            dobError.textContent = 'Please enter your Date of Birth.';
-            dobError.style.display = 'block';
-          }
-          return;
+        if (dobError) {
+          dobError.textContent = 'Client-side verification is disabled for security. Please use the Student Portal.';
+          dobError.style.display = 'block';
         }
-
-        const targetDob = currentPendingStudent ? currentPendingStudent.dob : null;
-        if (targetDob && inputDob !== targetDob && inputDob !== '2003-02-26' && inputDob !== '2002-05-14' && inputDob !== '2003-08-14' && inputDob !== '2004-11-03' && inputDob !== '2002-04-22') {
-          if (dobError) {
-            dobError.textContent = `Date of birth does not match portal record (${targetDob}). Please verify your official records.`;
-            dobError.style.display = 'block';
-          }
-          return;
-        }
-
-        playSound('success');
-        triggerHaptic();
-
-        if (dobError) dobError.style.display = 'none';
-        if (stepDob) stepDob.style.display = 'none';
-        if (stepCardResult) {
-          stepCardResult.style.display = 'block';
-          stepCardResult.classList.add('sid-fade-in');
-        }
-
-        renderStudentDetails(currentPendingStudent);
-
-        // Canonical Card Render via drawCard() with completion callback
-        renderSidCard('sid-canvas', currentPendingStudent, () => {
-          if (stepCardResult) {
-            requestAnimationFrame(() => {
-              stepCardResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            });
-          }
-        });
       });
     }
   }
 
-  // Canonical Card Render Function wrapper (Renders both Front & Back)
+  // Canonical Card Render Function wrapper (Renders Front, Back & 3D Orbit Stage)
   function renderSidCard(canvasId, student, onComplete) {
     const frontCanvas = document.getElementById('sid-canvas');
     const backCanvas = document.getElementById('sid-canvas-back');
+    const wrap3D = document.getElementById('sid-3d-wrap');
     const template = (typeof CardTemplate !== 'undefined' && CardTemplate.get) 
       ? CardTemplate.get() 
       : null;
@@ -239,6 +204,24 @@ const SID_SYSTEM = (() => {
     }
     if (frontCanvas && typeof drawCard === 'function') {
       drawCard(frontCanvas, template, student, 1, () => {
+        // Mount or update 3D card
+        if (wrap3D && typeof Card3D !== 'undefined') {
+          const existing = Card3D.getInstance(wrap3D);
+          if (existing) {
+            existing.update(student, template);
+          } else {
+            Card3D.mount({
+              container: wrap3D,
+              studentData: student,
+              template: template,
+              scale: 0.48,
+              autoSpin: false,
+              showControls: true,
+              showHint: true
+            });
+          }
+          setView('3d');
+        }
         if (typeof onComplete === 'function') onComplete();
       });
     } else {
@@ -250,26 +233,41 @@ const SID_SYSTEM = (() => {
   function setView(mode) {
     const wrapFront = document.getElementById('sid-canvas-wrap-front');
     const wrapBack = document.getElementById('sid-canvas-wrap-back');
+    const wrap3D = document.getElementById('sid-3d-wrap');
+    const btn3D = document.getElementById('sid-view-3d-btn');
     const btnFront = document.getElementById('sid-view-front-btn');
     const btnBack = document.getElementById('sid-view-back-btn');
     const btnBoth = document.getElementById('sid-view-both-btn');
 
-    [btnFront, btnBack, btnBoth].forEach(btn => {
+    [btn3D, btnFront, btnBack, btnBoth].forEach(btn => {
       if (btn) {
         btn.classList.remove('active-tab');
         btn.removeAttribute('style');
       }
     });
 
-    if (mode === 'front') {
+    if (mode === '3d') {
+      if (wrap3D) wrap3D.style.display = 'block';
+      if (wrapFront) wrapFront.style.display = 'none';
+      if (wrapBack) wrapBack.style.display = 'none';
+      if (btn3D) {
+        btn3D.classList.add('active-tab');
+        btn3D.style.fontWeight = '800';
+        btn3D.style.borderColor = '#1558c0';
+        btn3D.style.color = '#1558c0';
+      }
+    } else if (mode === 'front') {
+      if (wrap3D) wrap3D.style.display = 'none';
       if (wrapFront) wrapFront.style.display = 'block';
       if (wrapBack) wrapBack.style.display = 'none';
       if (btnFront) btnFront.classList.add('active-tab');
     } else if (mode === 'back') {
+      if (wrap3D) wrap3D.style.display = 'none';
       if (wrapFront) wrapFront.style.display = 'none';
       if (wrapBack) wrapBack.style.display = 'block';
       if (btnBack) btnBack.classList.add('active-tab');
     } else if (mode === 'both') {
+      if (wrap3D) wrap3D.style.display = 'none';
       if (wrapFront) wrapFront.style.display = 'block';
       if (wrapBack) wrapBack.style.display = 'block';
       if (btnBoth) btnBoth.classList.add('active-tab');
@@ -387,9 +385,6 @@ const SID_SYSTEM = (() => {
       const dataUrl = e.target.result;
       currentPendingStudent.photo = dataUrl;
       currentPendingStudent.photoUrl = dataUrl;
-      if (typeof StudentDataSource !== 'undefined' && StudentDataSource.saveManualStudent) {
-        StudentDataSource.saveManualStudent(currentPendingStudent);
-      }
       renderSidCard('sid-canvas', currentPendingStudent);
     };
     reader.readAsDataURL(file);
@@ -403,9 +398,6 @@ const SID_SYSTEM = (() => {
       const dataUrl = e.target.result;
       currentPendingStudent.sig = dataUrl;
       currentPendingStudent.signatureUrl = dataUrl;
-      if (typeof StudentDataSource !== 'undefined' && StudentDataSource.saveManualStudent) {
-        StudentDataSource.saveManualStudent(currentPendingStudent);
-      }
       renderSidCard('sid-canvas', currentPendingStudent);
     };
     reader.readAsDataURL(file);

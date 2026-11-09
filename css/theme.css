@@ -1,0 +1,270 @@
+/**
+ * EBSU Smart Identity Platform — Theme System (css/theme.css)
+ * Warm-Neutral Dual Mode (Light & Dark)
+ * WCAG AA Contrast Compliant | Zero Flash on Load
+ */
+
+:root,
+:root[data-theme="light"] {
+  --bg: #FAF9F5;
+  --surface: #FFFFFF;
+  --sunken: #F3F1EA;
+  --ink: #1F1E1B;
+  --muted: #6B675F;
+  --line: #E4E0D8;
+  --accent: #1558C0;
+  --accent-hover: #0F47A0;
+  --accent-ink: #FFFFFF;
+  --success: #1F7A4D;
+  --warning: #A15C07;
+  --error: #B3261E;
+  --shadow: 0 1px 2px rgba(31, 30, 27, 0.08);
+
+  /* Status badge tinted backgrounds */
+  --badge-valid-bg: rgba(31, 122, 77, 0.12);
+  --badge-warning-bg: rgba(161, 92, 7, 0.12);
+  --badge-error-bg: rgba(179, 38, 30, 0.12);
+  --badge-neutral-bg: rgba(107, 103, 95, 0.12);
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #262624;
+  --surface: #30302E;
+  --sunken: #1F1E1D;
+  --ink: #ECE9E1;
+  --muted: #A8A398;
+  --line: #42413D;
+  --accent: #6FA0F0;
+  --accent-hover: #8DB6F5;
+  --accent-ink: #1F1E1D;
+  --success: #5FBF8A;
+  --warning: #E0A458;
+  --error: #F08A82;
+  --shadow: none;
+
+  /* Status badge tinted backgrounds */
+  --badge-valid-bg: rgba(95, 191, 138, 0.16);
+  --badge-warning-bg: rgba(224, 164, 88, 0.16);
+  --badge-error-bg: rgba(240, 138, 130, 0.16);
+  --badge-neutral-bg: rgba(168, 163, 152, 0.16);
+
+  color-scheme: dark;
+}
+
+/* ── Base resets & application surface ── */
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Transitioning state (150ms max, background/color/border only) ── */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transitioning,
+  html.theme-transitioning * {
+    transition: none !important;
+  }
+}
+
+/* ── Accessible Focus Rings (2px accent with 2px offset) ── */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 2px !important;
+}
+
+/* ── Inputs, Selects & Form Controls ── */
+input,
+select,
+textarea {
+  background-color: var(--sunken);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-sizing: border-box;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled,
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Checkboxes */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--accent);
+}
+
+/* ── Unified Theme Toggle Component ── */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  line-height: 1;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--sunken);
+  border-color: var(--muted);
+}
+
+.theme-toggle-btn svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  flex-shrink: 0;
+}
+
+/* ── Accessible Status Badges & Pills ── */
+.theme-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border: 1px solid transparent;
+  line-height: 1.2;
+}
+
+.theme-pill.valid,
+.theme-pill.paid,
+.theme-pill.success {
+  background: var(--badge-valid-bg);
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.theme-pill.warning,
+.theme-pill.expired,
+.theme-pill.pass_expired,
+.theme-pill.unpaid,
+.theme-pill.provisional {
+  background: var(--badge-warning-bg);
+  color: var(--warning);
+  border-color: var(--warning);
+}
+
+.theme-pill.error,
+.theme-pill.revoked,
+.theme-pill.tampered,
+.theme-pill.suspended,
+.theme-pill.replayed,
+.theme-pill.lost_card {
+  background: var(--badge-error-bg);
+  color: var(--error);
+  border-color: var(--error);
+}
+
+.theme-pill.offline,
+.theme-pill.neutral {
+  background: var(--badge-neutral-bg);
+  color: var(--muted);
+  border-color: var(--line);
+}
+
+/* ── University Crest Chip (High-Contrast Background) ── */
+.crest-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: var(--shadow);
+}
+
+.student-photo-img {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  object-fit: cover;
+  /* Never invert or filter identity photos */
+  filter: none !important;
+}
+
+/* ── Card/Modal Surface Tokens ── */
+.theme-card {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  border-radius: 12px;
+}
+
+.theme-modal-backdrop {
+  background-color: rgba(31, 30, 27, 0.65);
+}
+
+:root[data-theme="dark"] .theme-modal-backdrop {
+  background-color: rgba(15, 15, 14, 0.78);
+}
+
+/* ── Print Isolation: Official Cards & PDF Sheets Always Print in Light Mode ── */
+@media print {
+  :root,
+  :root[data-theme="dark"],
+  :root[data-theme="light"] {
+    --bg: #FFFFFF !important;
+    --surface: #FFFFFF !important;
+    --sunken: #FFFFFF !important;
+    --ink: #000000 !important;
+    --muted: #555555 !important;
+    --line: #CCCCCC !important;
+    --accent: #1558C0 !important;
+    color-scheme: light !important;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+
+  .theme-toggle-btn,
+  .no-print {
+    display: none !important;
+  }
+}
+

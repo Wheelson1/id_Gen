@@ -10,6 +10,10 @@
   <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" />
   <link rel="stylesheet" href="css/shared.css" />
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/guard.js" data-allowed-roles="admin,super_admin"></script>
   <style>
     :root {
       --qa-bg: #050b14;
@@ -398,7 +402,7 @@
             <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
               <td style="padding: 10px;"><span class="qa-badge qa-badge-super">Super Admin</span></td>
               <td style="padding: 10px; font-family: var(--font-mono);">superadmin+test@example.com</td>
-              <td style="padding: 10px; font-family: var(--font-mono);">QaTest@2026!Secured</td>
+              <td style="padding: 10px; font-family: var(--font-mono);">[Set via QA_TEST_PASSWORD]</td>
               <td style="padding: 10px; color: #6080a0;">+1-555-0101</td>
               <td style="padding: 10px;">Mothership SaaS, Global Killswitch, DB Root</td>
               <td style="padding: 10px;"><button class="qa-btn qa-btn-secondary" onclick="copyText('superadmin+test@example.com')">Copy</button></td>
@@ -406,7 +410,7 @@
             <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
               <td style="padding: 10px;"><span class="qa-badge qa-badge-admin">Admin</span></td>
               <td style="padding: 10px; font-family: var(--font-mono);">admin+test@example.com</td>
-              <td style="padding: 10px; font-family: var(--font-mono);">QaTest@2026!Secured</td>
+              <td style="padding: 10px; font-family: var(--font-mono);">[Set via QA_TEST_PASSWORD]</td>
               <td style="padding: 10px; color: #6080a0;">+1-555-0102</td>
               <td style="padding: 10px;">Card Revocation, Layout Drag-Editor, Audit Review</td>
               <td style="padding: 10px;"><button class="qa-btn qa-btn-secondary" onclick="copyText('admin+test@example.com')">Copy</button></td>
@@ -414,7 +418,7 @@
             <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
               <td style="padding: 10px;"><span class="qa-badge qa-badge-operator">Operator</span></td>
               <td style="padding: 10px; font-family: var(--font-mono);">editor+test@example.com</td>
-              <td style="padding: 10px; font-family: var(--font-mono);">QaTest@2026!Secured</td>
+              <td style="padding: 10px; font-family: var(--font-mono);">[Set via QA_TEST_PASSWORD]</td>
               <td style="padding: 10px; color: #6080a0;">+1-555-0104</td>
               <td style="padding: 10px;">Generate Cards, Manual Form Desk, High-Res Export</td>
               <td style="padding: 10px;"><button class="qa-btn qa-btn-secondary" onclick="copyText('editor+test@example.com')">Copy</button></td>
@@ -422,7 +426,7 @@
             <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
               <td style="padding: 10px;"><span class="qa-badge qa-badge-verifier">Verifier</span></td>
               <td style="padding: 10px; font-family: var(--font-mono);">verifier+test@example.com</td>
-              <td style="padding: 10px; font-family: var(--font-mono);">QaTest@2026!Secured</td>
+              <td style="padding: 10px; font-family: var(--font-mono);">[Set via QA_TEST_PASSWORD]</td>
               <td style="padding: 10px; color: #6080a0;">+1-555-0105</td>
               <td style="padding: 10px;">Camera Scanner Terminal, Ed25519 Decryption</td>
               <td style="padding: 10px;"><button class="qa-btn qa-btn-secondary" onclick="copyText('verifier+test@example.com')">Copy</button></td>
@@ -430,7 +434,7 @@
             <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
               <td style="padding: 10px;"><span class="qa-badge qa-badge-student">Student</span></td>
               <td style="padding: 10px; font-family: var(--font-mono);">EBSU/2024/900001 (09035005623)</td>
-              <td style="padding: 10px; font-family: var(--font-mono);">QaTest@2026!Secured</td>
+              <td style="padding: 10px; font-family: var(--font-mono);">[Passwordless Onboarding]</td>
               <td style="padding: 10px; color: #6080a0;">+1-555-0106</td>
               <td style="padding: 10px;">Dynamic Anti-Screenshot QR, Report Card Lost</td>
               <td style="padding: 10px;"><button class="qa-btn qa-btn-secondary" onclick="copyText('EBSU/2024/900001')">Copy</button></td>
@@ -443,58 +447,16 @@
   </div>
 
   <!-- SCRIPTS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="config.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/demo-suite.js"></script>
   <script>
-    const DEFAULT_PWD = 'QaTest@2026!Secured';
-    let sbClient = null;
-
-    window.addEventListener('DOMContentLoaded', () => {
-      if (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.SUPABASE_URL) {
-        sbClient = supabase.createClient(EBSU_CONFIG.SUPABASE_URL, EBSU_CONFIG.SUPABASE_ANON_KEY);
-      }
-    });
+    let sbClient = AuthManager.getClient();
 
     async function simulateRoleLogin(email, destinationUrl) {
-      // 1. Try real Supabase auth if client exists
-      if (sbClient) {
-        try {
-          const { data, error } = await sbClient.auth.signInWithPassword({
-            email: email,
-            password: DEFAULT_PWD
-          });
-          if (!error && data?.session) {
-            window.location.href = destinationUrl;
-            return;
-          }
-        } catch (e) {
-          console.warn('Live Supabase login failed, using demo persona fallback:', e.message);
-        }
-      }
-
-      // 2. Demo Persona Fallback
-      if (typeof DemoAuthSuite !== 'undefined') {
-        let pKey = 'admin';
-        if (email.includes('superadmin')) pKey = 'superadmin';
-        else if (email.includes('editor') || email.includes('operator')) pKey = 'operator';
-        else if (email.includes('verifier') || email.includes('security')) pKey = 'verifier';
-        else if (email.includes('manager') || email.includes('registrar')) pKey = 'registrar';
-        else if (email.includes('student') || email.includes('900001')) pKey = 'student_active';
-
-        DemoAuthSuite.setMockSession(pKey);
-        window.location.href = destinationUrl;
-        return;
-      }
-
+      // Demo persona login & hardcoded passwords are disabled in Phase 1 security hotfix.
       window.location.href = destinationUrl;
     }
 
     async function clearActiveSession() {
-      if (sbClient) await sbClient.auth.signOut();
-      localStorage.removeItem('loginAttempts');
-      alert('Active session cleared.');
+      await Guard.signOut();
     }
 
     function copyText(val) {

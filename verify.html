@@ -4,25 +4,56 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>ID Card Verifier — EBSU</title>
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#FAF9F5" />
+  <script>
+    (function() {
+      try {
+        var p = localStorage.getItem('theme') || 'system';
+        var d = p === 'dark' || (p === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme-preference', p);
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.setAttribute('content', d ? '#262624' : '#FAF9F5');
+      } catch(e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/guard.js" data-allowed-roles="scanner,operator,registrar,admin,super_admin,staff"></script>
+  <script>
+    const _q = window.location.search || '';
+    const isPrivateDemo = (typeof Guard !== 'undefined' && typeof Guard.isPrivateDemoHost === 'function')
+      ? Guard.isPrivateDemoHost()
+      : false;
+    // In production, standalone view is strictly for authenticated staff; demo bypass is ignored on public hosts.
+    if (!_q.includes('standalone=1') && !(_q.includes('demo=1') && isPrivateDemo)) {
+      window.location.replace('app.html#/scanner');
+    }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:      #06101a;
-      --surface: #0c1b2e;
-      --surface2:#112240;
-      --border:  #1e3050;
-      --gold:    #d4a574;
-      --blue:    #1558c0;
-      --blue-lt: #4a90d9;
-      --text:    #cdd8e8;
-      --muted:   #6080a0;
-      --green:   #00cc66;
-      --orange:  #ff9900;
-      --red:     #cc2222;
-      --amber:   #e6a800;
+      --bg:       var(--bg, #FAF9F5);
+      --surface:  var(--surface, #FFFFFF);
+      --surface2: var(--sunken, #F3F1EA);
+      --border:   var(--line, #E4E0D8);
+      --gold:     var(--warning, #A15C07);
+      --blue:     var(--accent, #1558C0);
+      --blue-lt:  var(--accent, #1558C0);
+      --text:     var(--ink, #1F1E1B);
+      --muted:    var(--muted, #6B675F);
+      --green:    var(--success, #1F7A4D);
+      --orange:   var(--warning, #A15C07);
+      --red:      var(--error, #B3261E);
+      --amber:    var(--warning, #A15C07);
     }
 
     body {
@@ -33,7 +64,7 @@
 
     /* Header */
     .v-header {
-      background: #0a1628; border-bottom: 2px solid var(--border);
+      background: var(--surface); border-bottom: 1px solid var(--border);
       padding: 14px 20px; display: flex; align-items: center; gap: 14px; flex-shrink: 0;
     }
     .v-header-brand { font-size: 18px; font-weight: 800; color: var(--gold); letter-spacing: 0.5px; }
@@ -188,21 +219,21 @@
   </div>
   <nav class="v-header-nav">
     <span id="v-user-badge" class="user-badge"></span>
-    <button type="button" onclick="openMobilePairingModal()" style="background: linear-gradient(135deg, #10b981, #059669); border: none; color: #fff; font-weight: 800; cursor: pointer; padding: 6px 12px; border-radius: 6px; font-size: 11px; display: inline-flex; align-items: center; gap: 5px;">
+    <button type="button" onclick="openMobilePairingModal()" style="background: var(--green); border: none; color: #fff; font-weight: 800; cursor: pointer; padding: 6px 12px; border-radius: 6px; font-size: 11px; display: inline-flex; align-items: center; gap: 5px;">
       📱 Continue on Mobile
     </button>
-    <button onclick="SID_SYSTEM.toggleTheme()" class="sid-theme-toggle" style="background: rgba(212,165,116,0.15); border: 1px solid rgba(212,165,116,0.3); color: #d4a574; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 6px; font-size: 11px;">☀️ Light</button>
-    <a href="admin.html">⚙ Staff / Admin</a>
-    <a href="index.html">← Student Generator</a>
+    <button type="button" class="theme-toggle-btn" aria-label="Toggle Theme"></button>
+    <a href="app.html">⚙ Staff Console</a>
+    <a href="index.html">← Student Portal</a>
   </nav>
 </header>
 
 <!-- INSTITUTIONAL VERIFIER TERMINAL BANNER -->
-<div style="background: linear-gradient(135deg, #091a2e, #0f2b48); border-bottom: 2px solid #d4a574; color: #f0d4a8; padding: 12px 20px; text-align: center; font-size: 13px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
-  <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">
+<div style="background: var(--surface2); border-bottom: 1px solid var(--border); color: var(--text); padding: 12px 20px; text-align: center; font-size: 13px; font-weight: 700;">
+  <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--blue);">
     <span>🛡️ EBSU OFFICIAL GATE &amp; EXAM HALL VERIFIER TERMINAL</span>
   </div>
-  <p style="font-size: 11px; font-weight: 500; color: rgba(240, 212, 168, 0.85); margin-top: 3px;">
+  <p style="font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 3px;">
     Cryptographic QR &amp; Database Verification for Security Officers and Invigilators
   </p>
 </div>
@@ -222,99 +253,11 @@
       Sign in with your campus security or invigilator credentials to start scanning cards.
     </div>
     <input id="v-email" type="email" class="v-input"
-      placeholder="verifier+test@example.com" autocomplete="username" />
+      placeholder="staff@ebsu.edu.ng" autocomplete="username" />
     <input id="v-pass" type="password" class="v-input"
       placeholder="Password" autocomplete="current-password" />
     <div class="error-msg" id="login-error"></div>
     <button class="v-btn" id="v-login-btn" onclick="doLogin()">Sign In to Terminal</button>
-
-    <!-- ── 1-CLICK DEMO LOGIN SUITE ──────────────────────────────── -->
-    <div class="demo-login-box">
-      <div class="demo-box-header">
-        <span class="demo-box-title">⚡ 1-Click Demo Logins</span>
-        <span class="demo-box-badge">Terminal Personas</span>
-      </div>
-      <p class="demo-box-sub">Authenticate instantly with authorized personnel to test scanner capabilities:</p>
-
-      <div class="demo-roles-list">
-        <!-- Security Officer -->
-        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('verifier', { emailInputId: 'v-email', passInputId: 'v-pass', submitBtnId: 'v-login-btn', redirect: false })">
-          <div class="demo-role-top">
-            <div class="demo-role-name">
-              <span>🛡️</span>
-              <strong>Security Officer / Invigilator</strong>
-            </div>
-            <span class="demo-badge demo-badge-verifier">VERIFIER</span>
-          </div>
-          <div class="demo-role-meta">
-            <span class="demo-role-id">verifier+test@example.com</span>
-          </div>
-          <div class="demo-role-attached">
-            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
-            <ul class="demo-attached-items">
-              <li>Live Camera Scanner Viewport &amp; Video Canvas Stream</li>
-              <li>Dual Mode: Real-Time Database Query &amp; Offline Ed25519 Decryption</li>
-              <li>Instant Revocation &amp; Impersonation Security Alert Flags</li>
-              <li>Gate Entry Counter &amp; Examination Verification Log</li>
-            </ul>
-          </div>
-          <div class="demo-role-action">
-            <span>⚡ 1-Click Terminal Access</span>
-            <span class="demo-arrow">→</span>
-          </div>
-        </div>
-
-        <!-- Card Operator -->
-        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('operator', { emailInputId: 'v-email', passInputId: 'v-pass', submitBtnId: 'v-login-btn', redirect: false })">
-          <div class="demo-role-top">
-            <div class="demo-role-name">
-              <span>🪪</span>
-              <strong>ID Production Operator</strong>
-            </div>
-            <span class="demo-badge demo-badge-operator">OPERATOR</span>
-          </div>
-          <div class="demo-role-meta">
-            <span class="demo-role-id">editor+test@example.com</span>
-          </div>
-          <div class="demo-role-attached">
-            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
-            <ul class="demo-attached-items">
-              <li>Print QA Validation &amp; Instant Cryptographic Token Verification</li>
-              <li>Batch Barcode &amp; Hologram Inspection Access</li>
-            </ul>
-          </div>
-          <div class="demo-role-action">
-            <span>⚡ 1-Click Operator Access</span>
-            <span class="demo-arrow">→</span>
-          </div>
-        </div>
-
-        <!-- University Admin -->
-        <div class="demo-role-card" onclick="DemoAuthSuite.executeLogin('admin', { emailInputId: 'v-email', passInputId: 'v-pass', submitBtnId: 'v-login-btn', redirect: false })">
-          <div class="demo-role-top">
-            <div class="demo-role-name">
-              <span>🏛️</span>
-              <strong>University Admin</strong>
-            </div>
-            <span class="demo-badge demo-badge-admin">ADMIN</span>
-          </div>
-          <div class="demo-role-meta">
-            <span class="demo-role-id">admin+test@example.com</span>
-          </div>
-          <div class="demo-role-attached">
-            <div class="demo-attached-label">⚡ WHAT IS ATTACHED &amp; UNLOCKED:</div>
-            <ul class="demo-attached-items">
-              <li>Master Terminal Oversight &amp; Student Invalidation Lookup</li>
-              <li>Audit Trail Inspection Across Campus Security Points</li>
-            </ul>
-          </div>
-          <div class="demo-role-action">
-            <span>⚡ 1-Click Admin Access</span>
-            <span class="demo-arrow">→</span>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -322,17 +265,7 @@
 <div class="screen" id="screen-scanner" style="align-items:flex-start;padding-top:24px">
   <div class="scanner-wrap">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-      <div class="scanner-title">🔍 Scan Student ID Card</div>
-      <!-- DUAL MODE TOGGLE -->
-      <div style="background: var(--surface2); border: 1px solid var(--border); padding: 4px; border-radius: 20px; display: flex; gap: 4px;">
-        <button id="mode-btn-online" class="v-btn" style="padding: 4px 12px; font-size: 11px; border-radius: 16px;" onclick="setScanMode('online')">🌐 Online Mode</button>
-        <button id="mode-btn-offline" class="v-btn outline" style="padding: 4px 12px; font-size: 11px; border-radius: 16px;" onclick="setScanMode('offline')">🔐 Offline Ed25519</button>
-      </div>
-    </div>
-
-    <!-- Mode Badge Banner -->
-    <div id="scan-mode-indicator" style="background: rgba(74,144,217,0.1); border: 1px solid rgba(74,144,217,0.3); color: var(--blue-lt); padding: 8px 12px; border-radius: 8px; font-size: 11px; text-align: center; font-weight: 700;">
-      🌐 ONLINE MODE ACTIVE · Verifying against University ERP & Live Database
+      <div class="scanner-title">🔍 Scan Student ID Card (EBSU1 / EBSU2)</div>
     </div>
 
     <!-- ── QUICK MOBILE SWITCH & CAMERA CONTROLS BAR ── -->
@@ -368,30 +301,7 @@
       <small>Allow camera permission, use "📷 Photo" above to upload an image, or continue on mobile.</small>
     </div>
 
-    <div class="scanner-status" id="scanner-status">Point camera at student ID card or QR code</div>
-
-    <!-- Anti-Replay Simulation & Hardware Wear Tools -->
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <button onclick="simulatePhotocopyScan()" style="flex: 1; padding: 10px; background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.4); color: #ff6b6b; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer;">
-        🚨 Test Anti-Replay (Photocopy QR)
-      </button>
-      <button onclick="triggerWearSurvey()" style="flex: 1; padding: 10px; background: rgba(212,165,116,0.15); border: 1px solid rgba(212,165,116,0.4); color: #f0d4a8; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer;">
-        🛠️ Report Wear & Tear (Unscannable)
-      </button>
-    </div>
-
-    <!-- HARDWARE DEGRADATION SURVEY MODAL -->
-    <div id="wear-survey-modal" style="display: none; background: var(--surface2); border: 1px solid #d4a574; border-radius: 12px; padding: 16px; margin-top: 10px;">
-      <div style="font-size: 13px; font-weight: 800; color: #f0d4a8; margin-bottom: 6px;">🛠️ Hardware Wear & Tear Protocol</div>
-      <p style="font-size: 11px; color: var(--muted); margin-bottom: 12px;">QR failed to scan due to physical card damage? Select reason to flag for replacement:</p>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-        <button onclick="submitWearReport('Scratched Surface')" style="padding: 8px; background: var(--surface); border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 11px; cursor: pointer;">⚡ Scratched Surface</button>
-        <button onclick="submitWearReport('Faded Ink')" style="padding: 8px; background: var(--surface); border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 11px; cursor: pointer;">☀️ Faded Ink</button>
-        <button onclick="submitWearReport('Chipped Edge')" style="padding: 8px; background: var(--surface); border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 11px; cursor: pointer;">✂️ Chipped Edge</button>
-        <button onclick="submitWearReport('Warped Card')" style="padding: 8px; background: var(--surface); border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 11px; cursor: pointer;">🔥 Warped/Cracked</button>
-      </div>
-      <div id="wear-survey-ack" style="margin-top: 10px; font-size: 11px; color: #4ade80; display: none;"></div>
-    </div>
+    <div class="scanner-status" id="scanner-status">Point camera at student ID card (EBSU1) or 60-second live pass (EBSU2)</div>
 
     <!-- Manual input -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px">
@@ -399,7 +309,7 @@
         Manual entry (for unsupported devices — routed through server verification):
       </p>
       <div style="display:flex;gap:8px">
-        <input id="manual-qr" type="text" placeholder="Paste EBSU1:… token here"
+        <input id="manual-qr" type="text" placeholder="Paste EBSU1:… or EBSU2:… token here"
           style="flex:1;padding:9px 12px;background:var(--surface2);color:var(--text);
             border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none"
           onkeydown="if(event.key==='Enter') manualVerify()" />
@@ -427,8 +337,9 @@
       <div class="sc-body" id="sc-body"></div>
     </div>
     <div class="scan-timestamp" id="scan-timestamp"></div>
-    <div class="btn-row">
+    <div class="btn-row" style="flex-wrap:wrap; gap:10px;">
       <button class="v-btn" onclick="scanAgain()">⟳ Scan Another</button>
+      <button class="v-btn" id="btn-dl-verified-png" style="background:#059669; border-color:#059669; color:#fff; display:none;" onclick="downloadVerifiedCardPng()">📥 Download ID Card (PNG)</button>
       <button class="v-btn outline" onclick="doLogout()">Sign Out</button>
     </div>
   </div>
@@ -484,146 +395,104 @@
 
 <!-- QR Code Generator & Scanner Libraries -->
 <script src="qr.js"></script>
+<script src="js/cardTemplate.js"></script>
+<script src="canvas.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<!-- Supabase JS client -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<!-- Public config (copy config.example.js → config.js) -->
-<script src="config.js"></script>
-<script src="js/demo-suite.js"></script>
-<script src="js/studentDataSource.js"></script>
-
 <script>
 'use strict';
 
-// ── Config guard ───────────────────────────────────────────────────────────
-if (typeof EBSU_CONFIG === 'undefined') {
-  document.body.innerHTML =
-    '<div style="padding:40px;color:#ff6666;font-family:monospace;font-size:14px">' +
-    '⚠ config.js not found. Copy config.example.js → config.js and fill in your values.' +
-    '</div>';
-  throw new Error('EBSU_CONFIG not defined');
-}
-
-// ── Supabase client ────────────────────────────────────────────────────────
-const _sb = supabase.createClient(EBSU_CONFIG.SUPABASE_URL, EBSU_CONFIG.SUPABASE_ANON_KEY);
+// ── Supabase client (initialized by AuthManager / Guard) ───────────────────
+const _sb = AuthManager.getClient();
 window.ebsuSupabase = _sb;
 
-// ── Ed25519 local verification (offline resilience) ────────────────────────
-// Verifies the signature in the browser before ever hitting the server.
-// Uses Web Crypto API (Ed25519 supported in Chrome 113+, Edge 113+, Safari 17+, Firefox 122+).
+// ── QR token parser (Supports Signed-Links https://.../c/..., EBSU1 static, and EBSU2 rotating) ─
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const SIG_RE  = /^[A-Za-z0-9_-]{80,90}$/;
 
-function b64ToBytes(b64) {
-  const std    = b64.replace(/-/g, '+').replace(/_/g, '/');
-  const padded = std + '='.repeat((4 - std.length % 4) % 4);
-  const bin    = atob(padded);
-  return Uint8Array.from(bin, c => c.charCodeAt(0));
-}
-
-async function verifySignatureLocally(cardId, sigB64url) {
+function b64UrlToUuid(b64url) {
   try {
-    const pubBytes = b64ToBytes(EBSU_CONFIG.ED25519_PUBLIC_KEY);
-    const pubKey   = await crypto.subtle.importKey(
-      'raw', pubBytes, { name: 'Ed25519' }, false, ['verify']
-    );
-    const data = new TextEncoder().encode(cardId);
-    const sig  = b64ToBytes(sigB64url);
-    return await crypto.subtle.verify({ name: 'Ed25519' }, pubKey, sig, data);
+    if (!b64url) return null;
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(b64url)) {
+      return b64url.toLowerCase();
+    }
+    let base64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) base64 += '=';
+    const binary = atob(base64);
+    if (binary.length !== 16) return null;
+    let hex = '';
+    for (let i = 0; i < 16; i++) hex += binary.charCodeAt(i).toString(16).padStart(2, '0');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`.toLowerCase();
   } catch (e) {
-    console.warn('Local Ed25519 verify failed:', e.message);
-    return false;
+    return null;
   }
 }
-
-// ── QR token parser ────────────────────────────────────────────────────────
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function parseToken(raw) {
   if (typeof raw !== 'string') return null;
   raw = raw.trim();
-  if (!raw.startsWith('EBSU1:')) return null;
+
+  // Explicitly reject plain-text cards (Security requirement: never verify plain-text content)
+  if (raw.includes('Name:') || raw.includes('EBONYI STATE UNIVERSITY') || raw.includes('Reg No:') || raw.includes('Matric:')) {
+    return null;
+  }
+
+  // Format 0A: Signed Link for printed card (https://<domain>/c/<id_b64>.<sig>)
+  const cLinkMatch = raw.match(/\/c\/([^./?#]+)\.([^./?#]+)/);
+  if (cLinkMatch) {
+    const rawId = cLinkMatch[1];
+    const sig = cLinkMatch[2];
+    const cardId = b64UrlToUuid(rawId) || rawId;
+    return { version: 'LINK_C', cardId, sig, raw };
+  }
+
+  // Format 0B: Signed Link for 60s rotating pass (https://<domain>/p/<token>)
+  const pLinkMatch = raw.match(/\/p\/([^/?#]+)/);
+  if (pLinkMatch) {
+    const token = decodeURIComponent(pLinkMatch[1]);
+    return { version: 'LINK_P', token, raw };
+  }
+
   const parts = raw.split(':');
-  // UUID contains hyphens but we split on ALL colons — the UUID has 5 parts
-  // when split alone, but our format is EBSU1:<uuid>:<sig> = exactly 3 fields
-  // where field[1] is the UUID (no colons inside) and field[2] is the sig.
-  if (parts.length !== 3) return null;
-  const cardId = parts[1];
-  const sig    = parts[2];
-  if (!UUID_RE.test(cardId)) return null;
-  if (!/^[A-Za-z0-9_-]{80,}$/.test(sig)) return null;
-  return { cardId, sig };
+
+  // Format 1: EBSU1:<card_uuid>:<ed25519_sig_b64url> (Printed / Static Card)
+  if (parts.length === 3 && parts[0] === 'EBSU1') {
+    const cardId = parts[1];
+    const sig    = parts[2];
+    if ((!UUID_RE.test(cardId) && !/^[A-Za-z0-9_-]{10,}$/.test(cardId)) || !SIG_RE.test(sig)) return null;
+    return { version: 'EBSU1', cardId, sig, raw };
+  }
+
+  // Format 2: EBSU2:<card_uuid>:<expiry_unix>:<ed25519_sig_b64url> (60s Rotating Pass)
+  if (parts.length === 4 && parts[0] === 'EBSU2') {
+    const cardId     = parts[1];
+    const expiryUnix = Number(parts[2]);
+    const sig        = parts[3];
+    if ((!UUID_RE.test(cardId) && !/^[A-Za-z0-9_-]{10,}$/.test(cardId)) || !Number.isInteger(expiryUnix) || expiryUnix <= 0 || !SIG_RE.test(sig)) {
+      return null;
+    }
+    return { version: 'EBSU2', cardId, expiryUnix, sig, raw };
+  }
+
+  return null;
 }
 
-// ── Auth ───────────────────────────────────────────────────────────────────
-const ALLOWED_ROLES = ['verifier', 'operator', 'admin'];
+// ── Auth (Protected by js/guard.js) ────────────────────────────────────────
+const ALLOWED_ROLES = ['scanner', 'operator', 'registrar', 'admin', 'super_admin', 'staff'];
 
-async function doLogin() {
-  const emailEl = document.getElementById('v-email');
-  const passEl  = document.getElementById('v-pass');
-  const errEl   = document.getElementById('login-error');
-  const btnEl   = document.getElementById('v-login-btn');
-
-  const email = emailEl ? emailEl.value.trim() : '';
-  const pass  = passEl  ? passEl.value         : '';
-
-  errEl.textContent = '';
-  if (!email || !pass) { errEl.textContent = 'Enter email and password.'; return; }
-
-  btnEl.disabled    = true;
-  btnEl.textContent = 'Signing in…';
-
-  const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass });
-
-  btnEl.disabled    = false;
-  btnEl.textContent = 'Sign In';
-
-  if (error) {
-    if (email.includes('verifier') || email.includes('test') || pass === 'QaTest@2026!Secured') {
-      const mockUser = {
-        email: email || 'verifier@ebsu.edu.ng',
-        user_metadata: { role: 'verifier', full_name: 'Campus Security Officer' }
-      };
-      setUserBadge(mockUser);
-      showScreen('scanner');
-      startCamera();
-      return;
-    }
-    errEl.textContent = error.message;
-    return;
-  }
-
-  const role = data.user?.user_metadata?.role || '';
-  if (!ALLOWED_ROLES.includes(role)) {
-    // If testing with a test email, grant access
-    if (email.includes('test@example.com') || email.includes('ebsu.edu.ng')) {
-      setUserBadge(data.user || { email, user_metadata: { role: 'verifier' } });
-      showScreen('scanner');
-      startCamera();
-      return;
-    }
-    await _sb.auth.signOut();
-    errEl.textContent = 'Your account does not have verifier access.';
-    return;
-  }
-
-  setUserBadge(data.user);
-  showScreen('scanner');
-  startCamera();
+function doLogin() {
+  window.location.replace('login.html?next=verify.html');
 }
 
 async function doLogout() {
-  await _sb.auth.signOut();
   stopCamera();
-  setUserBadge(null);
-  showScreen('login');
-  const p = document.getElementById('v-pass');
-  if (p) p.value = '';
+  await Guard.signOut();
 }
 
 function setUserBadge(user) {
   const el = document.getElementById('v-user-badge');
   if (!el) return;
   if (user) {
-    const role = user.user_metadata?.role || '';
+    const role = user.app_metadata?.role || '';
     // Safe: textContent only, no innerHTML
     el.textContent = role.toUpperCase() + ' · ' + (user.email || '');
     el.style.display = 'inline';
@@ -864,199 +733,46 @@ async function handleQRData(raw) {
   if (!raw || typeof raw !== 'string') return;
   raw = raw.trim();
 
-  // 1. Support URL format or query strings (from smartphone camera or browser navigation)
-  if (raw.includes('?') || raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('/')) {
-    try {
-      const urlObj = new URL(raw.startsWith('http') ? raw : (window.location.origin + (raw.startsWith('/') ? '' : '/') + raw));
-      const p = urlObj.searchParams;
-      const reg = p.get('m') || p.get('matric') || p.get('reg') || p.get('school_reg_no') || p.get('id');
-      const name = p.get('n') || p.get('name');
-      const fac = p.get('f') || p.get('faculty');
-      const dept = p.get('d') || p.get('dept') || p.get('department');
-      const blood = p.get('b') || p.get('blood');
-      const geno = p.get('g') || p.get('genotype');
-      const cardId = p.get('c') || p.get('card_id') || p.get('id');
-      const expiry = p.get('exp') || p.get('expiry') || '2029';
-      const sig = p.get('sig');
-      const photo = p.get('photo');
-
-      // Check if we can resolve complete cached record with high-res photo/sig
-      let resolved = null;
-      if (typeof StudentDataSource !== 'undefined' && reg) {
-        resolved = await StudentDataSource.resolve(reg);
-      }
-
-      if (reg || name || fac) {
-        const student = {
-          name: (resolved && resolved.name) || name || 'STUDENT NAME',
-          matric: (resolved && (resolved.matric || resolved.schoolRegNo)) || reg || '—',
-          school_reg_no: (resolved && (resolved.schoolRegNo || resolved.matric)) || reg || '—',
-          faculty: (resolved && resolved.faculty) || fac || 'Science',
-          dept: (resolved && (resolved.dept || resolved.department)) || dept || '—',
-          blood: (resolved && (resolved.blood || resolved.bloodGroup)) || blood || 'O+',
-          genotype: (resolved && resolved.genotype) || geno || 'AA',
-          level: (resolved && resolved.level) || p.get('lvl') || '100 Level',
-          session: (resolved && resolved.session) || p.get('ses') || '2024/2025',
-          expiry: (resolved && resolved.expiry) || expiry || 2029,
-          photo_url: (resolved && (resolved.photoUrl || resolved.photo)) || photo || null,
-          signature_url: (resolved && (resolved.signatureUrl || resolved.sig)) || sig || null,
-          status: (resolved && resolved.status) || 'active',
-          card_id: cardId || (resolved && resolved.id) || null
-        };
-
-        showResult({
-          status: 'valid',
-          student: student,
-          checked_at: new Date().toISOString()
-        });
-        return;
-      }
-    } catch (e) {
-      console.warn('URL QR parse fallback:', e);
-    }
-  }
-
-  // 2. Support Plain Text lines (Name: ... \n Matric: ...)
-  if (raw.includes('Matric:') || raw.includes('Name:')) {
-    const lines = raw.split('\n');
-    let pName = '', pMatric = '', pDept = '', pExp = '';
-    lines.forEach(l => {
-      const lower = l.toLowerCase().trim();
-      if (lower.startsWith('name:')) pName = l.replace(/^name:/i, '').trim();
-      else if (lower.startsWith('matric:')) pMatric = l.replace(/^matric:/i, '').trim();
-      else if (lower.startsWith('dept:')) pDept = l.replace(/^dept:/i, '').trim();
-      else if (lower.startsWith('expiry:')) pExp = l.replace(/^expiry:/i, '').trim();
-    });
-
-    let resolved = null;
-    if (typeof StudentDataSource !== 'undefined' && pMatric) {
-      resolved = await StudentDataSource.resolve(pMatric);
-    }
-
-    showResult({
-      status: 'valid',
-      student: resolved || {
-        name: pName || 'STUDENT NAME',
-        matric: pMatric || '—',
-        school_reg_no: pMatric || '—',
-        dept: pDept || '—',
-        faculty: (resolved && resolved.faculty) || 'Academic Faculty',
-        blood: (resolved && resolved.blood) || 'O+',
-        genotype: (resolved && resolved.genotype) || 'AA',
-        expiry: pExp || '2029',
-        status: 'active'
-      },
-      checked_at: new Date().toISOString()
-    });
-    return;
-  }
-
-  // 3. Support JSON formatted QR code
-  if (raw.startsWith('{') && raw.endsWith('}')) {
-    try {
-      const data = JSON.parse(raw);
-      const reg = data.matric || data.school_reg_no || data.reg || data.id;
-      let resolved = null;
-      if (typeof StudentDataSource !== 'undefined' && reg) {
-        resolved = await StudentDataSource.resolve(reg);
-      }
-
-      const student = {
-        name: (resolved && resolved.name) || data.name || data.fullName || 'STUDENT NAME',
-        matric: (resolved && (resolved.matric || resolved.schoolRegNo)) || reg || '—',
-        school_reg_no: (resolved && (resolved.schoolRegNo || resolved.matric)) || reg || '—',
-        faculty: (resolved && resolved.faculty) || data.faculty || 'Science',
-        dept: (resolved && (resolved.dept || resolved.department)) || data.dept || data.department || '—',
-        blood: (resolved && (resolved.blood || resolved.bloodGroup)) || data.blood || data.blood_group || data.bloodGroup || 'O+',
-        genotype: (resolved && resolved.genotype) || data.genotype || 'AA',
-        level: (resolved && resolved.level) || data.level || '100 Level',
-        session: (resolved && resolved.session) || data.session || '2024/2025',
-        expiry: (resolved && resolved.expiry) || data.expiry || 2029,
-        photo_url: (resolved && (resolved.photoUrl || resolved.photo)) || data.photo || data.photo_url || null,
-        signature_url: (resolved && (resolved.signatureUrl || resolved.sig)) || data.sig || data.signature_url || null,
-        status: (resolved && resolved.status) || data.status || 'active'
-      };
-      showResult({
-        status: 'valid',
-        student: student,
-        checked_at: new Date().toISOString()
-      });
-      return;
-    } catch (e) {
-      console.warn('JSON QR parse failed:', e);
-    }
-  }
-
-  // 4. Support direct SID:, Matric, or Reg lookup (e.g. EBSU/..., 2025..., STU-...)
-  if (raw.startsWith('SID:') || raw.startsWith('EBSU') || raw.startsWith('STU-') || raw.startsWith('manual-') || /^[0-9]{4}[0-9a-zA-Z]{4,14}$/.test(raw)) {
-    const cleanId = raw.replace(/^SID:/, '').trim();
-    if (typeof StudentDataSource !== 'undefined') {
-      const resolved = await StudentDataSource.resolve(cleanId);
-      if (resolved) {
-        showResult({
-          status: 'valid',
-          student: resolved,
-          checked_at: new Date().toISOString()
-        });
-        return;
-      }
-    }
-  }
-
-  // 5. Support 2-part EBSU1:token (e.g. EBSU1:STU-001 or EBSU1:ebsu-...)
-  if (raw.startsWith('EBSU1:')) {
-    const p = raw.split(':');
-    if (p.length === 2 && typeof StudentDataSource !== 'undefined') {
-      const resolved = await StudentDataSource.resolve(p[1]);
-      if (resolved) {
-        showResult({
-          status: 'valid',
-          student: resolved,
-          checked_at: new Date().toISOString()
-        });
-        return;
-      }
-    }
-  }
-
+  // Accept signed EBSU1 (3-part static card) and EBSU2 (4-part 60s rotating pass) tokens
   const parsed = parseToken(raw);
 
   if (!parsed) {
-    if (statusEl) statusEl.textContent = 'Unrecognised code — not an EBSU card';
-    setTimeout(() => {
-      scanCooldown = false;
-      scanLoopId   = requestAnimationFrame(scanLoop);
-    }, 2500);
-    return;
-  }
-
-  const { cardId, sig } = parsed;
-
-  // 1. Local Ed25519 check (instant, works offline)
-  const localOk = await verifySignatureLocally(cardId, sig);
-
-  if (!localOk) {
-    // Signature is cryptographically invalid — forged or corrupted card
+    if (statusEl) statusEl.textContent = 'INVALID: not an EBSU card';
     showResult({
-      status:     'tampered',
+      status:     'not_ebsu_card',
       checked_at: new Date().toISOString(),
     });
     return;
   }
 
-  // 2. Server lookup (confirms revocation, expiry from authoritative record)
+  // Server lookup (verifies canonical Ed25519 signature over EBSU1|v1|card_id|matric|name|expiry
+  // or EBSU2 single-use rotating pass, plus live revocation & card_fee_paid_at status)
   let serverResult = null;
   try {
     const { data: { session } } = await _sb.auth.getSession();
     const authHeader = session ? { 'Authorization': 'Bearer ' + session.access_token } : {};
 
+    const reqBody = parsed.version === 'LINK_P'
+      ? { token: parsed.token, location: 'Staff Verifier Terminal' }
+      : {
+          token: (parsed.version === 'EBSU1' || parsed.version === 'EBSU2') ? parsed.raw : undefined,
+          card_id: parsed.cardId,
+          signature: parsed.sig,
+          expiry_unix: parsed.expiryUnix,
+          location: 'Staff Verifier Terminal',
+        };
+
     const res = await fetch(EBSU_CONFIG.VERIFY_CARD_URL, {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json', ...authHeader },
-      body:    JSON.stringify({ card_id: cardId, signature: sig }),
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': EBSU_CONFIG.SUPABASE_ANON_KEY || '',
+        ...authHeader,
+      },
+      body: JSON.stringify(reqBody),
     });
 
-    if (res.ok) {
+    if (res.ok || res.status === 429) {
       serverResult = await res.json();
     } else {
       console.warn('verify-card HTTP', res.status);
@@ -1065,10 +781,11 @@ async function handleQRData(raw) {
     console.warn('verify-card network error:', fetchErr.message);
   }
 
+  // Cryptographic Rule: Scan MUST NEVER be marked Verified without an authentic server response.
+  // If the server is unreachable or offline, report offline status — never a staged verdict.
   if (serverResult) {
     showResult(serverResult);
   } else {
-    // Network failed but signature was valid — degraded offline state
     showResult({
       status:     'offline',
       checked_at: new Date().toISOString(),
@@ -1094,19 +811,56 @@ function showResult(result) {
   let verdictText, verdictClass;
 
   if (status === 'valid') {
-    verdictText  = '✓ VERIFIED — Card is Valid';
+    const modeLabel = result.pass_mode === 'rotating_60s' ? ' (60s LIVE PASS)' : '';
+    verdictText  = '✓ VERIFIED — Card is Valid' + modeLabel;
     verdictClass = 'verified';
+    if (result.anomaly && result.anomaly.flagged) {
+      verdictText += '\n⚠ ANTI-PASSBACK WARNING: ' + (result.anomaly.reason || 'High scan frequency detected');
+    }
+  } else if (status === 'pass_expired') {
+    verdictText  = '⚠ 60s LIVE PASS EXPIRED — Ask Student to Refresh Pass';
+    verdictClass = 'expired';
+  } else if (status === 'replayed') {
+    verdictText  = '🚨 REPLAY BLOCKED — This 60s Pass Was Already Scanned';
+    verdictClass = 'invalid';
   } else if (status === 'expired') {
     verdictText  = '⚠ CARD EXPIRED';
     verdictClass = 'expired';
+  } else if (status === 'unpaid') {
+    verdictText  = '⚠ ID CARD FEE UNPAID — Access Restricted';
+    verdictClass = 'expired';
+  } else if (status === 'provisional') {
+    verdictText  = '⚠ PROVISIONAL — Not Yet Activated';
+    verdictClass = 'expired';
+  } else if (status === 'suspended') {
+    verdictText  = '✕ STUDENT SUSPENDED';
+    verdictClass = 'invalid';
   } else if (status === 'revoked') {
     verdictText  = '✕ CARD REVOKED';
     verdictClass = 'invalid';
+  } else if (status === 'lost_card') {
+    verdictText  = '✕ REPORTED LOST OR STOLEN';
+    verdictClass = 'invalid';
+  } else if (status === 'expelled') {
+    verdictText  = '✕ STUDENT EXPELLED';
+    verdictClass = 'invalid';
+  } else if (status === 'withdrawn') {
+    verdictText  = '✕ STUDENT WITHDRAWN';
+    verdictClass = 'invalid';
+  } else if (status === 'graduated') {
+    verdictText  = 'ℹ STUDENT GRADUATED';
+    verdictClass = 'expired';
   } else if (status === 'not_found') {
     verdictText  = '✕ NOT FOUND — Not in database';
     verdictClass = 'invalid';
+  } else if (status === 'not_ebsu_card') {
+    verdictText  = '✕ INVALID: not an EBSU card';
+    verdictClass = 'invalid';
+  } else if (status === 'rate_limited') {
+    verdictText  = '⚠ RATE LIMIT EXCEEDED — Please wait 60s';
+    verdictClass = 'expired';
   } else if (status === 'offline') {
-    verdictText  = '⚠ SIGNATURE VALID — OFFLINE\nCould not confirm revocation/expiry';
+    verdictText  = '⚠ Cannot reach server — Verification service offline';
     verdictClass = 'offline';
   } else {
     // tampered or anything unknown
@@ -1150,6 +904,8 @@ function showResult(result) {
     const fields = [
       { label: 'Name',       value: st.name || st.fullName,     full: true },
       { label: 'School Reg No / Matric',  value: st.school_reg_no || st.matric },
+      { label: 'JAMB / Reg No',           value: st.jamb_no || st.regNo },
+      { label: 'Phone Number',            value: st.phone || st.phoneNumber },
       { label: 'Faculty',    value: st.faculty },
       { label: 'Department', value: st.dept || st.department },
       { label: 'Level',      value: st.level },
@@ -1168,7 +924,17 @@ function showResult(result) {
       lbl.textContent = f.label;   // safe — textContent
 
       const span  = document.createElement('span');
-      span.textContent = f.value;  // safe — textContent, never innerHTML
+      if (f.label === 'Phone Number' && f.value) {
+        const a = document.createElement('a');
+        a.href = 'tel:' + f.value;
+        a.textContent = f.value + ' 📞 (Tap to Call)';
+        a.style.color = '#38bdf8';
+        a.style.fontWeight = '700';
+        a.style.textDecoration = 'none';
+        span.appendChild(a);
+      } else {
+        span.textContent = f.value;  // safe — textContent, never innerHTML
+      }
 
       div.appendChild(lbl);
       div.appendChild(span);
@@ -1214,7 +980,63 @@ function showResult(result) {
     : new Date().toLocaleString();
   ts.textContent = 'Checked: ' + checkedAt;  // safe — textContent
 
+  // Verified card PNG download button
+  window._lastVerifiedResult = result;
+  const dlBtn = document.getElementById('btn-dl-verified-png');
+  if (dlBtn) {
+    dlBtn.style.display = (st && (status === 'valid' || status === 'expired')) ? 'inline-flex' : 'none';
+  }
+
   showScreen('result');
+}
+
+function downloadVerifiedCardPng() {
+  const res = window._lastVerifiedResult;
+  if (!res || !res.student) {
+    alert('No verified student card data available to download.');
+    return;
+  }
+  const st = res.student;
+  const canvas = document.createElement('canvas');
+  canvas.width = 1011;
+  canvas.height = 638;
+  const tpl = (typeof CardTemplate !== 'undefined' && CardTemplate.get) ? CardTemplate.get() : null;
+  const payload = {
+    ...st,
+    name: st.name || st.fullName || 'STUDENT',
+    matric: st.matric || st.school_reg_no || st.jamb_no || 'STUDENT',
+    jamb_no: st.jamb_no || st.regNo || '',
+    faculty: st.faculty || '',
+    dept: st.dept || st.department || '',
+    level: st.level || '400 Level',
+    session: st.session || '2024/2025',
+    blood: st.blood || st.blood_group || 'O+',
+    genotype: st.genotype || 'AA',
+    expiry: st.expiry || 2027,
+    photo_url: st.photo_url || st.photo || 'images/demo_user_photo.jpg',
+    sig_url: st.signature_url || st.sig || st.sig_url || 'images/demo_user_sig.png',
+    card_signature: st.card_signature || st.sig || '',
+  };
+
+  const matricClean = String(payload.matric).replace(/\//g, '-');
+  let downloaded = false;
+  const triggerDl = () => {
+    if (downloaded) return;
+    downloaded = true;
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = `EBSU-ID-${matricClean}-VERIFIED.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  if (typeof drawCard === 'function') {
+    drawCard(canvas, tpl, payload, 1.0, triggerDl);
+    setTimeout(triggerDl, 250);
+  } else {
+    alert('Drawing library unavailable.');
+  }
 }
 
 function scanAgain() {
@@ -1223,56 +1045,6 @@ function scanAgain() {
   if (inp) inp.value = '';
   showScreen('scanner');
   scanLoopId = requestAnimationFrame(scanLoop);
-}
-
-// ── DUAL MODE & ANTI-REPLAY ENGINE ─────────────────────────────────
-let currentScanMode = 'online';
-
-function setScanMode(mode) {
-  currentScanMode = mode;
-  const btnOnline = document.getElementById('mode-btn-online');
-  const btnOffline = document.getElementById('mode-btn-offline');
-  const indicator = document.getElementById('scan-mode-indicator');
-
-  if (mode === 'online') {
-    btnOnline.className = 'v-btn';
-    btnOffline.className = 'v-btn outline';
-    indicator.style.background = 'rgba(74,144,217,0.1)';
-    indicator.style.borderColor = 'rgba(74,144,217,0.3)';
-    indicator.style.color = '#4a90d9';
-    indicator.textContent = '🌐 ONLINE MODE ACTIVE · Verifying against University ERP & Live Database';
-  } else {
-    btnOnline.className = 'v-btn outline';
-    btnOffline.className = 'v-btn';
-    indicator.style.background = 'rgba(212,165,116,0.15)';
-    indicator.style.borderColor = 'rgba(212,165,116,0.4)';
-    indicator.style.color = '#f0d4a8';
-    indicator.textContent = '🔐 OFFLINE ED25519 MODE ACTIVE · Validating Public Key Cryptography Instantly';
-  }
-}
-
-function simulatePhotocopyScan() {
-  const result = {
-    verdict: 'invalid',
-    status: 'PHOTOCOPY DETECTED',
-    message: '🚨 REPLAY ATTACK BLOCKED: High-frequency steganographic spatial noise check failed (<600 DPI photocopy distortion detected).'
-  };
-  displayResult(result);
-}
-
-function triggerWearSurvey() {
-  const modal = document.getElementById('wear-survey-modal');
-  modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
-}
-
-function submitWearReport(reason) {
-  const ack = document.getElementById('wear-survey-ack');
-  ack.style.display = 'block';
-  ack.textContent = `✓ Recorded: "${reason}". Card ID flagged as DEGRADED_NEEDS_REPLACEMENT in central DB. Free replacement voucher queued for student portal.`;
-  setTimeout(() => {
-    document.getElementById('wear-survey-modal').style.display = 'none';
-    ack.style.display = 'none';
-  }, 2500);
 }
 
 // ── Mobile Pairing & Mobile Terminal Mode ──────────────────────────────────
@@ -1334,49 +1106,22 @@ function copyMobilePairingUrl() {
   }
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────
-(async () => {
-  // Check if public direct QR verification parameters are present in URL
-  const searchParams = new URLSearchParams(window.location.search);
-  if (
-    searchParams.has('m') || searchParams.has('matric') || searchParams.has('reg') ||
-    searchParams.has('data') || searchParams.has('qr') || searchParams.has('n') ||
-    searchParams.has('name') || searchParams.has('id') || searchParams.has('c')
-  ) {
-    await handleQRData(window.location.href);
-    return;
-  }
+// ── Init (Protected by js/guard.js) ────────────────────────────────────────
+if (window.location.search && window.location.search.includes('autostart=1')) {
+  showScreen('scanner');
+  startCamera();
+}
 
-  // Check if opened directly in mobile mode from QR scan on another device
-  if (searchParams.get('mode') === 'mobile') {
-    const mockMobileOfficer = {
-      email: 'mobile-gate@ebsu.edu.ng',
-      user_metadata: { role: 'verifier', full_name: 'Mobile Security Invigilator' }
-    };
-    setUserBadge(mockMobileOfficer);
+Guard.ready().then(ctx => {
+  if (ctx && ctx.user) {
+    setUserBadge(ctx.user);
     showScreen('scanner');
     startCamera();
-    return;
   }
-
-  const { data: { session } } = await _sb.auth.getSession();
-  if (session) {
-    const role = session.user?.user_metadata?.role || '';
-    if (ALLOWED_ROLES.includes(role)) {
-      setUserBadge(session.user);
-      showScreen('scanner');
-      startCamera();
-      return;
-    }
-    await _sb.auth.signOut();
-  }
-  // No valid session — show login
-  showScreen('login');
-  const emailEl = document.getElementById('v-email');
-  if (emailEl) emailEl.focus();
-})();
+});
 </script>
 <script src="js/sid.js"></script>
+<script src="js/theme.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

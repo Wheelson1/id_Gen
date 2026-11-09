@@ -1,0 +1,260 @@
+/* ══════════════════════════════════════════════════════════════════════
+   CARD3D.CSS — Photorealistic 3D 360° Interactive CR80 ID Card Engine
+   Supports: Click & Drag Orbit, 360° Free Rotation, 3D Flip, Specular Light Glare
+   ══════════════════════════════════════════════════════════════════════ */
+
+.card3d-stage {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  perspective: 1400px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
+  padding: 18px 10px 24px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Floating interactive guidance pill */
+.card3d-hint-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 32, 56, 0.88);
+  border: 1px solid rgba(74, 144, 217, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  animation: card3dPulse 3s ease-in-out infinite;
+  transition: opacity 0.3s ease;
+}
+
+[data-theme="light"] .card3d-hint-pill {
+  background: rgba(240, 246, 255, 0.95);
+  border-color: rgba(37, 99, 235, 0.25);
+  color: #1d4ed8;
+}
+
+@keyframes card3dPulse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+/* The 3D Rotating Wrapper */
+.card3d-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1011 / 638;
+  transform-style: preserve-3d;
+  cursor: grab;
+  cursor: -webkit-grab;
+  transition: transform 0.08s ease-out;
+  will-change: transform;
+}
+
+.card3d-viewport.is-dragging {
+  cursor: grabbing;
+  cursor: -webkit-grabbing;
+  transition: none; /* instant tracking while dragging */
+}
+
+.card3d-viewport.is-animating {
+  transition: transform 0.65s cubic-bezier(0.2, 0.85, 0.32, 1.2);
+}
+
+/* Card Body (holds front and back faces) */
+.card3d-card {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  transform-style: preserve-3d;
+  transform: rotateX(0deg) rotateY(0deg);
+}
+
+/* Faces */
+.card3d-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  box-shadow: 
+    0 18px 45px rgba(0, 0, 0, 0.45),
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  background: #ffffff;
+}
+
+/* Front Face */
+.card3d-face-front {
+  transform: rotateY(0deg) translateZ(1.5px);
+}
+
+/* Back Face */
+.card3d-face-back {
+  transform: rotateY(180deg) translateZ(1.5px);
+}
+
+/* Canvases inside faces */
+.card3d-face canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  object-fit: contain;
+  border-radius: 14px;
+}
+
+/* Realistic PVC Card Core Edge Layer (Simulates plastic thickness at steep angles) */
+.card3d-edge {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  border: 2px solid rgba(230, 235, 245, 0.85);
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+/* Dynamic Specular Holographic Glare Overlay */
+.card3d-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.12) 40%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  mix-blend-mode: overlay;
+  opacity: 0.55;
+  transition: opacity 0.25s ease;
+  transform: translateZ(2.5px);
+}
+
+/* Ambient Card Shadow (shifts on ground as card rotates) */
+.card3d-ground-shadow {
+  position: absolute;
+  bottom: -22px;
+  left: 8%;
+  width: 84%;
+  height: 24px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 72%);
+  border-radius: 50%;
+  filter: blur(8px);
+  pointer-events: none;
+  transform-origin: center;
+  transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+}
+
+/* Interactive Control Toolbar */
+.card3d-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+  width: 100%;
+}
+
+.card3d-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid rgba(74, 144, 217, 0.3);
+  background: rgba(14, 28, 48, 0.85);
+  color: #cdd8e8;
+  backdrop-filter: blur(6px);
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card3d-btn:hover {
+  background: rgba(24, 46, 78, 0.95);
+  border-color: #4a90d9;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(74, 144, 217, 0.3);
+}
+
+.card3d-btn:active {
+  transform: translateY(0);
+}
+
+.card3d-btn-gold {
+  border-color: rgba(212, 165, 116, 0.5);
+  color: #d4a574;
+}
+
+.card3d-btn-gold:hover {
+  background: rgba(212, 165, 116, 0.18);
+  border-color: #d4a574;
+  color: #f7e1b5;
+  box-shadow: 0 4px 14px rgba(212, 165, 116, 0.35);
+}
+
+.card3d-btn-green {
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #10b981;
+}
+
+.card3d-btn-green:hover {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: #10b981;
+  color: #34d399;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.card3d-btn.is-active {
+  background: linear-gradient(135deg, #1558c0, #2563eb);
+  border-color: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.5);
+}
+
+[data-theme="light"] .card3d-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #1e293b;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .card3d-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+[data-theme="light"] .card3d-btn-gold {
+  border-color: #d4a574;
+  color: #92580c;
+}
+
+[data-theme="light"] .card3d-btn.is-active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}

@@ -4,7 +4,7 @@
  * Automatically purges stale caches on update.
  */
 
-const CACHE_NAME = 'sid-cache-v3';
+const CACHE_NAME = 'sid-cache-v5';
 
 // Install: immediately take control
 self.addEventListener('install', (event) => {

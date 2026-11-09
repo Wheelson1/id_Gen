@@ -75,42 +75,7 @@ const BulkStudio = (() => {
     }
   };
 
-  // ── SEED DATA (Comprehensive multi-faculty dataset) ─────────────
-  const SEED_STUDENTS = [
-    // SCIENCE (4 Yrs: 2025 -> 2029, 2024 -> 2028)
-    { id: 'STU-001', name: 'NNAJI WILSON SOMTOCHUKWU', matric: '202552179149SI', faculty: 'Science', dept: 'Computer Science', level: '100L', blood: 'A+', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-002', name: 'AMAECHI EMMANUEL CHUKWUMA', matric: 'EBSU/2025/104821', faculty: 'Science', dept: 'Computer Science', level: '100L', blood: 'O+', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-003', name: 'NWANKWO BLESSING NGOZI', matric: 'EBSU/2024/984210', faculty: 'Science', dept: 'Computer Science', level: '200L', blood: 'B+', genotype: 'AS', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-004', name: 'IGWE KINGSLEY CHIDIEBERE', matric: '202588123914SI', faculty: 'Science', dept: 'Industrial Chemistry', level: '100L', blood: 'O+', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-005', name: 'EZE CYNTHIA CHIAMAKA', matric: 'EBSU/2024/871029', faculty: 'Science', dept: 'Microbiology', level: '200L', blood: 'A-', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-
-    // LAW (5 Yrs: 2025 -> 2030, 2024 -> 2029)
-    { id: 'STU-006', name: 'CHUKWUEMEKA CHIDERA ESTHER', matric: '202599201940LA', faculty: 'Law', dept: 'Public Law', level: '100L', blood: 'O+', genotype: 'AS', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-007', name: 'OKOYE PROMISE CHISOM', matric: 'EBSU/2024/900002', faculty: 'Law', dept: 'Public Law', level: '200L', blood: 'B+', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-008', name: 'ONUOHA SOMTO MICHAEL', matric: '202511029481LA', faculty: 'Law', dept: 'Civil Law', level: '100L', blood: 'O+', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-009', name: 'AGWU CHIDINMA GRACE', matric: 'EBSU/2024/774019', faculty: 'Law', dept: 'Commercial Law', level: '200L', blood: 'A+', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-
-    // EDUCATION (4 Yrs: 2025 -> 2029, 2024 -> 2028)
-    { id: 'STU-010', name: 'UGURU SAMUEL NNAMDI', matric: '202566019283ED', faculty: 'Education', dept: 'Science Education', level: '100L', blood: 'O+', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-011', name: 'NWEKE PRISCA ONYINYECHI', matric: 'EBSU/2024/662019', faculty: 'Education', dept: 'Educational Foundations', level: '200L', blood: 'B+', genotype: 'AS', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-012', name: 'OBAJI DANIEL UCHENNA', matric: '202533019482ED', faculty: 'Education', dept: 'Business Education', level: '100L', blood: 'O-', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-
-    // MANAGEMENT SCIENCES (4 Yrs: 2025 -> 2029, 2024 -> 2028)
-    { id: 'STU-013', name: 'OKORO GODWIN BLESSING', matric: '202544019281MS', faculty: 'Management Sciences', dept: 'Accountancy', level: '100L', blood: 'B+', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-014', name: 'ALOH VICTOR TOCHUKWU', matric: 'EBSU/2024/900003', faculty: 'Management Sciences', dept: 'Banking and Finance', level: '200L', blood: 'A+', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-015', name: 'EZENWA VIVIAN IFUNANYA', matric: '202577109284MS', faculty: 'Management Sciences', dept: 'Marketing', level: '100L', blood: 'O+', genotype: 'AS', photo: 'images/demo_user_face.jpg' },
-
-    // PRESCO: HEALTH SCIENCE & TECHNOLOGY (4 Yrs: MedLab, Public Health)
-    { id: 'STU-016', name: 'MBAM DESTINY CHIBUEZE', matric: '202588102941HT', faculty: 'Health Science and Technology', dept: 'Medical Laboratory Science', level: '100L', blood: 'O+', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-017', name: 'OGBONNA PEACE CHIAMAKA', matric: 'EBSU/2024/881920', faculty: 'Health Science and Technology', dept: 'Medical Laboratory Science', level: '200L', blood: 'A+', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-018', name: 'NWEZE JOSHUA IFEANYI', matric: '202599104812HT', faculty: 'Health Science and Technology', dept: 'Public Health', level: '100L', blood: 'B+', genotype: 'AS', photo: 'images/demo_user_face.jpg' },
-
-    // PRESCO: BASIC MEDICAL SCIENCES (4 Yrs: Anatomy, Physiology)
-    { id: 'STU-019', name: 'EKUMA GABRIEL CHUKWUDI', matric: '202511094821BM', faculty: 'Basic Medical Sciences', dept: 'Human Anatomy', level: '100L', blood: 'O+', genotype: 'AA', photo: 'images/demo_user_face.jpg' },
-    { id: 'STU-020', name: 'CHIMA STEPHANIE ADAEZE', matric: 'EBSU/2024/991024', faculty: 'Basic Medical Sciences', dept: 'Medical Physiology', level: '200L', blood: 'A+', genotype: 'AA', photo: 'images/demo_user_face.jpg' }
-  ];
-
-  // Internal State
+  // Internal State (SEED_STUDENTS removed in Phase 2B; populated via Supabase RLS or CSV/Excel ingestion)
   let _students = [];
   let _selectedStudentIds = new Set();
   let _activeFaculty = 'ALL';
@@ -118,25 +83,49 @@ const BulkStudio = (() => {
   let _searchQuery = '';
 
   /**
-   * Initialize state with computed graduation year for every student
+   * Initialize state from authenticated Supabase students table (RLS-filtered by school_id)
    */
-  function init() {
-    const saved = localStorage.getItem('ebsu_bulk_students');
-    if (saved) {
-      try { _students = JSON.parse(saved); } catch(e) { _students = [...SEED_STUDENTS]; }
-    } else {
-      _students = [...SEED_STUDENTS];
+  async function init() {
+    _students = [];
+    try {
+      const client = (typeof AuthManager !== 'undefined' && AuthManager.getClient)
+        ? AuthManager.getClient()
+        : window.ebsuSupabase;
+      if (client) {
+        const { data: { session } } = await client.auth.getSession();
+        if (session) {
+          const { data, error } = await client
+            .from('students')
+            .select('id,name,matric,jamb_no,school_reg_no,faculty,dept,level,session,blood,genotype,photo_url,expiry,status,fees_paid,card_signature')
+            .order('created_at', { ascending: false })
+            .limit(500);
+          if (!error && Array.isArray(data)) {
+            _students = data.map(row => enrichStudentRecord({
+              id: row.id,
+              name: row.name,
+              matric: row.matric || row.school_reg_no || row.jamb_no,
+              faculty: row.faculty || 'Science',
+              dept: row.dept || '',
+              level: row.level || '100L',
+              blood: row.blood || 'O+',
+              genotype: row.genotype || 'AA',
+              photo: row.photo_url || null,
+              expiry: row.expiry,
+              status: row.status || 'active',
+              fees_paid: Boolean(row.fees_paid),
+              card_signature: row.card_signature || null
+            }));
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('BulkStudio Supabase init notice:', e);
     }
-
-    // Ensure graduation year is computed for all
-    _students = _students.map(s => enrichStudentRecord(s));
-    saveToStorage();
+    applyFilterAndRender();
   }
 
   function saveToStorage() {
-    try {
-      localStorage.setItem('ebsu_bulk_students', JSON.stringify(_students));
-    } catch(e) {}
+    // No-op: student records are no longer persisted in browser localStorage
   }
 
   /**
@@ -154,15 +143,21 @@ const BulkStudio = (() => {
       ? ACADEMIC_RULES.calculateGraduationYear(regNo, fac, dept)
       : (ACADEMIC_RULES ? ACADEMIC_RULES.extractAdmissionYear(regNo) + duration : 2029);
 
+    const signedToken = (s.id && s.card_signature)
+      ? `EBSU1:${s.id}:${s.card_signature}`
+      : (s.qr_string && s.qr_string.startsWith('EBSU1:') ? s.qr_string : '');
+
+    const explicitExp = (s.expiry && Number(s.expiry) > 2000) ? Number(s.expiry) : null;
+
     return {
       ...s,
       matric: regNo,
       faculty: fac,
       dept: dept,
       duration: duration,
-      expiry: gradYear,
+      expiry: explicitExp || gradYear,
       status: s.status || 'active',
-      qr_token: `EBSU1:${s.id || 'sid'}:${gradYear}:VERIFIED_ED25519`
+      qr_token: signedToken
     };
   }
 
@@ -267,10 +262,11 @@ const BulkStudio = (() => {
       const name = row.name || row.fullname || row.student_name || `Student ${i}`;
       const matric = row.matric || row.reg_no || row.regno || row.jamb_no || `2025${String(i).padStart(8, '0')}`;
       const faculty = row.faculty || _activeFaculty !== 'ALL' ? _activeFaculty : 'Science';
-      const dept = row.department || row.dept || (FACULTY_CATALOG[faculty]?.departments[0] || 'General');
+      const dept = row.dept || row.department || (FACULTY_CATALOG[faculty]?.departments[0] || 'General');
       const level = row.level || '100L';
       const blood = row.blood || row.blood_group || 'O+';
       const genotype = row.genotype || 'AA';
+      const expiry = row.expiry ? parseInt(row.expiry, 10) : undefined;
 
       const enriched = enrichStudentRecord({
         id: 'CSV-' + Date.now() + '-' + i,
@@ -281,6 +277,7 @@ const BulkStudio = (() => {
         level: level,
         blood: blood,
         genotype: genotype,
+        expiry: expiry,
         photo: 'images/demo_user_face.jpg'
       });
 
@@ -391,26 +388,23 @@ const BulkStudio = (() => {
     return count;
   }
 
-  // ── DYNAMIC QR CODE GENERATOR FOR BATCH CARDS ───────────────────
+  // ── DYNAMIC QR CODE GENERATOR FOR BATCH CARDS (SIGNED EBSU1 ONLY) ───
   function generateCardQRDataUrl(s) {
     try {
-      const qc = document.createElement('canvas');
-      const reg = s.matric || s.schoolRegNo || '';
-      const name = s.name || '';
-      const dept = s.dept || '';
-      const exp = s.expiry || '2029';
-      const blood = s.blood || 'O+';
-      const geno = s.genotype || 'AA';
-      const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-      const url = `${window.location.origin}${basePath}/verify.html?m=${encodeURIComponent(reg)}&n=${encodeURIComponent(name)}&d=${encodeURIComponent(dept)}&b=${encodeURIComponent(blood)}&g=${encodeURIComponent(geno)}&exp=${encodeURIComponent(exp)}`;
-      if (typeof QRGen !== 'undefined' && QRGen.drawToCanvas) {
-        QRGen.drawToCanvas(qc, url, 3);
+      const signedToken =
+        (s.qr_token && s.qr_token.startsWith('EBSU1:'))
+          ? s.qr_token
+          : (s.id && s.card_signature ? `EBSU1:${s.id}:${s.card_signature}` : '');
+
+      if (signedToken && typeof QRGen !== 'undefined' && QRGen.drawToCanvas) {
+        const qc = document.createElement('canvas');
+        QRGen.drawToCanvas(qc, signedToken, 3);
         return qc.toDataURL('image/png');
       }
     } catch(e) {
       console.warn('QR render notice:', e);
     }
-    return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23fff"/><text x="12" y="55" font-family="sans-serif" font-size="10" fill="%23000">QR SECURED</text></svg>';
+    return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23fff"/><text x="10" y="54" font-family="sans-serif" font-size="9" fill="%23991b1b">UNSIGNED</text></svg>';
   }
 
   // ── 1-CLICK PRINT PRODUCTION & FAIL-SAFE SECTIONED PIPELINE ────────
@@ -549,6 +543,47 @@ const BulkStudio = (() => {
       sec.status = 'generating';
       updateSectionConsoleUI(sIdx, sections);
 
+      // Ensure every student in the section has a server-signed Ed25519 QR token via issue-card
+      const unsignedBatch = sec.students.filter(st => !st.qr_token || !st.qr_token.startsWith('EBSU1:'));
+      if (unsignedBatch.length > 0 && typeof AuthManager !== 'undefined' && typeof EBSU_CONFIG !== 'undefined') {
+        try {
+          const session = await AuthManager.getSession();
+          if (session?.access_token) {
+            const issueUrl = EBSU_CONFIG.ISSUE_CARD_URL || `${EBSU_CONFIG.SUPABASE_URL}/functions/v1/issue-card`;
+            const res = await fetch(issueUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({
+                items: unsignedBatch.map(u => ({
+                  name: u.name,
+                  matric: u.matric,
+                  expiry: u.expiry,
+                })),
+              }),
+            });
+            const bulkData = await res.json().catch(() => ({}));
+            if (res.ok && Array.isArray(bulkData.results)) {
+              const byMatric = new Map(
+                bulkData.results.filter(r => r.ok).map(r => [String(r.matric).toUpperCase(), r])
+              );
+              sec.students.forEach(st => {
+                const match = byMatric.get(String(st.matric).toUpperCase());
+                if (match) {
+                  st.id = match.card_id;
+                  st.card_signature = match.signature;
+                  st.qr_token = match.qr_string;
+                }
+              });
+            }
+          }
+        } catch (err) {
+          console.warn('BulkStudio issue-card signing notice:', err);
+        }
+      }
+
       // Render cards with real scannable QR data URLs
       sec.html = renderCardsHtml(sec.students, sec.pageNumber, totalSections);
       sec.status = 'ready';
@@ -575,7 +610,7 @@ const BulkStudio = (() => {
               <img src="${s.photo || 'images/demo_user_face.jpg'}" class="cr80-photo" />
             </div>
             <div class="cr80-details">
-              <div class="cr80-row"><span class="k">NAME:</span> <strong class="v">${s.name}</strong></div>
+              <div class="cr80-row cr80-row-name"><span class="k">NAME:</span> <strong class="v">${s.name}</strong></div>
               <div class="cr80-row"><span class="k">MATRIC:</span> <strong class="v">${s.matric}</strong></div>
               <div class="cr80-row"><span class="k">FACULTY:</span> <span class="v">${s.faculty}</span></div>
               <div class="cr80-row"><span class="k">DEPT:</span> <span class="v">${s.dept}</span></div>
@@ -768,6 +803,7 @@ const BulkStudio = (() => {
           .cr80-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
           .cr80-details { flex: 1; font-size: 6pt; line-height: 1.35; }
           .cr80-row { margin-bottom: 0.8mm; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .cr80-row-name { white-space: normal !important; line-height: 1.15; max-height: 6mm; overflow: hidden; text-overflow: clip; word-break: break-word; }
           .cr80-row .k { color: #555; font-weight: 700; font-size: 5.5pt; }
           .cr80-qr-box { width: 16mm; text-align: center; flex-shrink: 0; }
           .cr80-footer { font-size: 5pt; color: #666; border-top: 0.5px solid #ccc; padding-top: 1mm; display: flex; justify-content: space-between; font-weight: 600; }
@@ -853,13 +889,13 @@ const BulkStudio = (() => {
 
   function downloadSampleCsv() {
     const csvContent = 
-      "Name,Matric,Faculty,Department,Level,Blood,Genotype\n" +
-      "NNAJI WILSON SOMTOCHUKWU,202552179149SI,Science,Computer Science,100L,A+,AA\n" +
-      "CHUKWUEMEKA CHIDERA ESTHER,202599201940LA,Law,Public Law,100L,O+,AS\n" +
-      "UGURU SAMUEL NNAMDI,202566019283ED,Education,Science Education,100L,O+,AA\n" +
-      "OKORO GODWIN BLESSING,202544019281MS,Management Sciences,Accountancy,100L,B+,AA\n" +
-      "MBAM DESTINY CHIBUEZE,202588102941HT,Health Science and Technology,Medical Laboratory Science,100L,O+,AA\n" +
-      "EKUMA GABRIEL CHUKWUDI,202511094821BM,Basic Medical Sciences,Human Anatomy,100L,O+,AA\n";
+      "matric,name,faculty,dept,level,blood,genotype,expiry\n" +
+      "EBSU/2021/101397,NNAJI WILSON SOMTOCHUKWU,Science,Computer Science,400L,O+,AA,2025\n" +
+      "202599201940LA,CHUKWUEMEKA CHIDERA ESTHER,Law,Public Law,100L,O+,AS,2029\n" +
+      "202566019283ED,UGURU SAMUEL NNAMDI,Education,Science Education,100L,O+,AA,2028\n" +
+      "202544019281MS,OKORO GODWIN BLESSING,Management Sciences,Accountancy,100L,B+,AA,2028\n" +
+      "202588102941HT,MBAM DESTINY CHIBUEZE,Health Science and Technology,Medical Laboratory Science,100L,O+,AA,2028\n" +
+      "202511094821BM,EKUMA GABRIEL CHUKWUDI,Basic Medical Sciences,Human Anatomy,100L,O+,AA,2028\n";
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');

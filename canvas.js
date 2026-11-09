@@ -117,7 +117,101 @@ function getMergedColors(template) {
   return {};
 }
 
-// ── AUTO-FIT TYPOGRAPHY HELPER ───────────────────────────────────
+// ── AUTO-FIT & NAME WRAPPING TYPOGRAPHY HELPERS ──────────────────
+/**
+ * Shared Full Name Renderer: Never truncates with ellipsis.
+ * 1. Uppercase display (underlying data/signature unchanged).
+ * 2. Shrink-to-fit: Starts at baseFontSize, steps down 1px to min 60% of base.
+ * 3. 2-Line Wrap: If it doesn't fit at 60%, wraps across exactly two lines.
+ * 4. Returns layout metrics so calling code can shift/compress rows below without overlap.
+ */
+function drawCardName(ctx, rawName, x, y, maxW, baseFontSize, fontWeight = 'bold', fontFamily = 'Arial,sans-serif') {
+  const upper = String(rawName || '—').trim().toUpperCase();
+  if (!upper || upper === '—') {
+    ctx.font = `${fontWeight} ${Math.round(baseFontSize)}px ${fontFamily}`.trim();
+    ctx.fillText('—', x, y);
+    return { lines: 1, fontSize: baseFontSize, heightUsed: baseFontSize, nextRowOffset: 0, line1: '—', line2: '' };
+  }
+
+  const minSingleLineSize = Math.max(6, Math.floor(baseFontSize * 0.60));
+  const fontPrefix = fontWeight ? fontWeight + ' ' : '';
+
+  // ── Step 1: Attempt single-line fit from baseFontSize down to 60% ──
+  let size = baseFontSize;
+  ctx.font = `${fontPrefix}${Math.round(size)}px ${fontFamily}`.trim();
+  let textWidth = ctx.measureText(upper).width;
+
+  while (textWidth > maxW && size > minSingleLineSize) {
+    size -= 1;
+    ctx.font = `${fontPrefix}${Math.round(size)}px ${fontFamily}`.trim();
+    textWidth = ctx.measureText(upper).width;
+  }
+
+  // If it fits on 1 line:
+  if (textWidth <= maxW) {
+    ctx.fillText(upper, x, y);
+    return {
+      lines: 1,
+      fontSize: size,
+      heightUsed: size,
+      nextRowOffset: 0,
+      line1: upper,
+      line2: ''
+    };
+  }
+
+  // ── Step 2: Wrap onto TWO lines (never more than two) ──
+  const words = upper.split(/\s+/).filter(Boolean);
+  let bestSplit = 1;
+  let bestScore = Infinity;
+
+  // Find split point that balances the lengths of line 1 and line 2
+  for (let i = 1; i < words.length; i++) {
+    const l1 = words.slice(0, i).join(' ');
+    const l2 = words.slice(i).join(' ');
+    const diff = Math.abs(l1.length - l2.length);
+    if (diff < bestScore) {
+      bestScore = diff;
+      bestSplit = i;
+    }
+  }
+
+  let line1 = words.slice(0, bestSplit).join(' ');
+  let line2 = words.slice(bestSplit).join(' ');
+
+  // If only 1 huge word, split in half
+  if (!line2 && line1.length > 10) {
+    const mid = Math.floor(line1.length / 2);
+    line2 = line1.slice(mid);
+    line1 = line1.slice(0, mid);
+  }
+
+  // Find font size that fits both lines comfortably
+  let wrapSize = Math.max(10, Math.floor(baseFontSize * 0.85));
+  ctx.font = `${fontPrefix}${Math.round(wrapSize)}px ${fontFamily}`.trim();
+
+  while (
+    (ctx.measureText(line1).width > maxW || ctx.measureText(line2).width > maxW) &&
+    wrapSize > 9
+  ) {
+    wrapSize -= 1;
+    ctx.font = `${fontPrefix}${Math.round(wrapSize)}px ${fontFamily}`.trim();
+  }
+
+  const lineSpacing = Math.round(wrapSize * 1.15);
+  ctx.fillText(line1, x, y);
+  ctx.fillText(line2, x, y + lineSpacing);
+
+  return {
+    lines: 2,
+    fontSize: wrapSize,
+    heightUsed: wrapSize + lineSpacing,
+    nextRowOffset: lineSpacing,
+    line1,
+    line2
+  };
+}
+
 function drawFittedText(ctx, text, x, y, maxW, baseFontSize, fontWeight = '', fontFamily = 'Arial,sans-serif') {
   if (!text) text = '—';
   let size = baseFontSize;
@@ -154,9 +248,95 @@ function truncateText(ctx, text, maxW) {
   return text + '…';
 }
 
+// ── Base64URL / UUID Converters for Compact Signed QR Links ──────────────
+function uuidToB64Url(uuid) {
+  try {
+    const clean = String(uuid || '').replace(/-/g, '').toLowerCase();
+    if (clean.length !== 32) return null;
+    let binary = '';
+    for (let i = 0; i < 32; i += 2) {
+      binary += String.fromCharCode(parseInt(clean.substr(i, 2), 16));
+    }
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  } catch (e) {
+    return null;
+  }
+}
+
+function b64UrlToUuid(b64url) {
+  try {
+    if (!b64url) return null;
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(b64url)) {
+      return b64url.toLowerCase();
+    }
+    let base64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) base64 += '=';
+    const binary = atob(base64);
+    if (binary.length !== 16) return null;
+    let hex = '';
+    for (let i = 0; i < 16; i++) {
+      hex += binary.charCodeAt(i).toString(16).padStart(2, '0');
+    }
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`.toLowerCase();
+  } catch (e) {
+    return null;
+  }
+}
+
+function verifyRenderedQR(canvas, expectedText) {
+  if (typeof jsQR === 'undefined') return true;
+  try {
+    const ctx = canvas.getContext('2d');
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imgData.data, canvas.width, canvas.height);
+    if (!code || code.data !== expectedText) {
+      console.warn('QR self-test mismatch:', { expected: expectedText, got: code?.data });
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn('QR self-test decode error:', err);
+    return false;
+  }
+}
+
 function buildQRData(st) {
   if (!st) return '';
-  return st.qrString || (st.cardId ? `EBSU1:${st.cardId}` : (st.matric ? `SID:${st.matric}` : ''));
+
+  const publicBaseUrl = (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.PUBLIC_BASE_URL)
+    ? EBSU_CONFIG.PUBLIC_BASE_URL
+    : ((typeof window !== 'undefined' && window.location && window.location.origin && !window.location.origin.startsWith('file:') && !window.location.origin.includes('null'))
+      ? window.location.origin
+      : 'https://id.ebsu.edu.ng');
+
+  // Case 1: 60s rotating pass (EBSU2 token)
+  if (st.token && st.token.startsWith('EBSU2:')) {
+    return `${publicBaseUrl}/p/${encodeURIComponent(st.token)}`;
+  }
+  if (st.qrString && st.qrString.startsWith('EBSU2:')) {
+    return `${publicBaseUrl}/p/${encodeURIComponent(st.qrString)}`;
+  }
+
+  // Case 2: Already a signed verification link
+  if (st.qrString && (st.qrString.startsWith('http://') || st.qrString.startsWith('https://'))) {
+    return st.qrString;
+  }
+
+  // Case 3: Legacy EBSU1 token -> translate to signed link https://<domain>/c/<id_b64>.<sig>
+  if (st.qrString && st.qrString.startsWith('EBSU1:')) {
+    const parts = st.qrString.split(':');
+    if (parts.length === 3) {
+      const b64Id = uuidToB64Url(parts[1]) || parts[1];
+      return `${publicBaseUrl}/c/${b64Id}.${parts[2]}`;
+    }
+  }
+
+  // Case 4: Static printed card with cardId/card_signature
+  const rawId = st.cardId || st.card_id || st.id || '00000000-0000-4000-8000-000000000001';
+  const b64Id = uuidToB64Url(rawId) || rawId.replace(/[^A-Za-z0-9_-]/g, '');
+  const sig = st.card_signature || st.cardSignature || st.sig || 'ED25519_PREVIEW_SIGNATURE';
+
+  return `${publicBaseUrl}/c/${b64Id}.${sig}`;
 }
 
 // ── FRONT CARD ───────────────────────────────────────────────────
@@ -288,27 +468,44 @@ function drawCard(canvas, arg1, arg2, arg3, arg4) {
   const studentFaculty = st.faculty || '—';
   const studentDept = st.department || st.dept || '—';
 
-  const rows = [
-    ['Name:',        studentName],
+  // 1. Draw Name with shrink-to-fit and 2-line wrapping (no ellipsis)
+  const nameLabel = 'Name:';
+  c.textAlign = 'left';
+  c.fillStyle = col.labelColor || '#000000';
+  c.font      = 'bold ' + S(CC.fieldFontSize) + 'px Arial,sans-serif';
+  const nameLabelY = S(CC.fieldsStartY);
+  c.fillText(nameLabel, S(CC.fieldLabelX), nameLabelY);
+
+  const nameLabelW = c.measureText(nameLabel).width;
+  const nameValX = S(CC.fieldLabelX) + nameLabelW + S(12);
+  const nameMaxW = Math.max(0, S(CC.qrX - 10) - nameValX);
+
+  c.fillStyle = col.valueColor || '#222222';
+  const nameRes = drawCardName(c, studentName, nameValX, nameLabelY, nameMaxW, S(CC.fieldFontSize), 'bold', 'Arial,sans-serif');
+
+  // If name took 2 lines, shift subsequent rows down and compress spacing slightly so rows never collide
+  const nameOffset = (nameRes && nameRes.lines === 2) ? nameRes.nextRowOffset : 0;
+  const subSpacing = nameOffset > 0 ? S(CC.fieldSpacing * 0.88) : S(CC.fieldSpacing);
+
+  const subRows = [
     ['Faculty:',     studentFaculty],
     ['Department:',  studentDept],
     ['Expiry Year:', expiryYear.toString()]
   ];
 
-  rows.forEach(([label, val], i) => {
-    const ty = S(CC.fieldsStartY + i * CC.fieldSpacing);
+  subRows.forEach(([label, val], idx) => {
+    const ty = S(CC.fieldsStartY) + nameOffset + (idx + 1) * subSpacing;
     c.textAlign = 'left';
     c.fillStyle = col.labelColor || '#000000';
     c.font      = 'bold ' + S(CC.fieldFontSize) + 'px Arial,sans-serif';
     c.fillText(label, S(CC.fieldLabelX), ty);
 
-    // Position value dynamically right after label with consistent spacing to prevent overlap
     const labelW = c.measureText(label).width;
     const rowValX = S(CC.fieldLabelX) + labelW + S(12);
+    const fMaxW = Math.max(0, S(CC.qrX - 10) - rowValX);
 
     c.fillStyle = col.valueColor || '#222222';
-    const fMaxW = Math.max(0, S(CC.qrX - 10) - rowValX);
-    drawFittedText(c, val || '—', rowValX, ty, fMaxW, S(CC.fieldFontSize), (i === 0 ? 'bold' : ''));
+    drawFittedText(c, val || '—', rowValX, ty, fMaxW, S(CC.fieldFontSize), '');
   });
 
   // Signature label
@@ -368,16 +565,32 @@ function drawCard(canvas, arg1, arg2, arg3, arg4) {
   }
 
   function stepQR() {
-    const qc = document.createElement('canvas');
-    if (typeof QRGen !== 'undefined' && QRGen.drawToCanvas) {
-      QRGen.drawToCanvas(qc, buildQRData(st), 4);
+    const qrString = buildQRData(st);
+    if (typeof QRGen !== 'undefined' && QRGen.generate && qrString) {
+      const q = QRGen.generate(qrString);
+      const targetSize = S(CC.qrSize);
+      // Integer pixel sizing per module (min 2px) for ultra-crisp square edges at 300 DPI
+      const px = Math.max(2, Math.floor(targetSize / (q.size + 8)));
+      const qc = document.createElement('canvas');
+      QRGen.drawToCanvas(qc, qrString, px);
+
       c.save();
-      // Pure white backing to prevent background/watermark interference
+      const actualSize = qc.width; // (q.size + 8) * px
+      const drawX = S(CC.qrX) + Math.round((targetSize - actualSize) / 2);
+      const drawY = S(CC.qrY) + Math.round((targetSize - actualSize) / 2);
+
+      // Dedicated solid white backing rectangle with quiet zone (prevents watermark / background interference)
       c.fillStyle = '#ffffff';
-      c.fillRect(S(CC.qrX) - S(4), S(CC.qrY) - S(4), S(CC.qrSize) + S(8), S(CC.qrSize) + S(8));
+      c.fillRect(drawX - S(4), drawY - S(4), actualSize + S(8), actualSize + S(8));
+
       c.imageSmoothingEnabled = false;
-      c.drawImage(qc, S(CC.qrX), S(CC.qrY), S(CC.qrSize), S(CC.qrSize));
+      c.drawImage(qc, drawX, drawY);
       c.restore();
+
+      // Automated self-test check
+      if (typeof jsQR !== 'undefined') {
+        verifyRenderedQR(qc, qrString);
+      }
     }
     stepSig();
   }
@@ -647,3 +860,13 @@ function drawBackCard(canvas, arg1, arg2, arg3) {
 
 // Canonical Render Function Alias
 const renderCard = drawCard;
+
+if (typeof window !== 'undefined') {
+  window.drawCardName = drawCardName;
+  window.drawCard = drawCard;
+  window.drawBackCard = drawBackCard;
+  window.CardCanvas = window.CardCanvas || {};
+  window.CardCanvas.drawCardName = drawCardName;
+  window.CardCanvas.drawCard = drawCard;
+  window.CardCanvas.drawBackCard = drawBackCard;
+}

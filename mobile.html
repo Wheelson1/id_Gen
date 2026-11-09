@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Phone Demo Bridge — EBSU Digital ID</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <style>
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 24px;
+    }
+    .bridge-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .bridge-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .bridge-header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent);
+      margin: 0 0 6px 0;
+    }
+    .bridge-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .bridge-grid { grid-template-columns: 1fr; }
+    }
+    .bridge-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .qr-frame {
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 12px;
+      border: 2px solid var(--accent);
+      margin: 16px 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    .qr-frame canvas {
+      display: block;
+    }
+    .url-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: var(--sunken);
+      border: 1px solid var(--line);
+      padding: 8px 14px;
+      border-radius: 8px;
+      word-break: break-all;
+      margin: 8px 0;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .btn-action {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .btn-secondary {
+      background: var(--sunken);
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin: 10px 0;
+    }
+    .pill-btn {
+      background: var(--sunken);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+    .pill-btn.active {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+    .step-box {
+      text-align: left;
+      width: 100%;
+      background: var(--sunken);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 14px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .step-box ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .step-box li {
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bridge-wrap">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <a href="invest.html" style="font-size:12px; font-weight:700; color:var(--muted); text-decoration:none;">← Back to Presentation Hub</a>
+      <button type="button" class="theme-toggle-btn" aria-label="Toggle Theme"></button>
+    </div>
+
+    <div class="bridge-header">
+      <h1>📱 Mobile Phone Live Demo Bridge</h1>
+      <p style="color:var(--muted); font-size:14px; margin:0;">
+        Hold the student card in your hand on your phone, then hold your phone to your PC webcam to scan it.
+      </p>
+    </div>
+
+    <div class="bridge-grid">
+      <!-- LEFT COLUMN: SCAN THIS TO OPEN ON PHONE -->
+      <div class="bridge-card">
+        <span style="font-size:11px; font-weight:800; letter-spacing:0.5px; color:var(--accent); text-transform:uppercase;">Step 1 · Open on Mobile</span>
+        <h2 style="font-size:18px; margin:6px 0 2px 0;">Scan with Phone Camera</h2>
+        <p style="font-size:12px; color:var(--muted); margin:0;">
+          Open your phone's camera or Google Lens and point it at this QR code:
+        </p>
+
+        <!-- Card Preset Selector -->
+        <div class="pill-group">
+          <button type="button" class="pill-btn active" data-mode="standard">🎓 Standard Card</button>
+          <button type="button" class="pill-btn" data-mode="long">📏 Long Name</button>
+          <button type="button" class="pill-btn" data-mode="expired">⌛ Expired 2025</button>
+          <button type="button" class="pill-btn" data-mode="foreign">🚫 Foreign Barcode (Test Invalid)</button>
+        </div>
+
+        <div class="qr-frame">
+          <canvas id="bridge-qr-canvas" width="220" height="220"></canvas>
+        </div>
+
+        <div style="font-size:11px; color:var(--muted); margin-bottom:4px;">Or type this URL directly into your phone browser:</div>
+        <div id="bridge-url-display" class="url-chip">http://192.168.18.4:8000/student-portal.html?demo=1</div>
+
+        <div style="display:flex; gap:8px; width:100%; justify-content:center;">
+          <button type="button" id="btn-copy-url" class="btn-action btn-secondary" style="font-size:11px; padding:6px 12px;">📋 Copy Link</button>
+          <a id="btn-preview-link" href="#" target="_blank" class="btn-action btn-secondary" style="font-size:11px; padding:6px 12px;">🔗 Open in New Tab</a>
+        </div>
+
+        <div style="margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; color: var(--muted);">
+          <span>PC Wi-Fi IP:</span>
+          <input type="text" id="custom-ip-input" style="font-family:'JetBrains Mono',monospace; font-size:11px; padding:4px 8px; border:1px solid var(--line); border-radius:6px; width:115px; background:var(--sunken); color:var(--ink);" />
+          <button type="button" id="btn-save-ip" class="pill-btn" style="padding:4px 8px; font-size:10px;">Update IP</button>
+        </div>
+
+        <div class="step-box">
+          <div style="font-weight:700; color:var(--accent); margin-bottom:4px;">📶 Wi-Fi Connection Tip:</div>
+          <div>Make sure your mobile phone is connected to the same Wi-Fi network (or turn on your phone's <strong>Personal Hotspot</strong> and connect your PC to it).</div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: PC SCANNER & VERIFICATION -->
+      <div class="bridge-card" style="justify-content:space-between;">
+        <div style="width:100%;">
+          <span style="font-size:11px; font-weight:800; letter-spacing:0.5px; color:var(--success); text-transform:uppercase;">Step 2 · Scan on This PC</span>
+          <h2 style="font-size:18px; margin:6px 0 2px 0;">PC Gate Scanner Terminal</h2>
+          <p style="font-size:12px; color:var(--muted); margin:0 0 16px 0;">
+            Turn on your computer's webcam to scan the card displayed on your phone screen.
+          </p>
+
+          <div style="background:var(--sunken); border:2px dashed var(--line); border-radius:12px; padding:24px 16px; margin-bottom:16px;">
+            <div style="font-size:44px; margin-bottom:8px;">💻 ⇄ 📱</div>
+            <div style="font-weight:700; font-size:14px; margin-bottom:4px;">Ready for Live Verification</div>
+            <div style="font-size:12px; color:var(--muted);">
+              Once your phone displays the card, click the button below to launch the PC webcam scanner.
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
+            <a href="verify.html?standalone=1&autostart=1&demo=1" target="_blank" class="btn-action" style="justify-content:center; padding:12px; font-size:14px;">
+              🛡️ Launch High-Res Gate Scanner (Full Window)
+            </a>
+            <a href="app.html#/scanner" target="_blank" class="btn-action btn-secondary" style="justify-content:center; padding:10px; font-size:12px;">
+              👔 Launch Staff Registry Scanner Terminal
+            </a>
+          </div>
+
+          <div class="step-box" style="margin-top:16px;">
+            <div style="font-weight:700; color:var(--accent); margin-bottom:6px;">🎬 The Presentation Sequence:</div>
+            <ol>
+              <li>Scan the QR on the left with your phone to load the student ID.</li>
+              <li>Click <strong>Launch High-Res Gate Scanner</strong> on your PC.</li>
+              <li>Hold your phone screen up to your computer's webcam.</li>
+              <li>The computer instantly beeps and validates the card cryptographically!</li>
+            </ol>
+          </div>
+        </div>
+
+        <div style="font-size:11px; color:var(--muted); margin-top:12px;">
+          Tested for Google Lens, iOS Camera, Android Camera, and Chrome Mobile.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="qr.js"></script>
+  <script>
+    // Local IP address detected automatically (or saved by user)
+    const savedIp = localStorage.getItem('ebsu_bridge_ip');
+    let hostIp = savedIp || ((window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+      ? window.location.hostname
+      : '192.168.18.4');
+    const PORT = window.location.port || '8000';
+
+    const canvas = document.getElementById('bridge-qr-canvas');
+    const urlDisplay = document.getElementById('bridge-url-display');
+    const previewLink = document.getElementById('btn-preview-link');
+    const copyBtn = document.getElementById('btn-copy-url');
+    const ipInput = document.getElementById('custom-ip-input');
+    const saveIpBtn = document.getElementById('btn-save-ip');
+
+    if (ipInput) {
+      ipInput.value = hostIp;
+      saveIpBtn?.addEventListener('click', () => {
+        const val = ipInput.value.trim();
+        if (val) {
+          hostIp = val;
+          localStorage.setItem('ebsu_bridge_ip', val);
+          renderQR();
+        }
+      });
+      ipInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') saveIpBtn?.click();
+      });
+    }
+
+    let currentMode = 'standard';
+
+    function getTargetUrl() {
+      if (currentMode === 'foreign') {
+        // External non-EBSU barcode (e.g. standard external receipt URL) to test live parser rejection
+        return 'https://example.com/receipt-verify?order=9948271';
+      }
+      let query = '?demo=1';
+      if (currentMode === 'long') query = '?demo=1&long=1';
+      if (currentMode === 'expired') query = '?demo=1&expired=1';
+      return `http://${hostIp}:${PORT}/student-portal.html${query}`;
+    }
+
+    function renderQR() {
+      const url = getTargetUrl();
+      urlDisplay.textContent = url;
+      previewLink.href = url;
+
+      if (typeof QRGen !== 'undefined' && QRGen.drawToCanvas) {
+        QRGen.drawToCanvas(canvas, url, 4);
+      }
+    }
+
+    // Preset pills
+    document.querySelectorAll('.pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = btn.getAttribute('data-mode');
+        renderQR();
+      });
+    });
+
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(getTargetUrl()).then(() => {
+        copyBtn.textContent = '✓ Copied!';
+        setTimeout(() => { copyBtn.textContent = '📋 Copy Link'; }, 2000);
+      });
+    });
+
+    // Initial render
+    renderQR();
+  </script>
+  <script src="config.js"></script>
+  <script src="js/theme.js"></script>
+</body>
+</html>
