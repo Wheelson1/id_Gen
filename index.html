@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EBSU SID Platform | Official Student ID Onboarding & Cryptographic Pass</title>
-    <meta name="description" content="Official Ebonyi State University (EBSU) Student Identity Card Portal. Verify your admission record, pay the ₦2,500 ID card fee, and activate your Ed25519-signed student ID.">
+    <title>Student ID card | Ebonyi State University</title>
+    <meta name="description" content="Get your Ebonyi State University student ID card online. Find your admission record, confirm your identity, pay the ID card fee and receive your signed card.">
     <meta name="color-scheme" content="light dark">
-    <meta name="theme-color" content="#FAF9F5">
+    <meta name="theme-color" content="#0B2B26">
     <script>
       (function() {
         try {
@@ -15,624 +15,415 @@
           document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
           document.documentElement.setAttribute('data-theme-preference', p);
           var m = document.querySelector('meta[name="theme-color"]');
-          if (m) m.setAttribute('content', d ? '#262624' : '#FAF9F5');
+          if (m) m.setAttribute('content', '#0B2B26');
         } catch(e) {
           document.documentElement.setAttribute('data-theme', 'light');
         }
       })();
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/theme.css">
-    <link rel="stylesheet" href="css/landing-pro.css">
-    <!-- Cloudflare Turnstile SDK (non-blocking async load) -->
+    <link rel="stylesheet" href="css/print.css">
+    <!-- Cloudflare Turnstile (security check) -->
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
-    <!-- QRCode generator for Step 6 Digital ID & Live 60s Pass -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+    <!-- QR code drawing for the card and the live pass -->
+    <script src="js/vendor/qrcode.min.js" defer></script>
 </head>
-<body class="mc-body">
+<body class="print-body">
 
-    <!-- Top Cryptographic Status Bar -->
-    <div class="mc-topbar">
-        <div class="mc-container mc-topbar-inner">
-            <div class="mc-topbar-badge">
-                <span class="mc-status-dot" aria-hidden="true"></span>
-                <span>EBSU CRYPTOGRAPHIC CREDENTIAL ENGINE · ED25519 + EBSU2 ROTATING PASS</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                <span>Helpdesk: <a href="tel:09016054526" class="mono" style="color:inherit; font-weight:700;">09016054526</a> · <a href="tel:09035005623" class="mono" style="color:inherit; font-weight:700;">09035005623</a></span>
-                <a href="support.html" style="color:var(--mc-gold); font-weight:700;">Manual Reg &amp; Support →</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sticky Header -->
-    <header class="mc-header">
-        <div class="mc-container mc-header-inner">
-            <a href="index.html" class="mc-brand">
-                <img src="images/ebsu_logo.png" alt="Ebonyi State University Crest" class="mc-brand-logo" onerror="this.style.display='none'">
-                <div>
-                    <span class="mc-brand-title">Ebonyi State University</span>
-                    <span class="mc-brand-sub">Official Student ID Platform</span>
-                </div>
+    <header class="site-head">
+        <div class="wrap site-head-inner">
+            <a href="index.html" class="brand">
+                <img src="crest_large.png.jpeg" alt="Ebonyi State University crest" class="brand-crest">
+                <span>
+                    <span class="brand-name">Ebonyi State University</span>
+                    <span class="brand-sub">Student ID cards</span>
+                </span>
             </a>
 
-            <nav class="mc-nav" aria-label="Primary Navigation">
-                <a href="#how-it-works" class="mc-nav-link">How It Works</a>
-                <a href="#security-architecture" class="mc-nav-link">Security</a>
-                <a href="support.html" class="mc-nav-link">Manual Reg &amp; Support</a>
-                <a href="verify.html" class="mc-nav-link mc-nav-verify">🛡️ Verify a Card</a>
-                <a href="invest.html" class="mc-nav-link mc-nav-pitch">For Institutions</a>
-                <a href="login.html" class="mc-nav-link mc-nav-staff">Staff Login</a>
-                <button type="button" class="theme-toggle-btn" aria-label="Toggle Theme"></button>
+            <nav class="site-nav" aria-label="Main">
+                <a href="#how-it-works">How it works</a>
+                <a href="#how-cards-are-checked">How cards are checked</a>
+                <a href="#help">Help</a>
+                <a href="login.html">Staff sign-in</a>
+                <button type="button" class="theme-toggle-btn" aria-label="Switch between light and dark"></button>
             </nav>
         </div>
     </header>
 
-    <!-- Main 2-Column Hero -->
-    <main class="mc-hero">
-        <div class="mc-container mc-hero-grid">
+    <main>
+        <section class="hero" aria-labelledby="hero-headline">
+            <div class="wrap hero-grid">
 
-            <!-- LEFT COLUMN: Brand Pitch, Trust Strip & Interactive 3D SAMPLE Card -->
-            <section aria-labelledby="hero-headline">
-                <div class="mc-eyebrow">
-                    <span>●</span>
-                    <span>EBSU SID PLATFORM</span>
-                </div>
+                <!-- LEFT: what this page is for, then the application itself -->
+                <div>
+                    <h1 id="hero-headline" class="hero-title">Get your student ID card</h1>
+                    <p class="hero-lede">
+                        Find your admission record, confirm it is you, pay the ID card fee, and your signed card is ready to use.
+                    </p>
+                    <p class="hero-need">
+                        You need your JAMB or matric number and your date of birth.
+                    </p>
 
-                <h1 id="hero-headline" class="mc-hero-title">
-                    Identity that <span class="mc-accent-gradient">can't be photocopied.</span>
-                </h1>
-
-                <p class="mc-hero-sub">
-                    Complete your official Ebonyi State University smart ID registration in 60 seconds. Confirm your admission record, pay the <strong>₦2,500 ID card fee</strong>, and unlock your Ed25519-signed credential and 60-second rotating campus pass.
-                </p>
-
-                <div class="mc-hero-actions">
-                    <button type="button" class="mc-cta-primary" onclick="const el=document.getElementById('onb-jamb-input'); if(el){el.scrollIntoView({behavior:'smooth',block:'center'}); el.focus();}">
-                        <span>Get my ID</span>
-                        <span aria-hidden="true">→</span>
-                    </button>
-                    <a href="verify.html" class="mc-cta-secondary">
-                        <span>🛡️ Verify a card</span>
-                    </a>
-                </div>
-
-                <!-- 4 Trust Chips -->
-                <div class="mc-trust-strip" role="list" aria-label="Cryptographic Security Features">
-                    <div class="mc-trust-chip" role="listitem">
-                        <span class="mc-trust-chip-icon" aria-hidden="true">01</span>
-                        <span>Ed25519 signed</span>
-                    </div>
-                    <div class="mc-trust-chip" role="listitem">
-                        <span class="mc-trust-chip-icon" aria-hidden="true">02</span>
-                        <span>60-second rotating pass</span>
-                    </div>
-                    <div class="mc-trust-chip" role="listitem">
-                        <span class="mc-trust-chip-icon" aria-hidden="true">03</span>
-                        <span>Server-side verification</span>
-                    </div>
-                    <div class="mc-trust-chip" role="listitem">
-                        <span class="mc-trust-chip-icon" aria-hidden="true">04</span>
-                        <span>Instant revocation</span>
-                    </div>
-                </div>
-
-                <!-- Floating 3D Tilting SAMPLE ID Card -->
-                <div class="mc-sample-card-stage" id="mc-sample-stage" aria-label="Interactive sample student ID credential preview">
-                    <div class="mc-sample-card" id="mc-sample-card">
-                        <div class="mc-sample-card-top">
-                            <div class="mc-sample-uni">
-                                <img src="images/ebsu_logo.png" alt="" class="mc-sample-uni-crest" onerror="this.style.display='none'">
-                                <div>
-                                    <div class="mc-sample-uni-name">Ebonyi State University</div>
-                                    <div class="mc-sample-uni-sub">ABAKALIKI · SMART STUDENT CREDENTIAL</div>
-                                </div>
-                            </div>
-                            <span class="mc-sample-badge" title="Illustrative preview — contains no real student data">SAMPLE · SPECIMEN</span>
+                    <section id="student-onboarding-portal" class="apply" aria-labelledby="apply-title">
+                        <div class="apply-head">
+                            <h2 id="apply-title" class="apply-title">Student ID application</h2>
+                            <span class="apply-time">Takes about two minutes</span>
                         </div>
 
-                        <div class="mc-sample-card-body">
-                            <!-- Stylised SVG Portrait Avatar (SAMPLE) -->
-                            <div class="mc-sample-avatar" aria-hidden="true">
-                                <svg width="46" height="52" viewBox="0 0 46 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="23" cy="17" r="10" fill="#60A5FA" fill-opacity="0.35" stroke="#93C5FD" stroke-width="1.6"/>
-                                    <path d="M7 46C7 36.6112 14.1634 29 23 29C31.8366 29 39 36.6112 39 46" stroke="#D4A574" stroke-width="2" stroke-linecap="round"/>
-                                </svg>
-                                <span class="mc-sample-avatar-tag">SAMPLE</span>
+                        <div class="apply-body">
+                            <ol class="onb-stepper" aria-label="Steps">
+                                <li id="onb-step-pill-1" class="onb-step-pill active">School</li>
+                                <li id="onb-step-pill-2" class="onb-step-pill">Number</li>
+                                <li id="onb-step-pill-3" class="onb-step-pill">Confirm</li>
+                                <li id="onb-step-pill-4" class="onb-step-pill">Birthday</li>
+                                <li id="onb-step-pill-5" class="onb-step-pill">Card fee</li>
+                                <li id="onb-step-pill-6" class="onb-step-pill">Your ID</li>
+                            </ol>
+
+                            <!-- ============ PANEL 1-2: SCHOOL + JAMB NUMBER ============ -->
+                            <div id="onb-panel-1-2" class="onb-panel active">
+                                <div id="onb-alert-step12" class="onb-alert" role="alert"></div>
+
+                                <!-- Shown only on localhost/LAN with DEMO_MODE: true. Removed from the page everywhere else. -->
+                                <div id="onb-demo-box" class="onb-demo" hidden>
+                                    <strong>Demo mode, this computer only.</strong> Sample data. No payment is taken and the card is not signed.
+                                    <button type="button" id="btn-quick-fill-onboarding" class="onb-btn onb-btn-outline">Fill sample student and continue</button>
+                                </div>
+
+                                <form id="onb-form-lookup" class="onb-form">
+                                    <div>
+                                        <label class="onb-label" for="onb-school-select">Your school</label>
+                                        <select id="onb-school-select" class="onb-select" required>
+                                            <option value="00000000-0000-4000-8000-000000000001" selected>Ebonyi State University, Abakaliki (EBSU)</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="onb-label" for="onb-jamb-input">JAMB registration number or matric number</label>
+                                        <input type="text" id="onb-jamb-input" class="onb-input onb-input--code" autocomplete="off" required minlength="6" maxlength="32" aria-describedby="onb-jamb-hint">
+                                        <p id="onb-jamb-hint" class="onb-hint">Type it exactly as it appears on your admission letter.</p>
+                                    </div>
+
+                                    <div id="onb-turnstile-step2" class="onb-turnstile"></div>
+
+                                    <button type="submit" id="onb-btn-lookup" class="onb-btn onb-btn-primary">Find my admission record</button>
+
+                                    <div class="onb-foot onb-row">
+                                        <a href="support.html">My details are not in the system</a>
+                                        <button type="button" class="onb-linkbtn" onclick="StudentOnboarding.openFindPaymentModal()">I already paid</button>
+                                    </div>
+                                </form>
                             </div>
 
-                            <!-- Sample Metadata -->
+                            <!-- ============ PANEL 3: IS THIS YOU? (masked name only) ============ -->
+                            <div id="onb-panel-3" class="onb-panel">
+                                <div id="onb-alert-step3" class="onb-alert" role="alert"></div>
+
+                                <div class="onb-student-card">
+                                    <p class="onb-record-q">We found this record. Part of the name is hidden for privacy.</p>
+                                    <div id="onb-masked-name" class="onb-masked">—</div>
+                                    <dl class="onb-facts">
+                                        <div><dt>Department</dt><dd id="onb-masked-dept">—</dd></div>
+                                        <div class="code"><dt>Number you entered</dt><dd id="onb-masked-jamb">—</dd></div>
+                                    </dl>
+                                </div>
+
+                                <p class="onb-label">Do the visible letters and the department match you?</p>
+
+                                <div class="onb-two">
+                                    <button type="button" id="onb-btn-confirm-yes" class="onb-btn onb-btn-success">Yes, this is me</button>
+                                    <button type="button" id="onb-btn-confirm-no" class="onb-btn onb-btn-danger">No, this is not me</button>
+                                </div>
+                            </div>
+
+                            <!-- ============ PANEL 3B: NOT ME ============ -->
+                            <div id="onb-panel-not-me" class="onb-panel">
+                                <div class="onb-stop">
+                                    <h3>We have told the Registry</h3>
+                                    <p id="onb-mismatch-note">
+                                        This record does not look like yours, so the application has stopped. Do not pay on someone else's record. The Support Desk can find or create the right one for you.
+                                    </p>
+                                    <div class="onb-row">
+                                        <a href="support.html" class="onb-btn onb-btn-primary onb-btn-auto">Go to the Support Desk</a>
+                                        <button type="button" onclick="StudentOnboarding.resetFlow()" class="onb-btn onb-btn-outline onb-btn-auto">Try another number</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ============ PANEL 4: DATE OF BIRTH ============ -->
+                            <div id="onb-panel-4" class="onb-panel">
+                                <div id="onb-alert-step4" class="onb-alert" role="alert"></div>
+
+                                <form id="onb-form-dob" class="onb-form">
+                                    <fieldset class="onb-fieldset">
+                                        <legend class="onb-label">Your date of birth</legend>
+                                        <div class="onb-dob">
+                                            <select id="onb-dob-year" class="onb-select" aria-label="Year of birth" required></select>
+                                            <select id="onb-dob-month" class="onb-select" aria-label="Month of birth" required></select>
+                                            <select id="onb-dob-day" class="onb-select" aria-label="Day of birth" required></select>
+                                        </div>
+                                        <p class="onb-hint">Use the date on your admission record. After 5 wrong tries, checking is locked for a while.</p>
+                                    </fieldset>
+
+                                    <div id="onb-turnstile-step4" class="onb-turnstile"></div>
+
+                                    <button type="submit" id="onb-btn-step4" class="onb-btn onb-btn-primary">Check my date of birth</button>
+                                    <button type="button" class="onb-linkbtn" onclick="StudentOnboarding.resetFlow()">Start again</button>
+                                </form>
+                            </div>
+
+                            <!-- ============ PANEL 5: CARD FEE ============ -->
+                            <div id="onb-panel-5" class="onb-panel">
+                                <div id="onb-alert-step5" class="onb-alert" role="alert"></div>
+
+                                <img id="onb-redacted-svg-img" class="onb-preview" alt="Locked preview of your ID card">
+
+                                <div class="onb-student-card">
+                                    <dl class="onb-facts">
+                                        <div class="big"><dt>ID card fee</dt><dd id="onb-pay-amount-display">—</dd></div>
+                                        <div class="code">
+                                            <dt>Your payment reference</dt>
+                                            <dd><span id="onb-pay-ref-display">—</span>
+                                                <button type="button" id="onb-btn-copy-ref" class="onb-btn onb-btn-outline onb-btn-small">Copy</button></dd>
+                                        </div>
+                                    </dl>
+                                    <p class="onb-hint">Keep the payment reference. You need it to open your ID again later.</p>
+                                </div>
+
+                                <div id="onb-pay-unavailable-note" class="onb-alert onb-alert-warn">
+                                    Online payment is not available right now. Try again later, or ask the Support Desk.
+                                </div>
+
+                                <div class="onb-stack">
+                                    <button type="button" id="onb-btn-pay-now" class="onb-btn onb-btn-gold" disabled>Pay the ID card fee online</button>
+                                    <button type="button" id="onb-btn-pay-confirm" class="onb-btn onb-btn-success">I have paid. Unlock my ID</button>
+
+                                    <div class="onb-row">
+                                        <button type="button" class="onb-linkbtn" onclick="StudentOnboarding.openFindPaymentModal()">I paid earlier</button>
+                                        <button type="button" class="onb-linkbtn" onclick="StudentOnboarding.resetFlow()">Start again</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ============ PANEL 6: YOUR ID + LIVE PASS ============ -->
+                            <div id="onb-panel-6" class="onb-panel">
+                                <div id="onb-alert-step6" class="onb-alert" role="alert"></div>
+
+                                <div id="onb-photo-missing-note" class="onb-alert onb-alert-warn">
+                                    There is no passport photograph on file for you yet. Your card is valid, but please <a href="support.html">ask the Support Desk</a> to add your photo.
+                                </div>
+
+                                <div class="issued-ref">
+                                    <span>Payment reference, keep it safe:</span>
+                                    <strong id="onb-final-payment-ref">—</strong>
+                                    <button type="button" id="onb-btn-copy-ref-final" class="onb-btn onb-btn-outline onb-btn-small">Copy</button>
+                                </div>
+
+                                <div class="idcard idcard--issued">
+                                    <div class="idcard-head">
+                                        <img src="crest_large.png.jpeg" alt="" class="idcard-crest">
+                                        <div>
+                                            <div class="idcard-uni">Ebonyi State University</div>
+                                            <div class="idcard-kind">Abakaliki</div>
+                                        </div>
+                                        <span id="onb-card-badge" class="idcard-status">Active and signed</span>
+                                    </div>
+                                    <div class="idcard-title">STUDENT IDENTITY CARD</div>
+                                    <div class="idcard-body">
+                                        <img id="onb-card-photo" src="images/photo-placeholder.svg" alt="Your passport photograph" class="idcard-photo" onerror="this.onerror=null; this.src='images/photo-placeholder.svg';">
+                                        <dl class="idcard-fields">
+                                            <div class="wide name"><dt>Name</dt><dd id="onb-card-name">—</dd></div>
+                                            <div class="wide matric"><dt>Matric number</dt><dd id="onb-card-matric">—</dd></div>
+                                            <div><dt>Department</dt><dd id="onb-card-dept">—</dd></div>
+                                            <div><dt>Faculty</dt><dd id="onb-card-faculty">—</dd></div>
+                                            <div><dt>Level</dt><dd id="onb-card-level">—</dd></div>
+                                            <div><dt>Expires</dt><dd id="onb-card-expiry">—</dd></div>
+                                        </dl>
+                                        <div class="idcard-qr-row">
+                                            <div id="onb-static-qr-box" class="idcard-qr"></div>
+                                            <span>Card QR code. Anyone who scans it sees whether this card is genuine.</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="issued-actions">
+                                    <a href="student-portal.html" class="onb-btn onb-btn-primary onb-btn-auto">Open my card to download or print</a>
+                                </div>
+
+                                <div class="livepass">
+                                    <h3>Live pass for gates and exam halls</h3>
+                                    <p>This code is replaced every 60 seconds, so a screenshot of it stops working. Show it from this page. Your session here lasts 30 minutes.</p>
+
+                                    <div id="onb-live-pass-box" class="livepass-box">
+                                        <div id="onb-live-qr-canvas"></div>
+                                        <div id="onb-live-pass-timer" class="livepass-timer">Live pass valid: 60s</div>
+                                    </div>
+
+                                    <button type="button" id="onb-btn-mint-pass" class="onb-btn onb-btn-outline onb-btn-auto">Get a new live pass</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- RIGHT: the card itself -->
+                <div class="hero-art" aria-label="Sample of the student ID card">
+                    <div class="idcard">
+                        <div class="idcard-head">
+                            <img src="crest_large.png.jpeg" alt="" class="idcard-crest">
                             <div>
-                                <div class="mc-sample-meta-name">NWANKWO CHIDIMMA ADAEZE</div>
-                                <div class="mc-sample-meta-matric">EBSU/2026/00000 · SAMPLE</div>
-                                <div class="mc-sample-meta-grid">
-                                    <div>
-                                        <span class="mc-sample-meta-label">Faculty</span>
-                                        <span class="mc-sample-meta-val">Physical Sci.</span>
-                                    </div>
-                                    <div>
-                                        <span class="mc-sample-meta-label">Department</span>
-                                        <span class="mc-sample-meta-val">Computer Sci.</span>
-                                    </div>
-                                    <div>
-                                        <span class="mc-sample-meta-label">Level</span>
-                                        <span class="mc-sample-meta-val">100 LEVEL</span>
-                                    </div>
-                                    <div>
-                                        <span class="mc-sample-meta-label">Token Mode</span>
-                                        <span class="mc-sample-meta-val" style="color:#34D399;">EBSU2 LIVE</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Live Re-rendering Sample QR Pattern -->
-                            <div class="mc-sample-qr-box" aria-hidden="true">
-                                <div id="mc-sample-qr-grid" class="mc-qr-grid"></div>
-                                <span class="mono" style="font-size:0.55rem; color:#0F172A; font-weight:800; margin-top:4px; letter-spacing:0.06em;">SAMPLE QR</span>
+                                <div class="idcard-uni">Ebonyi State University</div>
+                                <div class="idcard-kind">Abakaliki</div>
                             </div>
                         </div>
-
-                        <div class="mc-sample-card-footer">
-                            <div class="mc-countdown-pill">
-                                <svg class="mc-countdown-svg" viewBox="0 0 20 20" aria-hidden="true">
-                                    <circle class="mc-ring-bg" cx="10" cy="10" r="8"></circle>
-                                    <circle id="mc-sample-ring" class="mc-ring-progress" cx="10" cy="10" r="8"></circle>
-                                </svg>
-                                <span id="mc-sample-timer-text">pass refreshes in 60s</span>
-                            </div>
-                            <div class="mc-sample-sig" id="mc-sample-nonce">NONCE: SAMPLE-8F2A · ED25519</div>
+                        <div class="idcard-title">STUDENT IDENTITY CARD</div>
+                        <div class="idcard-body">
+                            <img src="images/photo-placeholder.svg" alt="" class="idcard-photo">
+                            <dl class="idcard-fields">
+                                <div class="wide name"><dt>Name</dt><dd>Nwankwo Chidimma Adaeze</dd></div>
+                                <div class="wide matric"><dt>Matric number</dt><dd>EBSU/2026/00000</dd></div>
+                                <div><dt>Department</dt><dd>Computer Science</dd></div>
+                                <div><dt>Level</dt><dd>100</dd></div>
+                            </dl>
+                            <div id="specimen-qr" class="idcard-qr" aria-hidden="true"></div>
                         </div>
+                        <div class="idcard-mrz" aria-hidden="true">IDNGAEBSU202600000&lt;&lt;NWANKWO&lt;&lt;CHIDIMMA&lt;ADAEZE&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>
+                        <div class="idcard-overprint" aria-hidden="true">SPECIMEN</div>
                     </div>
+                    <p class="specimen-note">
+                        A sample card. Yours carries your photograph, your details and a QR code signed by the university.
+                    </p>
                 </div>
-            </section>
+            </div>
 
-            <!-- RIGHT COLUMN: Glass Onboarding Form (All #onb-* & .onb-* preserved) -->
-            <section id="student-onboarding-portal" class="mc-portal-card" aria-label="Student ID Self-Service Onboarding">
-                <div class="mc-portal-header">
+            <div class="guilloche-band" aria-hidden="true"></div>
+        </section>
+
+        <!-- ==================== HOW IT WORKS ==================== -->
+        <section id="how-it-works" class="section section--sheet">
+            <div class="wrap">
+                <h2 class="section-title">How it works</h2>
+                <p class="section-lede">Four steps, all on this page. You can stop after paying and come back later with your payment reference.</p>
+
+                <ol class="steps">
+                    <li>
+                        <h3>Find your record</h3>
+                        <p>Enter your JAMB or matric number. We look for your admission record in the university register.</p>
+                    </li>
+                    <li>
+                        <h3>Confirm it is you</h3>
+                        <p>You see part of the name and the department. If they match, you enter your date of birth and we check it against the record.</p>
+                    </li>
+                    <li>
+                        <h3>Pay the ID card fee</h3>
+                        <p>Pay on the secure payment page. The amount is shown before you pay, and you get a payment reference to keep.</p>
+                    </li>
+                    <li>
+                        <h3>Get your card</h3>
+                        <p>Your signed card appears straight away. Download it, print it, or show the live pass from your phone.</p>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- ==================== HOW CARDS ARE CHECKED ==================== -->
+        <section id="how-cards-are-checked" class="section">
+            <div class="wrap">
+                <h2 class="section-title">How a card is checked</h2>
+                <p class="section-lede">A printed card can be photocopied. These three checks are why a copy does not pass.</p>
+
+                <div class="checks">
                     <div>
-                        <h2 class="mc-portal-header-title">
-                            <span>🎓 Student Self-Service ID Portal</span>
-                        </h2>
-                        <p class="mc-portal-header-sub">Verify your admission record, pay the ID card fee &amp; generate your digital ID</p>
+                        <h3>Signed by the university</h3>
+                        <p>The QR code on every card carries a digital signature made with a key only the university holds. Change a name or a number and the signature no longer matches.</p>
                     </div>
-                    <span class="mc-fee-chip">ID CARD FEE: ₦2,500</span>
+                    <div>
+                        <h3>A pass that changes every minute</h3>
+                        <p>At gates and exam halls you show a live pass from your phone. It is replaced every 60 seconds and each one works once, so a screenshot is useless.</p>
+                    </div>
+                    <div>
+                        <h3>Checked against the register</h3>
+                        <p>Every scan asks the university's register for the card's status. A card reported lost or withdrawn is refused from that moment.</p>
+                    </div>
                 </div>
+            </div>
+        </section>
 
-                <div class="mc-portal-body">
-                    <!-- 6-Step Progress Line + Glowing Dots Stepper -->
-                    <div class="onb-stepper" role="group" aria-label="Onboarding Progress">
-                        <div id="onb-step-pill-1" class="onb-step-pill active">1. School</div>
-                        <div id="onb-step-pill-2" class="onb-step-pill">2. Verify</div>
-                        <div id="onb-step-pill-3" class="onb-step-pill">3. Confirm</div>
-                        <div id="onb-step-pill-4" class="onb-step-pill">4. Card Fee</div>
-                        <div id="onb-step-pill-5" class="onb-step-pill">5. Photo</div>
-                        <div id="onb-step-pill-6" class="onb-step-pill">6. Your ID</div>
+        <div class="microtext" aria-hidden="true"></div>
+
+        <!-- ==================== HELP ==================== -->
+        <section id="help" class="section section--sheet">
+            <div class="wrap">
+                <h2 class="section-title">Help</h2>
+
+                <div class="help-grid">
+                    <div>
+                        <h3>Your details are missing or wrong</h3>
+                        <p>If we cannot find your record, or it shows the wrong details, send a manual registration request or open a support ticket.</p>
+                        <a href="support.html">Go to the Support Desk</a>
                     </div>
-
-                    <!-- CSS/SVG Graphic Header (Replaces stock illustration banner) -->
-                    <div class="mc-credential-graphic">
-                        <div class="mc-credential-graphic-text">
-                            <strong>Cryptographic Identity Verification</strong>
-                            <span>Your matriculation number and QR signature remain locked until your identity and ₦2,500 ID card fee are verified.</span>
-                        </div>
-                        <button type="button" onclick="openPassportGuideModal('rules')" class="onb-btn onb-btn-outline" style="width:auto; padding:8px 12px; font-size:0.75rem; flex-shrink:0;">
-                            📸 Photo Guide
-                        </button>
+                    <div>
+                        <h3>You paid but did not get your card</h3>
+                        <p>Open your card again with your number, date of birth and payment reference.</p>
+                        <button type="button" class="onb-linkbtn" onclick="StudentOnboarding.openFindPaymentModal()">Find my payment</button>
                     </div>
-
-                    <!-- ==================== PANEL 1-2: SCHOOL + JAMB + DOB ==================== -->
-                    <div id="onb-panel-1-2" class="onb-panel active">
-                        <div id="onb-alert-step12" class="onb-alert"></div>
-
-                        <div style="background: rgba(21, 88, 192, 0.12); border: 1px solid rgba(21, 88, 192, 0.3); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.8rem; line-height: 1.5;">
-                            <div style="font-weight: 800; color: #fff; margin-bottom: 2px;">⚡ Active Test Credentials:</div>
-                            <div style="color: #cdd8e8;">JAMB/Reg No: <strong class="mono" style="color: #ffd700;">1234567890</strong> · Matric: <strong class="mono" style="color: #ffd700;">EBSU/2021/101397</strong></div>
-                            <div style="color: #94a3b8; font-size: 0.75rem;">Date of Birth: <strong class="mono" style="color: #cdd8e8;">26th Feb 2003 (2003-02-26)</strong></div>
-                            <button type="button" id="btn-quick-fill-onboarding" onclick="document.getElementById('onb-jamb-input').value='1234567890'; document.getElementById('onb-dob-input').value='2003-02-26'; if (window.StudentOnboarding && StudentOnboarding.handleLookupSubmit) { StudentOnboarding.handleLookupSubmit(); }" style="margin-top: 6px; width: 100%; background: linear-gradient(135deg, #1558c0, #3b82f6); color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
-                                ⚡ 1-Click Verify Test Student (1234567890) →
-                            </button>
-                        </div>
-
-                        <form onsubmit="StudentOnboarding.handleLookupSubmit(event)" style="display:flex; flex-direction:column; gap:16px;">
-                            <div>
-                                <label class="onb-label" for="onb-school-select">Step 1 — Select Your Institution</label>
-                                <select id="onb-school-select" class="onb-select" required>
-                                    <option value="ebsu" selected>Ebonyi State University, Abakaliki (EBSU)</option>
-                                </select>
-                            </div>
-
-                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:14px;">
-                                <div>
-                                    <label class="onb-label" for="onb-jamb-input">Step 2 — JAMB Reg Number (or Matric No)</label>
-                                    <input type="text" id="onb-jamb-input" class="onb-input" value="1234567890" placeholder="e.g. 1234567890" autocomplete="off" required style="text-transform:uppercase; font-weight:700;">
-                                </div>
-                                <div>
-                                    <label class="onb-label" for="onb-dob-input">Date of Birth</label>
-                                    <input type="date" id="onb-dob-input" class="onb-input" value="2003-02-26" required>
-                                </div>
-                            </div>
-
-                            <!-- Cloudflare Turnstile Widget Container -->
-                            <div id="onb-turnstile-step2" style="min-height:6px; display:flex; justify-content:center;"></div>
-
-                            <button type="submit" id="onb-btn-lookup" class="onb-btn onb-btn-primary">
-                                🔍 Verify My Admission Record
-                            </button>
-
-                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; font-size:0.78rem; color:var(--mc-text-muted); padding-top:6px; border-top:1px solid var(--mc-border);">
-                                <span>🔒 Protected against automated enumeration (5 attempts max)</span>
-                                <a href="support.html" style="color:var(--mc-gold); font-weight:700; text-decoration:none;">My details aren't in the system →</a>
-                            </div>
-                        </form>
+                    <div>
+                        <h3>Talk to someone</h3>
+                        <p>Call the ID card helpdesk during working hours.</p>
+                        <p class="help-phones"><a href="tel:09016054526">0901 605 4526</a><br><a href="tel:09035005623">0903 500 5623</a></p>
+                        <button type="button" class="onb-linkbtn" onclick="openPassportGuideModal('rules')">Passport photograph guide</button>
                     </div>
-
-                    <!-- ==================== PANEL 3: IS THIS YOU? ==================== -->
-                    <div id="onb-panel-3" class="onb-panel">
-                        <div id="onb-alert-step3" class="onb-alert"></div>
-
-                        <div class="onb-student-card">
-                            <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
-                                <img id="onb-preview-photo" src="images/ebsu_logo.png" alt="Student Photo Preview" class="onb-photo-ring">
-                                <div style="flex:1; min-width:200px;">
-                                    <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--mc-gold); margin-bottom:4px;">Admission Record Found — Confirm Your Identity</div>
-                                    <div id="onb-preview-name" style="font-size:1.22rem; font-weight:800; color:var(--mc-text); margin-bottom:8px;">—</div>
-                                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:8px; font-size:0.82rem; color:var(--mc-text-muted);">
-                                        <div><strong>Faculty:</strong> <span id="onb-preview-faculty">—</span></div>
-                                        <div><strong>Department:</strong> <span id="onb-preview-dept">—</span></div>
-                                        <div><strong>Level:</strong> <span id="onb-preview-level">—</span></div>
-                                        <div><strong>JAMB No:</strong> <span id="onb-preview-jamb" class="mono">—</span></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Locked Matriculation & QR Preview -->
-                            <div style="margin-top:16px; padding:12px 14px; background:var(--mc-surface); border:1px dashed var(--mc-border); border-radius:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-                                <div>
-                                    <div style="font-size:0.72rem; font-weight:700; color:var(--mc-text-muted); text-transform:uppercase;">Matriculation Number &amp; Official QR Pass</div>
-                                    <div id="onb-preview-matric" class="mono" style="font-size:0.95rem; font-weight:800; color:var(--mc-text);">🔒 Locked until ₦2,500 ID Card Fee is verified</div>
-                                </div>
-                                <span style="background:var(--mc-gold-soft); color:var(--mc-gold-bright); border:1px solid var(--mc-gold-border); font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:999px;">🔒 Encrypted</span>
-                            </div>
-                        </div>
-
-                        <p style="font-size:0.85rem; color:var(--mc-text-muted); margin:0 0 14px; text-align:center; font-weight:600;">
-                            Please confirm carefully: Is this your official university admission record?
-                        </p>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px;">
-                            <button type="button" id="onb-btn-confirm-yes" onclick="StudentOnboarding.handleConfirmIdentity(true)" class="onb-btn onb-btn-success" style="font-weight:800;">
-                                ✅ Yes, This Is Me
-                            </button>
-                            <button type="button" id="onb-btn-confirm-no" onclick="StudentOnboarding.handleConfirmIdentity(false)" class="onb-btn onb-btn-outline" style="border-color:rgba(239,68,68,0.45); color:#FCA5A5;">
-                                ❌ No, This Is Not Me
-                            </button>
-                        </div>
-                        <button type="button" id="onb-btn-direct-card" onclick="StudentOnboarding.handleProceedToCard()" class="onb-btn onb-btn-primary" style="width:100%; font-weight:800; background:linear-gradient(135deg, #1558c0, #3b82f6);">
-                            🎓 Generate My Official Student ID Card (Fee Verified) →
-                        </button>
-                    </div>
-
-                    <!-- ==================== PANEL 3B: NOT ME / MISMATCH ==================== -->
-                    <div id="onb-panel-not-me" class="onb-panel">
-                        <div style="background:var(--mc-danger-soft); border:1.5px solid rgba(239,68,68,0.45); border-radius:14px; padding:20px; text-align:center;">
-                            <div style="font-size:2rem; margin-bottom:6px;">🛑</div>
-                            <h3 style="margin:0 0 8px; color:var(--mc-text); font-size:1.1rem;">Identity Mismatch Flagged</h3>
-                            <p id="onb-mismatch-note" style="font-size:0.85rem; color:var(--mc-text-secondary); margin:0 0 16px;">
-                                Your report has been logged for the Registrar's Support Desk. Do not proceed with payment on someone else's JAMB record.
-                            </p>
-                            <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-                                <a href="support.html" class="onb-btn onb-btn-primary" style="width:auto; text-decoration:none;">
-                                    📩 Open Manual Registration / Support Ticket
-                                </a>
-                                <button type="button" onclick="StudentOnboarding.resetFlow()" class="onb-btn onb-btn-outline" style="width:auto;">
-                                    ← Try Another JAMB Number
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ==================== PANEL 4: ID CARD FEE PAYMENT ==================== -->
-                    <div id="onb-panel-4" class="onb-panel">
-                        <div id="onb-alert-step4" class="onb-alert"></div>
-
-                        <div class="onb-student-card">
-                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-                                <div>
-                                    <div style="font-size:0.72rem; text-transform:uppercase; font-weight:700; color:var(--mc-text-muted);">Confirmed Student</div>
-                                    <div id="onb-pay-name" style="font-size:1.05rem; font-weight:800; color:var(--mc-text);">—</div>
-                                    <div style="font-size:0.78rem; color:var(--mc-text-muted);">JAMB No: <span id="onb-pay-jamb" class="mono">—</span></div>
-                                </div>
-                                <div style="text-align:right;">
-                                    <div style="font-size:0.72rem; text-transform:uppercase; font-weight:700; color:var(--mc-text-muted);">Smart ID Card Fee</div>
-                                    <div id="onb-pay-fee-badge" class="mono" style="font-size:1.25rem; font-weight:800; color:var(--mc-gold-bright);">₦2,500 (PAID)</div>
-                                </div>
-                            </div>
-
-                            <div style="background:rgba(16,185,129,0.15); border:1px solid #10b981; border-radius:10px; padding:12px; font-size:0.8rem; color:#A7F3D0; line-height:1.5;">
-                                ⚡ <strong>Fee Status:</strong> ₦2,500 ID Card Fee is verified and pre-cleared for this account (Receipt Ref: <code>EBSU-PAY-2021-101397</code>).
-                            </div>
-                        </div>
-
-                        <!-- Optional Turnstile for payment initiation -->
-                        <div id="onb-turnstile-step4" style="min-height:6px; display:flex; justify-content:center; margin-bottom:10px;"></div>
-
-                        <div style="display:flex; flex-direction:column; gap:10px;">
-                            <button type="button" id="onb-btn-pay" onclick="StudentOnboarding.handleProceedToCard()" class="onb-btn onb-btn-gold" style="font-weight:800;">
-                                ⚡ Continue to Generate ID Card (Fee Verified) →
-                            </button>
-
-                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:4px;">
-                                <button type="button" onclick="StudentOnboarding.openFindPaymentModal()" style="background:none; border:none; color:var(--mc-blue); font-size:0.8rem; font-weight:700; cursor:pointer; padding:4px 0;">
-                                    🔎 Already paid? Find my payment
-                                </button>
-                                <button type="button" onclick="StudentOnboarding.resetFlow()" style="background:none; border:none; color:var(--mc-text-muted); font-size:0.78rem; cursor:pointer; padding:4px 0;">
-                                    ← Start Over
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ==================== PANEL 5: PHOTO VERIFICATION / UPLOAD ==================== -->
-                    <div id="onb-panel-5" class="onb-panel">
-                        <div id="onb-alert-step5" class="onb-alert"></div>
-
-                        <div class="onb-student-card" style="text-align:center;">
-                            <div style="margin-bottom:10px;">
-                                <span id="onb-photo-badge" style="background:var(--mc-warning-soft); color:var(--mc-gold-bright); font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:999px;">⚠️ Photo Required</span>
-                            </div>
-                            <img id="onb-photo-preview" src="images/ebsu_logo.png" alt="Passport Photo" class="onb-photo-ring" style="margin-bottom:12px;">
-                            <h3 style="margin:0 0 6px; font-size:1rem; color:var(--mc-text);">Passport Photograph Verification</h3>
-                            <p style="margin:0 0 14px; font-size:0.8rem; color:var(--mc-text-muted); max-width:460px; margin-inline:auto;">
-                                Upload a clear passport photograph (plain white or light blue background, facing forward, max 2 MB, JPEG/PNG/WebP).
-                            </p>
-
-                            <div style="max-width:380px; margin:0 auto 14px; text-align:left;">
-                                <input type="file" id="onb-photo-file-input" accept="image/jpeg,image/png,image/webp" class="onb-input" style="font-size:0.82rem; padding:8px;">
-                            </div>
-
-                            <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-                                <button type="button" id="onb-btn-upload-photo" onclick="StudentOnboarding.handlePhotoUpload()" class="onb-btn onb-btn-primary" style="width:auto;">
-                                    📤 Upload &amp; Save Passport Photo
-                                </button>
-                                <button type="button" onclick="openPassportGuideModal('framer')" class="onb-btn onb-btn-outline" style="width:auto;">
-                                    ✂️ Open Photo Framing Tool
-                                </button>
-                            </div>
-                        </div>
-
-                        <button type="button" id="onb-btn-continue-step6" onclick="StudentOnboarding.handleProceedToCard()" class="onb-btn onb-btn-success">
-                            🎓 Generate My Official Student ID Card →
-                        </button>
-                    </div>
-
-                    <!-- ==================== PANEL 6: DIGITAL ID & 60s LIVE PASS ==================== -->
-                    <div id="onb-panel-6" class="onb-panel">
-                        <div id="onb-alert-step6" class="onb-alert"></div>
-
-                        <div style="background:linear-gradient(135deg, #0D182E 0%, #1E3A8A 100%); color:#ffffff; border-radius:16px; padding:22px; border:1px solid var(--mc-gold-border); box-shadow:0 16px 32px rgba(2, 6, 23, 0.5); margin-bottom:16px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:12px; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <img src="images/ebsu_logo.png" alt="EBSU" style="width:36px; height:36px; border-radius:8px; background:#fff; padding:2px;" onerror="this.style.display='none'">
-                                    <div>
-                                        <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:#93C5FD; font-weight:700;">Ebonyi State University</div>
-                                        <div style="font-size:0.95rem; font-weight:800;">Official Digital Student ID Credential</div>
-                                    </div>
-                                </div>
-                                <span style="background:rgba(16,185,129,0.22); border:1px solid #34D399; color:#A7F3D0; font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:999px;">✅ ACTIVE &amp; SIGNED</span>
-                            </div>
-
-                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:18px; align-items:center;">
-                                <div style="display:flex; align-items:center; gap:14px;">
-                                    <img id="onb-card-photo" src="images/ebsu_logo.png" alt="Student Photo" style="width:84px; height:84px; border-radius:12px; object-fit:cover; border:2px solid #D4A574; background:#fff;">
-                                    <div>
-                                        <div id="onb-card-name" style="font-size:1.05rem; font-weight:800; margin-bottom:4px;">—</div>
-                                        <div class="mono" style="font-size:0.8rem; color:#FDE68A; font-weight:700; margin-bottom:4px;">Matric: <span id="onb-card-matric">—</span></div>
-                                        <div style="font-size:0.76rem; color:#E2E8F0;"><span id="onb-card-dept">—</span> (<span id="onb-card-faculty">—</span>)</div>
-                                        <div style="font-size:0.74rem; color:#CBD5E1; margin-top:2px;">Level: <span id="onb-card-level">—</span> · Exp: <span id="onb-card-expiry" class="mono">—</span></div>
-                                    </div>
-                                </div>
-
-                                <div style="display:flex; flex-direction:column; align-items:center; background:#ffffff; color:#0F172A; padding:12px; border-radius:12px;">
-                                    <div id="onb-static-qr-box" style="min-height:140px; display:flex; align-items:center; justify-content:center;"></div>
-                                    <div class="mono" style="font-size:0.68rem; font-weight:700; color:#475569; margin-top:6px;">STATIC CARD QR (EBSU1 Ed25519)</div>
-                                </div>
-                            </div>
-
-                            <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px; border-top:1px solid rgba(255,255,255,0.15); padding-top:12px;">
-                                <a href="student-portal.html" class="onb-btn onb-btn-gold" style="width:auto; text-decoration:none; font-weight:800;">
-                                    🪪 Open Full 3D Student Portal →
-                                </a>
-                                <button type="button" onclick="window.print()" class="onb-btn onb-btn-outline" style="width:auto; border-color:rgba(255,255,255,0.3); color:#fff;">
-                                    🖨️ Print Card Slip
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- 60-Second Rotating Live Gate Pass -->
-                        <div style="background:var(--mc-bg-elevated); border:1.5px solid var(--mc-border); border-radius:14px; padding:16px; text-align:center;">
-                            <div style="font-size:0.85rem; font-weight:800; color:var(--mc-text); margin-bottom:4px;">🔐 Anti-Photocopy 60-Second Live Gate Pass (EBSU2)</div>
-                            <p style="font-size:0.76rem; color:var(--mc-text-muted); margin:0 0 12px;">
-                                Present a live rotating pass at campus security checkpoints or exam halls for single-use anti-replay verification. (Active onboarding session lasts 30 minutes.)
-                            </p>
-
-                            <div id="onb-live-pass-box" style="display:none; flex-direction:column; align-items:center; gap:8px; margin-bottom:12px; padding:12px; background:#ffffff; border-radius:12px; border:1px solid var(--mc-border);">
-                                <div id="onb-live-qr-canvas"></div>
-                                <div id="onb-live-pass-timer" class="mono" style="font-size:0.78rem; font-weight:800; color:#059669;">Live Pass Valid: 60s</div>
-                            </div>
-
-                            <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-                                <button type="button" id="onb-btn-mint-pass" onclick="StudentOnboarding.mintLivePass()" class="onb-btn onb-btn-primary" style="width:auto;">
-                                    ⚡ Generate 60-Second Live Pass
-                                </button>
-                                <a href="verify.html" class="onb-btn onb-btn-outline" style="width:auto; text-decoration:none;">
-                                    🛡️ Open Gate Verifier
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
-            </section>
-
-        </div>
+            </div>
+        </section>
     </main>
 
-    <!-- ==================== HOW IT WORKS (4 STEPS) ==================== -->
-    <section id="how-it-works" class="mc-section mc-section-alt">
-        <div class="mc-container">
-            <div class="mc-section-header">
-                <div class="mc-eyebrow">4-STEP STUDENT FLOW</div>
-                <h2 class="mc-section-title">How it works</h2>
-                <p class="mc-section-desc">
-                    From JAMB verification to a cryptographically signed digital and physical university credential in under two minutes.
-                </p>
+    <footer class="site-foot">
+        <div class="microtext" aria-hidden="true"></div>
+        <div class="wrap site-foot-inner">
+            <div>
+                <div class="foot-name">Ebonyi State University, Abakaliki</div>
+                <p class="foot-motto">Development and Excellence</p>
+                <p style="margin-bottom:10px;"><strong>NDPA 2023 Data Privacy Notice:</strong> Student biographical records and passport photographs are processed strictly for official university credential issuance and campus access verification under the Nigeria Data Protection Act (NDPA) 2023.</p>
+                <p>© 2026 Ebonyi State University, Abakaliki.</p>
             </div>
-
-            <div class="mc-steps-grid">
-                <article class="mc-step-card">
-                    <span class="mc-step-num">STEP 01</span>
-                    <h3>Verify Admission Record</h3>
-                    <p>Enter your JAMB Registration Number (or Matric Number) and Date of Birth. Rate-limited server lookup protects your student profile.</p>
-                </article>
-
-                <article class="mc-step-card">
-                    <span class="mc-step-num">STEP 02</span>
-                    <h3>Confirm Your Identity</h3>
-                    <p>Review your official name, faculty, and department. Your matriculation number and QR signature stay encrypted until confirmed.</p>
-                </article>
-
-                <article class="mc-step-card">
-                    <span class="mc-step-num">STEP 03</span>
-                    <h3>Pay ₦2,500 ID Card Fee</h3>
-                    <p>Complete the dedicated ₦2,500 Smart ID Card fee payment and verify or frame your compliant passport photograph.</p>
-                </article>
-
-                <article class="mc-step-card">
-                    <span class="mc-step-num">STEP 04</span>
-                    <h3>Unlock Signed ID &amp; Pass</h3>
-                    <p>Receive your Ed25519-signed Digital ID immediately while your physical CR80 card enters the Registrar's batch print queue.</p>
-                </article>
-            </div>
+            <nav class="foot-links" aria-label="More pages">
+                <a href="verify.html">Check a card (staff scanner)</a>
+                <a href="support.html">Support Desk</a>
+                <a href="invest.html">For institutions</a>
+                <a href="login.html">Staff sign-in</a>
+            </nav>
         </div>
-    </section>
+    </footer>
 
-    <!-- ==================== SECURITY BY DESIGN (3 LAYERS) ==================== -->
-    <section id="security-architecture" class="mc-section">
-        <div class="mc-container">
-            <div class="mc-section-header">
-                <div class="mc-eyebrow">ZERO-TRUST CREDENTIALING</div>
-                <h2 class="mc-section-title">Security by design</h2>
-                <p class="mc-section-desc">
-                    Ordinary plastic cards can be cloned at any street kiosk. Every EBSU credential is protected by three independent verification layers.
-                </p>
+    <!-- ==================== FIND MY PAYMENT ==================== -->
+    <div id="onb-find-payment-modal" class="dialog-backdrop">
+        <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="find-payment-title">
+            <div class="dialog-head">
+                <h3 id="find-payment-title">Find my payment</h3>
+                <button type="button" class="dialog-close" onclick="StudentOnboarding.closeFindPaymentModal()" aria-label="Close">✕</button>
             </div>
-
-            <div class="mc-security-grid">
-                <article class="mc-security-card">
-                    <span class="mc-security-tag">LAYER 01 · ASYMMETRIC CRYPTO</span>
-                    <h3>Ed25519 Canonical Signatures</h3>
-                    <p>
-                        Each card's QR payload binds the card UUID, matriculation number, full name, and expiry date using an Ed25519 private key held strictly inside the server enclave. Altering a single character invalidates the signature.
-                    </p>
-                </article>
-
-                <article class="mc-security-card">
-                    <span class="mc-security-tag">LAYER 02 · ANTI-REPLAY</span>
-                    <h3>60-Second Rotating Live Pass</h3>
-                    <p>
-                        For high-security exam halls and hostel gates, students mint a dynamic <code class="mono">EBSU2</code> pass that expires in 60 seconds and is consumed on first scan—rendering screenshots and photocopies useless.
-                    </p>
-                </article>
-
-                <article class="mc-security-card">
-                    <span class="mc-security-tag">LAYER 03 · LIVE AUTHORITY</span>
-                    <h3>Server Verification &amp; Instant Revocation</h3>
-                    <p>
-                        When a guard scans a card at <a href="verify.html">verify.html</a>, the server checks live card status, fee clearance, and displays the official stored portrait so impersonators are stopped on the spot.
-                    </p>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== HELP DESK & PUBLIC SUPPORT ==================== -->
-    <section id="helpdesk" class="mc-section mc-section-alt">
-        <div class="mc-container">
-            <div class="mc-helpdesk-box">
+            <p>Enter the same number and date of birth you used, and the payment reference from your receipt.</p>
+            <div id="onb-alert-find-payment" class="onb-alert" role="alert"></div>
+            <form id="onb-form-find-payment" class="onb-form">
                 <div>
-                    <div class="mc-eyebrow">STUDENT SUPPORT &amp; MANUAL REGISTRATION</div>
-                    <h2 class="mc-section-title" style="margin-bottom:10px;">Need help with your ID record?</h2>
-                    <p class="mc-section-desc" style="margin-bottom:22px;">
-                        If your JAMB number is not yet synchronized from the admissions list, or you need a name/department correction, submit a Manual Registration Request or open a ticket with the ICT Smart Card Unit.
-                    </p>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                        <a href="support.html" class="mc-cta-primary">
-                            <span>📩 Open Manual Reg &amp; Support Desk</span>
-                        </a>
-                        <button type="button" onclick="StudentOnboarding.openFindPaymentModal()" class="mc-cta-secondary">
-                            <span>🔎 Recover Payment Receipt</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mc-helpdesk-contacts">
-                    <div class="mc-contact-row">
-                        <span class="mc-contact-label">📞 Direct Voice Lines</span>
-                        <div class="mc-contact-links">
-                            <a href="tel:09016054526">09016054526</a>
-                            <span style="color:var(--mc-text-dim);">·</span>
-                            <a href="tel:09035005623">09035005623</a>
-                        </div>
-                    </div>
-
-                    <div class="mc-contact-row">
-                        <span class="mc-contact-label">💬 WhatsApp Desk</span>
-                        <div class="mc-contact-links">
-                            <a href="https://wa.me/2349035005623" target="_blank" rel="noopener" style="color:var(--mc-emerald);">+234 903 500 5623</a>
-                            <span style="color:var(--mc-text-dim);">·</span>
-                            <a href="https://wa.me/2349016054526" target="_blank" rel="noopener" style="color:var(--mc-emerald);">+234 901 605 4526</a>
-                        </div>
-                    </div>
-
-                    <div class="mc-contact-row">
-                        <span class="mc-contact-label">🏛️ Campus Office</span>
-                        <div style="font-size:var(--text-xs); color:var(--mc-text-secondary); font-weight:600;">
-                            ICT / Smart ID Card Unit, Ebonyi State University, Abakaliki
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== FIND MY PAYMENT MODAL (Preserved IDs) ==================== -->
-    <div id="onb-find-payment-modal" style="display:none; position:fixed; inset:0; background:rgba(2,6,23,0.82); backdrop-filter:blur(8px); z-index:9998; align-items:center; justify-content:center; padding:16px;">
-        <div style="background:var(--mc-surface-solid); border:1px solid var(--mc-border); width:100%; max-width:440px; border-radius:18px; padding:24px; box-shadow:0 24px 48px rgba(0,0,0,0.6);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="margin:0; font-size:1.05rem; color:var(--mc-text);">🔎 Recover My ID Card Payment</h3>
-                <button type="button" onclick="StudentOnboarding.closeFindPaymentModal()" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--mc-text-muted);">✕</button>
-            </div>
-            <p style="font-size:0.8rem; color:var(--mc-text-muted); margin:0 0 14px;">
-                Enter your JAMB Registration Number and the Payment Reference (`EBSU-CARD-...`) from your receipt to verify your ₦2,500 ID card fee payment.
-            </p>
-            <div id="onb-alert-find-payment" class="onb-alert"></div>
-            <form onsubmit="StudentOnboarding.handleFindPaymentSubmit(event)" style="display:flex; flex-direction:column; gap:12px;">
-                <div>
-                    <label class="onb-label" for="onb-find-payment-jamb">JAMB Reg Number</label>
-                    <input type="text" id="onb-find-payment-jamb" class="onb-input" placeholder="e.g. 2026104928BA" required style="text-transform:uppercase;">
+                    <label class="onb-label" for="onb-find-payment-jamb">JAMB registration number or matric number</label>
+                    <input type="text" id="onb-find-payment-jamb" class="onb-input onb-input--code" autocomplete="off" required>
                 </div>
                 <div>
-                    <label class="onb-label" for="onb-find-payment-ref">Payment Reference</label>
-                    <input type="text" id="onb-find-payment-ref" class="onb-input" placeholder="e.g. EBSU-CARD-..." required>
+                    <label class="onb-label" for="onb-find-payment-dob">Date of birth</label>
+                    <input type="date" id="onb-find-payment-dob" class="onb-input" required>
                 </div>
-                <button type="submit" id="onb-btn-find-payment" class="onb-btn onb-btn-primary">Verify Payment Reference</button>
+                <div>
+                    <label class="onb-label" for="onb-find-payment-ref">Payment reference</label>
+                    <input type="text" id="onb-find-payment-ref" class="onb-input onb-input--code" placeholder="EBSU-CARD-..." autocomplete="off" required>
+                </div>
+                <div id="onb-turnstile-restore" class="onb-turnstile"></div>
+                <button type="submit" id="onb-btn-find-payment" class="onb-btn onb-btn-primary">Open my ID</button>
             </form>
         </div>
     </div>
 
-    <!-- ==================== PASSPORT PHOTO GUIDE MODAL (Preserved IDs & Handlers) ==================== -->
     <div class="guide-modal-backdrop" id="passport-guide-modal" onclick="if(event.target===this) closePassportGuideModal()">
         <div class="guide-modal" role="dialog" aria-modal="true" aria-labelledby="guide-modal-title">
             <div class="guide-header">
@@ -745,107 +536,20 @@
         </div>
     </div>
 
-    <!-- ==================== FOOTER ==================== -->
-    <footer class="mc-footer">
-        <div class="mc-container">
-            <div class="mc-footer-inner">
-                <div style="max-width:520px;">
-                    <div style="font-family:var(--font-display); font-weight:800; font-size:0.95rem; color:#F8FAFC; margin-bottom:6px;">
-                        Ebonyi State University (EBSU) · Smart Identity Platform
-                    </div>
-                    <p style="margin:0 0 8px; line-height:1.55;">
-                        <strong>NDPA 2023 Data Privacy Notice:</strong> Student biographical records and passport photographs are processed strictly for official university credential issuance and campus access verification under the Nigeria Data Protection Act (NDPA) 2023.
-                    </p>
-                    <div>© 2026 Ebonyi State University, Abakaliki. All rights reserved.</div>
-                </div>
-
-                <div class="mc-footer-links">
-                    <a href="verify.html">Verify Card</a>
-                    <a href="support.html">Manual Reg &amp; Support</a>
-                    <a href="invest.html">For Institutions</a>
-                    <a href="login.html">Staff Login</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Interactive Hero 3D SAMPLE Card, 60s Countdown & Passport Guide Scripts -->
     <script>
-        // 1. Hero SAMPLE 3D Card Tilt & 60-Second Rotating SAMPLE QR (Zero API calls)
-        (function initSampleCard() {
-            const stage = document.getElementById('mc-sample-stage');
-            const card = document.getElementById('mc-sample-card');
-            const qrGrid = document.getElementById('mc-sample-qr-grid');
-            const ring = document.getElementById('mc-sample-ring');
-            const timerText = document.getElementById('mc-sample-timer-text');
-            const nonceEl = document.getElementById('mc-sample-nonce');
+        // Microtext rules and the sample card's QR code (decoration only).
+        (function () {
+            var line = 'EBONYI STATE UNIVERSITY ABAKALIKI • DEVELOPMENT AND EXCELLENCE • ';
+            var text = new Array(40).join(line);
+            document.querySelectorAll('.microtext').forEach(function (el) { el.textContent = text; });
 
-            // Pointer 3D tilt (respects prefers-reduced-motion)
-            const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (stage && card && !reducedMotion) {
-                stage.addEventListener('pointermove', function (e) {
-                    const rect = card.getBoundingClientRect();
-                    const x = (e.clientX - rect.left) / rect.width - 0.5;
-                    const y = (e.clientY - rect.top) / rect.height - 0.5;
-                    card.style.setProperty('--rx', (-y * 10).toFixed(2) + 'deg');
-                    card.style.setProperty('--ry', (x * 12).toFixed(2) + 'deg');
-                });
-                stage.addEventListener('pointerleave', function () {
-                    card.style.setProperty('--rx', '0deg');
-                    card.style.setProperty('--ry', '0deg');
-                });
-            }
-
-            // Deterministic SAMPLE QR pattern renderer (9x9 visual matrix)
-            let seed = 4201;
-            function renderSampleQrPattern() {
-                if (!qrGrid) return;
-                qrGrid.innerHTML = '';
-                seed = (seed * 1664525 + 1013904223) >>> 0;
-                for (let r = 0; r < 9; r++) {
-                    for (let c = 0; c < 9; c++) {
-                        const cell = document.createElement('span');
-                        cell.className = 'mc-qr-cell';
-                        const isFinder = (r < 2 && c < 2) || (r < 2 && c > 6) || (r > 6 && c < 2);
-                        if (isFinder) {
-                            cell.classList.add('finder');
-                        } else {
-                            const bit = ((seed >> ((r * 9 + c) % 24)) ^ (r * 7 + c * 13)) & 1;
-                            if (bit) cell.classList.add('on');
-                        }
-                        qrGrid.appendChild(cell);
-                    }
+            document.addEventListener('DOMContentLoaded', function () {
+                var box = document.getElementById('specimen-qr');
+                if (box && typeof QRCode !== 'undefined') {
+                    new QRCode(box, { text: 'EBSU SPECIMEN CARD - NOT VALID', width: 78, height: 78, colorDark: '#14213D', colorLight: '#ffffff', correctLevel: 1 });
                 }
-                if (nonceEl) {
-                    const hex = (seed & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-                    nonceEl.textContent = 'NONCE: SAMPLE-' + hex + ' · ED25519';
-                }
-            }
-
-            renderSampleQrPattern();
-
-            let secondsLeft = 42;
-            const circumference = 50.26;
-            function tickCountdown() {
-                secondsLeft -= 1;
-                if (secondsLeft <= 0) {
-                    secondsLeft = 60;
-                    renderSampleQrPattern();
-                }
-                if (timerText) {
-                    timerText.textContent = 'pass refreshes in ' + secondsLeft + 's';
-                }
-                if (ring) {
-                    const offset = circumference * (1 - secondsLeft / 60);
-                    ring.style.strokeDashoffset = offset.toFixed(2);
-                }
-            }
-            setInterval(tickCountdown, 1000);
+            });
         })();
-
-        // 3. Passport Photo Guide & Interactive Framer functions (Preserved API)
-        let guideLoadedImg = null;
-        let useDemoSilhouette = true;
 
         function openPassportGuideModal(defaultTab) {
             const modal = document.getElementById('passport-guide-modal');
@@ -977,7 +681,6 @@
         }
     </script>
 
-    <!-- Core Config & Student Onboarding Flow Controller -->
     <script src="config.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/onboarding.js"></script>

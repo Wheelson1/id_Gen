@@ -12,6 +12,76 @@
       "source": "/admin",
       "destination": "/app.html",
       "permanent": true
+    },
+    {
+      "source": "/hub.html",
+      "destination": "/app.html",
+      "permanent": true
+    },
+    {
+      "source": "/hub",
+      "destination": "/app.html",
+      "permanent": true
+    },
+    {
+      "source": "/generate.html",
+      "destination": "/app.html#/generate",
+      "permanent": true
+    },
+    {
+      "source": "/generate",
+      "destination": "/app.html#/generate",
+      "permanent": true
+    },
+    {
+      "source": "/validate.html",
+      "destination": "/verify.html",
+      "permanent": true
+    },
+    {
+      "source": "/validate",
+      "destination": "/verify.html",
+      "permanent": true
+    },
+    {
+      "source": "/design.html",
+      "destination": "/app.html#/templates",
+      "permanent": true
+    },
+    {
+      "source": "/design",
+      "destination": "/app.html#/templates",
+      "permanent": true
+    },
+    {
+      "source": "/manual-entry.html",
+      "destination": "/app.html#/help",
+      "permanent": true
+    },
+    {
+      "source": "/manual-entry",
+      "destination": "/app.html#/help",
+      "permanent": true
+    },
+    {
+      "source": "/mothership.html",
+      "destination": "/app.html#/schools",
+      "permanent": true
+    },
+    {
+      "source": "/mothership",
+      "destination": "/app.html#/schools",
+      "permanent": true
+    },
+    {
+      "source": "/qa-dashboard.html",
+      "destination": "/app.html",
+      "permanent": true
+    },
+    {
+      "source": "/qa-dashboard",
+      "destination": "/app.html",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -26,21 +96,20 @@
   ],
   "headers": [
     {
-      "source": "/c.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, no-cache, must-revalidate, proxy-revalidate"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "no-referrer"
-        }
-      ]
-    },
-    {
       "source": "/(.*)",
       "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com https://js.paystack.co https://checkout.flutterwave.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.supabase.co https://api.qrserver.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com https://api.paystack.co https://api.flutterwave.com; frame-src https://challenges.cloudflare.com https://checkout.paystack.com https://*.paystack.com https://*.flutterwave.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(), payment=(self)"
+        },
         {
           "key": "X-Content-Type-Options",
           "value": "nosniff"
@@ -56,6 +125,54 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/(verify\\.html|verify|app\\.html|app)",
+      "headers": [
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(), geolocation=(), payment=(self)"
+        }
+      ]
+    },
+    {
+      "source": "/c.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
+      ]
+    },
+    {
+      "source": "/c/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
+      ]
+    },
+    {
+      "source": "/p/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
         }
       ]
     },

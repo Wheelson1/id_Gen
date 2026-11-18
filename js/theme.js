@@ -55,7 +55,7 @@
       meta.name = 'theme-color';
       document.head.appendChild(meta);
     }
-    meta.setAttribute('content', resolved === 'dark' ? '#262624' : '#FAF9F5');
+    meta.setAttribute('content', '#0B2B26');
   }
 
   function updateAllToggleButtons(pref, resolved) {
@@ -148,7 +148,8 @@
       // Attach click listeners to all toggle buttons on DOM ready
       var attachButtons = function () {
         updateAllToggleButtons(pref, resolved);
-        initDemoBanner();
+        // A broken config.js must never stop the theme button from working.
+        try { initDemoBanner(); } catch (err) { console.warn('Demo banner skipped:', err); }
         document.querySelectorAll('.theme-toggle-btn').forEach(function (btn) {
           if (!btn.dataset.themeBound) {
             btn.dataset.themeBound = 'true';
@@ -187,8 +188,10 @@
       if (document.getElementById('ebsu-demo-env-banner')) return;
       var banner = document.createElement('div');
       banner.id = 'ebsu-demo-env-banner';
-      banner.style.cssText = 'background:#b45309; color:#ffffff; font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; text-align:center; padding:7px 12px; z-index:9999999; position:sticky; top:0; width:100%; box-shadow:0 2px 10px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; gap:8px;';
-      banner.innerHTML = '<span>⚠️ DEMO ENVIRONMENT</span> · <span style="font-weight:600; opacity:0.9;">Sandboxed Test Pilot</span> · <span style="background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px; font-size:10px;">Project: EBSU Digital Identity</span>';
+      // A small fixed badge: it never pushes or squeezes the page layout.
+      banner.setAttribute('role', 'status');
+      banner.style.cssText = 'position:fixed; right:12px; bottom:12px; z-index:9999999; background:#7A5200; color:#FFFFFF; font-family:"Source Sans 3",-apple-system,"Segoe UI",sans-serif; font-size:12px; font-weight:700; line-height:1.3; padding:6px 10px; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.25); pointer-events:none; max-width:calc(100vw - 24px);';
+      banner.textContent = 'Demo mode, this computer only';
       if (document.body) {
         document.body.insertBefore(banner, document.body.firstChild);
       }

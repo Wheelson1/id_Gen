@@ -84,10 +84,24 @@ function getAnonHeaders() {
   };
 }
 
+// Demo shortcuts work ONLY on localhost / private LAN with DEMO_MODE: true.
+function portalDemoAllowed() {
+  return (typeof AuthManager !== 'undefined' && typeof AuthManager.isPrivateDemoHost === 'function')
+    ? AuthManager.isPrivateDemoHost()
+    : false;
+}
+(function () {
+  const box = document.getElementById('portal-demo-box');
+  if (!box) return;
+  if (portalDemoAllowed()) box.hidden = false;
+  else box.remove();
+})();
+
 // ── PASSWORDLESS SESSION RECOVERY BY JAMB + DOB + PAYMENT REFERENCE ──
 document.getElementById('btn-quick-fill-portal')?.addEventListener('click', () => {
+  if (!portalDemoAllowed()) return;
   if (matricInput) matricInput.value = '1234567890';
-  if (dobInput) dobInput.value = '2003-02-26';
+  if (dobInput) dobInput.value = '2000-01-01';
   if (refInput) refInput.value = 'EBSU-PAY-2021-101397';
   unlockBtn?.click();
 });
@@ -103,11 +117,10 @@ if (unlockBtn) {
       return showToast('Enter your JAMB/Matric Number, Date of Birth, and Payment Reference.', true);
     }
 
-    const isTestStudent =
+    const isTestStudent = portalDemoAllowed() && (
       jambNo === '1234567890' ||
       jambNo.includes('101397') ||
-      jambNo.includes('1234567890') ||
-      dob === '2003-02-26';
+      jambNo.includes('1234567890'));
 
     const testSessionObj = {
       onboarding_session_id: 'test-session-1234567890',
@@ -323,6 +336,14 @@ function checkSession() {
     authSec.className = 'auth-section';
     dashSec.className = 'dashboard-section active-section';
     loadDashboard();
+
+    // Draw the card with this student's school design, then redraw once it arrives.
+    if (typeof CardTemplate !== 'undefined' && CardTemplate.setSchool) {
+      CardTemplate.setSchool(s.school_id || CardTemplate.EBSU_SCHOOL_ID);
+      CardTemplate.load().then(() => {
+        try { renderLiveCard(); } catch (e) {}
+      }).catch(() => {});
+    }
   }
 }
 
@@ -420,14 +441,19 @@ function updateDownloadUI() {
 }
 
 async function requestDownloadPermission(format) {
-  if (!currentStudentSession?.onboarding_session_id && !currentStudentSession?.student_id) {
-    const storageKey = `ebsu_dl_${new Date().toISOString().slice(0, 10)}`;
-    const count = parseInt(sessionStorage.getItem(storageKey) || '0', 10);
-    if (count >= 3) {
-      throw new Error('Daily download limit (3 per day) reached for today.');
+  const studentKey = currentStudent?.matric || currentStudent?.id || 'STUDENT';
+  const limitCheck = checkDailyDownloadLimit(studentKey);
+  if (!limitCheck.allowed) {
+    throw new Error('Daily download limit (3 per day) reached for today.');
+  }
+
+  const sessionId = currentStudentSession?.onboarding_session_id || currentStudentSession?.id;
+  if (!sessionId) {
+    if (!isPrivateDemoHost()) {
+      throw new Error('Active verification session required to download card.');
     }
-    sessionStorage.setItem(storageKey, String(count + 1));
-    _downloadsToday = count + 1;
+    recordDownload(studentKey);
+    _downloadsToday = limitCheck.used + 1;
     updateDownloadUI();
     return true;
   }
@@ -436,48 +462,38 @@ async function requestDownloadPermission(format) {
     (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.CONFIRM_IDENTITY_URL) ||
     `${EBSU_CONFIG?.SUPABASE_URL}/functions/v1/confirm-identity`;
 
-  try {
-    const res = await fetch(confirmUrl, {
-      method: 'POST',
-      headers: getAnonHeaders(),
-      body: JSON.stringify({
-        action: 'log_download',
-        session_id: currentStudentSession.onboarding_session_id || currentStudentSession.id,
-        format: format,
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      throw new Error(data.error || 'Server rejected download permission.');
-    }
-    _downloadsToday = data.downloads_today ?? (_downloadsToday + 1);
-    _maxDailyDownloads = data.max_daily_downloads ?? 3;
-    updateDownloadUI();
-    return true;
-  } catch (err) {
-    if (err.message && err.message.includes('limit')) throw err;
-    // Graceful offline fallback in demo environment
-    const storageKey = `ebsu_dl_${new Date().toISOString().slice(0, 10)}`;
-    const count = parseInt(sessionStorage.getItem(storageKey) || '0', 10);
-    if (count >= 3) {
-      throw new Error('Daily download limit (3 per day) reached for today.');
-    }
-    sessionStorage.setItem(storageKey, String(count + 1));
-    _downloadsToday = count + 1;
-    updateDownloadUI();
-    return true;
+  const res = await fetch(confirmUrl, {
+    method: 'POST',
+    headers: getAnonHeaders(),
+    body: JSON.stringify({
+      action: 'log_download',
+      session_id: sessionId,
+      format: format,
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) {
+    throw new Error(data.error || 'Daily download limit reached or download rejected by server.');
   }
+  recordDownload(studentKey);
+  _downloadsToday = data.downloads_today ?? (limitCheck.used + 1);
+  _maxDailyDownloads = data.max_daily_downloads ?? 3;
+  updateDownloadUI();
+  return true;
 }
 
 function getStaticCardPayload() {
   if (!currentStudent) return null;
-  const rawId = currentStudent.id || currentStudent.student_id || '00000000-0000-4000-8000-000000000001';
-  const sig = currentStudent.card_signature || 'ED25519_STATIC_PASS';
-  const safeMatric = String(currentStudent.matric || currentStudent.jamb_no || 'STUDENT').toUpperCase();
+  const rawId = currentStudent.card_id || currentStudent.id || currentStudent.student_id || '00000000-0000-4000-8000-000000000001';
+  const sig = currentStudent.card_signature || '';
+  const safeMatric = String(currentStudent.matric || currentStudent.jamb_no || 'N/A').toUpperCase();
+  const baseUrl = (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.PUBLIC_BASE_URL)
+    ? EBSU_CONFIG.PUBLIC_BASE_URL
+    : 'https://ebsu-id-card.vercel.app';
 
   const staticQr = (typeof buildQRData === 'function')
     ? buildQRData({ cardId: rawId, card_signature: sig })
-    : `https://id.ebsu.edu.ng/c/${rawId}.${sig}`;
+    : `${baseUrl}/c/${rawId}.${sig}`;
 
   return {
     ...currentStudent,
@@ -486,15 +502,15 @@ function getStaticCardPayload() {
     matric: safeMatric,
     schoolRegNo: safeMatric,
     regNo: currentStudent.jamb_no || safeMatric,
-    jambNo: currentStudent.jamb_no || '1234567890',
-    faculty: currentStudent.faculty || 'Science',
-    department: currentStudent.dept || 'Computer Science',
-    dept: currentStudent.dept || 'Computer Science',
-    level: currentStudent.level || '100 Level',
-    session: currentStudent.session || '2024/2025',
-    blood: currentStudent.blood || 'O+',
-    genotype: currentStudent.genotype || 'AA',
-    expiry: currentStudent.expiry || 2029,
+    jambNo: currentStudent.jamb_no || 'N/A',
+    faculty: currentStudent.faculty || 'N/A',
+    department: currentStudent.dept || 'N/A',
+    dept: currentStudent.dept || 'N/A',
+    level: currentStudent.level || 'N/A',
+    session: currentStudent.session || 'N/A',
+    blood: currentStudent.blood || 'N/A',
+    genotype: currentStudent.genotype || 'N/A',
+    expiry: currentStudent.expiry || 'N/A',
     photo: currentStudent.photo_url || 'images/demo_user_photo.jpg',
     sig: currentStudent.sig_url || 'images/demo_user_sig.png',
     card_signature: sig,
@@ -749,7 +765,8 @@ if (btnShowQrModal && modalQrPass) {
     }
 
     const payload = (typeof getStaticCardPayload === 'function') ? getStaticCardPayload() : currentStudent;
-    const qrStr = (typeof buildQRData === 'function') ? buildQRData(payload) : (currentStudent.qr_string || `https://id.ebsu.edu.ng/c/${currentStudent.id}.${currentStudent.card_signature}`);
+    const baseUrl = (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.PUBLIC_BASE_URL) ? EBSU_CONFIG.PUBLIC_BASE_URL : 'https://ebsu-id-card.vercel.app';
+    const qrStr = (typeof buildQRData === 'function') ? buildQRData(payload) : (currentStudent.qr_string || `${baseUrl}/c/${currentStudent.id}.${currentStudent.card_signature}`);
 
     if (canvas && typeof QRGen !== 'undefined' && QRGen.drawToCanvas) {
       QRGen.drawToCanvas(canvas, qrStr, 5);

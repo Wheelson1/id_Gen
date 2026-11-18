@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>ID Card Verifier — EBSU</title>
   <meta name="color-scheme" content="light dark" />
-  <meta name="theme-color" content="#FAF9F5" />
+  <meta name="theme-color" content="#0B2B26" />
   <script>
     (function() {
       try {
@@ -14,7 +14,7 @@
         document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme-preference', p);
         var m = document.querySelector('meta[name="theme-color"]');
-        if (m) m.setAttribute('content', d ? '#262624' : '#FAF9F5');
+        if (m) m.setAttribute('content', '#0B2B26');
       } catch(e) {
         document.documentElement.setAttribute('data-theme', 'light');
       }
@@ -40,45 +40,30 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bg:       var(--bg, #FAF9F5);
-      --surface:  var(--surface, #FFFFFF);
-      --surface2: var(--sunken, #F3F1EA);
-      --border:   var(--line, #E4E0D8);
-      --gold:     var(--warning, #A15C07);
-      --blue:     var(--accent, #1558C0);
-      --blue-lt:  var(--accent, #1558C0);
-      --text:     var(--ink, #1F1E1B);
-      --muted:    var(--muted, #6B675F);
-      --green:    var(--success, #1F7A4D);
-      --orange:   var(--warning, #A15C07);
-      --red:      var(--error, #B3261E);
-      --amber:    var(--warning, #A15C07);
-    }
 
     body {
-      background: var(--bg); color: var(--text);
-      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg); color: var(--ink);
+      font-family: var(--font-ui);
       min-height: 100vh; display: flex; flex-direction: column;
     }
 
     /* Header */
     .v-header {
-      background: var(--surface); border-bottom: 1px solid var(--border);
+      background: var(--band); border-bottom: 1px solid var(--band); color: var(--band-ink);
       padding: 14px 20px; display: flex; align-items: center; gap: 14px; flex-shrink: 0;
     }
-    .v-header-brand { font-size: 18px; font-weight: 800; color: var(--gold); letter-spacing: 0.5px; }
-    .v-header-sub   { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+    .v-header-brand { font-family: var(--font-head); font-size: 18px; font-weight: 600; color: var(--band-ink); }
+    .v-header-sub   { font-size: 12px; color: var(--band-ink-2); }
     .v-header-nav   { margin-left: auto; display: flex; gap: 10px; align-items: center; }
     .v-header-nav a {
-      color: var(--muted); font-size: 12px; text-decoration: none;
-      padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);
+      color: var(--band-ink); font-size: 13px; text-decoration: none;
+      padding: 6px 12px; border-radius: 3px; border: 1px solid rgba(218,241,222,0.35);
       transition: all 0.15s;
     }
-    .v-header-nav a:hover { color: var(--gold); border-color: var(--gold); }
+    .v-header-nav a:hover { color: var(--band-ink); background: rgba(218,241,222,0.10); border-color: var(--band-ink-2); }
     .user-badge {
-      font-size: 10px; color: var(--blue-lt);
-      background: rgba(74,144,217,0.1); border: 1px solid rgba(74,144,217,0.3);
+      font-size: 10px; color: var(--accent);
+      background: rgba(218,241,222,0.10); border: 1px solid rgba(218,241,222,0.35); color: var(--band-ink);
       border-radius: 6px; padding: 4px 10px; display: none;
     }
 
@@ -88,49 +73,49 @@
 
     /* Login card */
     .login-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 32px 28px;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: 6px; padding: 32px 28px;
       width: 100%; max-width: 440px; max-height: 92vh; overflow-y: auto; text-align: center;
-      box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+      box-shadow: var(--shadow);
     }
     .login-icon  { font-size: 52px; margin-bottom: 12px; }
-    .login-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .login-title { font-family: var(--font-head); font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
     .login-subtitle { font-size: 12px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
 
     .v-input {
       width: 100%; padding: 12px 16px;
-      background: var(--surface2); color: var(--text);
-      border: 1px solid var(--border); border-radius: 8px;
+      background: var(--sunken); color: var(--ink);
+      border: 1px solid var(--line); border-radius: 8px;
       font-size: 14px; outline: none; transition: border-color 0.2s;
       margin-bottom: 10px;
     }
-    .v-input:focus { border-color: var(--blue-lt); }
-    .v-input.error { border-color: var(--red); }
+    .v-input:focus { border-color: var(--accent); }
+    .v-input.error { border-color: var(--error); }
 
     .v-btn {
       width: 100%; padding: 13px;
-      background: var(--blue); color: #fff;
+      background: var(--accent); color: var(--accent-ink);
       border: none; border-radius: 8px;
       font-size: 14px; font-weight: 700; cursor: pointer;
       letter-spacing: 0.5px; transition: background 0.15s;
     }
-    .v-btn:hover   { background: #1a6ad0; }
-    .v-btn:active  { background: #0e4a9e; }
+    .v-btn:hover   { background: var(--accent-hover); }
+    .v-btn:active  { background: var(--accent-hover); }
     .v-btn.outline {
-      background: transparent; border: 1px solid var(--border); color: var(--muted);
+      background: transparent; border: 1px solid var(--line); color: var(--muted);
     }
-    .v-btn.outline:hover { border-color: var(--blue-lt); color: var(--blue-lt); background: transparent; }
+    .v-btn.outline:hover { border-color: var(--accent); color: var(--accent); background: transparent; }
 
-    .error-msg { color: var(--red); font-size: 12px; margin-bottom: 12px; min-height: 18px; }
+    .error-msg { color: var(--error); font-size: 12px; margin-bottom: 12px; min-height: 18px; }
 
     /* Scanner screen */
     .scanner-wrap { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 16px; }
-    .scanner-title { font-size: 18px; font-weight: 800; color: var(--blue-lt); text-align: center; }
+    .scanner-title { font-size: 18px; font-weight: 800; color: var(--accent); text-align: center; }
 
     .video-container {
       position: relative; width: 100%; border-radius: 12px;
       overflow: hidden; background: #000; aspect-ratio: 4/3;
-      border: 2px solid var(--border);
+      border: 2px solid var(--line);
     }
     #scanner-video { width: 100%; height: 100%; object-fit: cover; display: block; }
     .scan-overlay {
@@ -138,7 +123,7 @@
       display: flex; align-items: center; justify-content: center; pointer-events: none;
     }
     .scan-box {
-      width: 200px; height: 200px; border: 3px solid var(--blue-lt);
+      width: 200px; height: 200px; border: 3px solid var(--accent);
       border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.45); position: relative;
     }
     .scan-box::before, .scan-box::after {
@@ -149,7 +134,7 @@
     .scan-box::after  { bottom:-3px; right:-3px; border-width:0 3px 3px 0; border-radius:0 0 8px 0; }
     .scan-line {
       position: absolute; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--blue-lt), transparent);
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
       animation: scanAnim 2s linear infinite;
     }
     @keyframes scanAnim { 0% { top:0; } 100% { top:100%; } }
@@ -160,8 +145,8 @@
     }
     .camera-error {
       display: none; padding: 16px; text-align: center;
-      background: rgba(204,34,34,0.1); border: 1px solid rgba(204,34,34,0.3);
-      border-radius: 10px; color: #ff6666; font-size: 13px; line-height: 1.6;
+      background: var(--badge-error-bg); border: 1px solid var(--error);
+      border-radius: 4px; color: var(--error); font-size: 13px; line-height: 1.6;
     }
 
     /* Result screen */
@@ -171,31 +156,31 @@
       text-align: center; padding: 18px 20px;
       border-radius: 12px; font-size: 22px; font-weight: 900; letter-spacing: 1px;
     }
-    .verdict.verified  { background:rgba(0,204,102,0.12); border:2px solid var(--green);  color:var(--green);  }
-    .verdict.expired   { background:rgba(255,153,0,0.12);  border:2px solid var(--orange); color:var(--orange); }
-    .verdict.invalid   { background:rgba(204,34,34,0.12);  border:2px solid var(--red);    color:var(--red);    }
-    .verdict.offline   { background:rgba(230,168,0,0.12);  border:2px solid var(--amber);  color:var(--amber);  }
+    .verdict.verified  { background:var(--badge-valid-bg); border:2px solid var(--success);  color:var(--success);  }
+    .verdict.expired   { background:var(--badge-warning-bg); border:2px solid var(--warning); color:var(--warning); }
+    .verdict.invalid   { background:var(--badge-error-bg); border:2px solid var(--error);    color:var(--error);    }
+    .verdict.offline   { background:var(--badge-warning-bg); border:2px solid var(--warning);  color:var(--warning);  }
 
     .student-photo-wrap {
       text-align: center;
     }
     .student-photo {
       width: 100px; height: 130px; object-fit: cover;
-      border-radius: 6px; border: 2px solid var(--border);
+      border-radius: 6px; border: 2px solid var(--line);
       display: block; margin: 0 auto;
     }
     .student-photo-placeholder {
-      width: 100px; height: 130px; background: var(--surface2);
-      border-radius: 6px; border: 2px solid var(--border);
+      width: 100px; height: 130px; background: var(--sunken);
+      border-radius: 6px; border: 2px solid var(--line);
       display: flex; align-items: center; justify-content: center;
       font-size: 36px; margin: 0 auto;
     }
 
-    .student-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-    .sc-header { background:var(--blue); padding:12px 16px; font-size:11px; font-weight:800; letter-spacing:1px; color:rgba(255,255,255,0.8); }
+    .student-card { background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+    .sc-header { background:#1F4AA8; padding:12px 16px; font-family:var(--font-head); font-size:13px; font-weight:600; color:#FFFFFF; }
     .sc-body { padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     .sc-field label { display:block; font-size:9px; font-weight:700; color:var(--muted); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:3px; }
-    .sc-field span  { font-size:14px; font-weight:600; color:var(--text); }
+    .sc-field span  { font-size:14px; font-weight:600; color:var(--ink); }
     .sc-field.full  { grid-column:1 / -1; }
 
     .scan-timestamp { font-size:10px; color:var(--muted); text-align:center; padding:6px; }
@@ -214,12 +199,12 @@
 <!-- Header -->
 <header class="v-header">
   <div>
-    <div class="v-header-brand" style="color: #d4a574;">SID Public Verifier</div>
+    <div class="v-header-brand" style="color: var(--warning);">SID Public Verifier</div>
     <div class="v-header-sub">STUDENTS IDENTIFICATION CARD SYSTEM · TRIPLE J GROUP OF COMPANIES</div>
   </div>
   <nav class="v-header-nav">
     <span id="v-user-badge" class="user-badge"></span>
-    <button type="button" onclick="openMobilePairingModal()" style="background: var(--green); border: none; color: #fff; font-weight: 800; cursor: pointer; padding: 6px 12px; border-radius: 6px; font-size: 11px; display: inline-flex; align-items: center; gap: 5px;">
+    <button type="button" onclick="openMobilePairingModal()" style="background: var(--accent); border: none; color: var(--accent-ink); font-weight: 800; cursor: pointer; padding: 6px 12px; border-radius: 6px; font-size: 11px; display: inline-flex; align-items: center; gap: 5px;">
       📱 Continue on Mobile
     </button>
     <button type="button" class="theme-toggle-btn" aria-label="Toggle Theme"></button>
@@ -229,8 +214,8 @@
 </header>
 
 <!-- INSTITUTIONAL VERIFIER TERMINAL BANNER -->
-<div style="background: var(--surface2); border-bottom: 1px solid var(--border); color: var(--text); padding: 12px 20px; text-align: center; font-size: 13px; font-weight: 700;">
-  <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--blue);">
+<div style="background: var(--sunken); border-bottom: 1px solid var(--line); color: var(--ink); padding: 12px 20px; text-align: center; font-size: 13px; font-weight: 700;">
+  <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--accent);">
     <span>🛡️ EBSU OFFICIAL GATE &amp; EXAM HALL VERIFIER TERMINAL</span>
   </div>
   <p style="font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 3px;">
@@ -246,7 +231,7 @@
     </div>
     <div class="login-icon" style="margin-top: 10px;">📷</div>
     <div class="login-title">Security Verifier Portal</div>
-    <div style="display: inline-block; background: rgba(74, 144, 217, 0.15); border: 1px solid rgba(74, 144, 217, 0.3); color: #4a90d9; font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px;">
+    <div style="display: inline-block; background: rgba(74, 144, 217, 0.15); border: 1px solid rgba(74, 144, 217, 0.3); color: var(--accent); font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px;">
       OFFICIAL VERIFIER TERMINAL READY
     </div>
     <div class="login-subtitle">
@@ -270,19 +255,19 @@
 
     <!-- ── QUICK MOBILE SWITCH & CAMERA CONTROLS BAR ── -->
     <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
-      <button type="button" onclick="openMobilePairingModal()" style="flex:1; min-width:180px; padding:9px 14px; background:linear-gradient(135deg, rgba(16,185,129,0.18), rgba(5,150,105,0.25)); border:1px solid #10b981; border-radius:8px; color:#34d399; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+      <button type="button" onclick="openMobilePairingModal()" style="flex:1; min-width:180px; padding:9px 14px; background:linear-gradient(135deg, rgba(16,185,129,0.18), rgba(5,150,105,0.25)); border:1px solid var(--success); border-radius:8px; color:var(--success); font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
         <span>📱</span>
         <span>Continue on Mobile (Phone Camera)</span>
       </button>
 
       <div style="display:flex; gap:6px;">
-        <button type="button" onclick="flipCamera()" title="Flip Camera" style="padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:12px; font-weight:700; cursor:pointer;">
+        <button type="button" onclick="flipCamera()" title="Flip Camera" style="padding:8px 12px; background:var(--sunken); border:1px solid var(--line); border-radius:8px; color:var(--ink); font-size:12px; font-weight:700; cursor:pointer;">
           🔄 Flip
         </button>
-        <button type="button" id="btn-torch" onclick="toggleTorch()" title="Toggle Flashlight / Torch" style="padding:8px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:12px; font-weight:700; cursor:pointer;">
+        <button type="button" id="btn-torch" onclick="toggleTorch()" title="Toggle Flashlight / Torch" style="padding:8px 12px; background:var(--sunken); border:1px solid var(--line); border-radius:8px; color:var(--ink); font-size:12px; font-weight:700; cursor:pointer;">
           💡 Torch
         </button>
-        <label title="Upload or Take Photo of Card" style="padding:8px 12px; background:rgba(74,144,217,0.15); border:1px solid var(--blue-lt); border-radius:8px; color:var(--blue-lt); font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+        <label title="Upload or Take Photo of Card" style="padding:8px 12px; background:rgba(74,144,217,0.15); border:1px solid var(--accent); border-radius:8px; color:var(--accent); font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
           <span>📷 Photo</span>
           <input type="file" id="card-photo-input" accept="image/*" style="display:none;" onchange="if(this.files && this.files[0]) scanUploadedImage(this.files[0])" />
         </label>
@@ -304,17 +289,17 @@
     <div class="scanner-status" id="scanner-status">Point camera at student ID card (EBSU1) or 60-second live pass (EBSU2)</div>
 
     <!-- Manual input -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px">
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px">
       <p style="font-size:11px;color:var(--muted);margin-bottom:8px">
         Manual entry (for unsupported devices — routed through server verification):
       </p>
       <div style="display:flex;gap:8px">
         <input id="manual-qr" type="text" placeholder="Paste EBSU1:… or EBSU2:… token here"
-          style="flex:1;padding:9px 12px;background:var(--surface2);color:var(--text);
-            border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none"
+          style="flex:1;padding:9px 12px;background:var(--sunken);color:var(--ink);
+            border:1px solid var(--line);border-radius:6px;font-size:13px;outline:none"
           onkeydown="if(event.key==='Enter') manualVerify()" />
         <button onclick="manualVerify()"
-          style="padding:9px 16px;background:var(--blue);color:#fff;
+          style="padding:9px 16px;background:var(--accent);color:var(--accent-ink);
             border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer">
           Verify
         </button>
@@ -339,7 +324,7 @@
     <div class="scan-timestamp" id="scan-timestamp"></div>
     <div class="btn-row" style="flex-wrap:wrap; gap:10px;">
       <button class="v-btn" onclick="scanAgain()">⟳ Scan Another</button>
-      <button class="v-btn" id="btn-dl-verified-png" style="background:#059669; border-color:#059669; color:#fff; display:none;" onclick="downloadVerifiedCardPng()">📥 Download ID Card (PNG)</button>
+      <button class="v-btn" id="btn-dl-verified-png" style="background:var(--accent); border-color:var(--success); color: var(--accent-ink); display:none;" onclick="downloadVerifiedCardPng()">📥 Download ID Card (PNG)</button>
       <button class="v-btn outline" onclick="doLogout()">Sign Out</button>
     </div>
   </div>
@@ -347,34 +332,34 @@
 
 <!-- ── MOBILE PAIRING MODAL ─────────────────────────────────────── -->
 <div id="mobile-pair-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:99999; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:#0c1b2e; border:1px solid #1e3558; border-radius:18px; max-width:440px; width:100%; padding:26px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.6); position:relative;">
-    <button type="button" onclick="closeMobilePairingModal()" style="position:absolute; top:14px; right:16px; background:none; border:none; color:#6080a0; font-size:22px; cursor:pointer;">✕</button>
+  <div style="background:var(--surface); border:1px solid var(--line); border-radius:18px; max-width:440px; width:100%; padding:26px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.6); position:relative;">
+    <button type="button" onclick="closeMobilePairingModal()" style="position:absolute; top:14px; right:16px; background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer;">✕</button>
 
     <div style="font-size:36px; margin-bottom:8px;">📱</div>
-    <h3 style="font-size:18px; font-weight:800; color:#fff; margin-bottom:4px;">Switch to Smartphone Scanner</h3>
-    <p style="font-size:11px; color:#8090a8; line-height:1.5; margin-bottom:18px;">
+    <h3 style="font-size:18px; font-weight:600; font-family:var(--font-head); color:var(--ink); margin-bottom:4px;">Switch to Smartphone Scanner</h3>
+    <p style="font-size:11px; color:var(--muted); line-height:1.5; margin-bottom:18px;">
       Smartphone cameras have optical macro focus, better resolution, and LED torches — ideal for scanning printed student cards and digital screens in seconds.
     </p>
 
     <!-- QR Canvas Container -->
-    <div style="background:#fff; border-radius:12px; padding:14px; display:inline-block; margin-bottom:14px; box-shadow:0 8px 24px rgba(0,0,0,0.3);">
+    <div style="background:var(--surface); border-radius:12px; padding:14px; display:inline-block; margin-bottom:14px; box-shadow:0 8px 24px rgba(0,0,0,0.3);">
       <canvas id="mobile-pair-qr" width="180" height="180" style="display:block;"></canvas>
     </div>
 
-    <div style="font-size:11px; font-weight:700; color:#34d399; margin-bottom:12px;">
+    <div style="font-size:11px; font-weight:700; color:var(--success); margin-bottom:12px;">
       Point your phone's camera at this QR code to open the verifier instantly
     </div>
 
     <!-- LAN IP helper for local dev -->
-    <div style="background:#091322; border:1px solid #1e3050; border-radius:10px; padding:12px; text-align:left; margin-bottom:14px;">
-      <label style="font-size:10px; color:#8090a8; font-weight:700; display:block; margin-bottom:4px;">
+    <div style="background:var(--sunken); border:1px solid var(--line); border-radius:10px; padding:12px; text-align:left; margin-bottom:14px;">
+      <label style="font-size:10px; color:var(--muted); font-weight:700; display:block; margin-bottom:4px;">
         NETWORK / WI-FI HOST LINK:
       </label>
       <div style="display:flex; gap:6px;">
-        <input id="mobile-pair-input" type="text" style="flex:1; background:#112240; border:1px solid #1e3558; border-radius:6px; color:#fff; font-size:11px; padding:6px 10px; outline:none;" />
-        <button type="button" onclick="updateMobilePairingUrl()" style="background:#1558c0; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">Update</button>
+        <input id="mobile-pair-input" type="text" style="flex:1; background:var(--sunken); border:1px solid var(--line); border-radius:6px; color:var(--ink); font-size:11px; padding:6px 10px; outline:none;" />
+        <button type="button" onclick="updateMobilePairingUrl()" style="background:var(--accent); color: var(--accent-ink); border:none; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">Update</button>
       </div>
-      <small style="font-size:9.5px; color:#6080a0; margin-top:4px; display:block;">
+      <small style="font-size:9.5px; color:var(--muted); margin-top:4px; display:block;">
         💡 Tip: If using Wi-Fi, change "localhost" to your PC's IP (e.g. 192.168.1.10) so your phone can reach this page.
       </small>
     </div>
@@ -615,7 +600,7 @@ async function toggleTorch() {
     isTorchActive = !isTorchActive;
     await track.applyConstraints({ advanced: [{ torch: isTorchActive }] });
     const btn = document.getElementById('btn-torch');
-    if (btn) btn.style.background = isTorchActive ? '#d97706' : 'var(--surface2)';
+    if (btn) btn.style.background = isTorchActive ? 'var(--warning)' : 'var(--sunken)';
   } catch (e) {
     console.warn('Torch not supported on this device/camera:', e);
   }
@@ -928,7 +913,7 @@ function showResult(result) {
         const a = document.createElement('a');
         a.href = 'tel:' + f.value;
         a.textContent = f.value + ' 📞 (Tap to Call)';
-        a.style.color = '#38bdf8';
+        a.style.color = 'var(--accent)';
         a.style.fontWeight = '700';
         a.style.textDecoration = 'none';
         span.appendChild(a);
@@ -1120,7 +1105,6 @@ Guard.ready().then(ctx => {
   }
 });
 </script>
-<script src="js/sid.js"></script>
 <script src="js/theme.js"></script>
 <script>
   if ('serviceWorker' in navigator) {

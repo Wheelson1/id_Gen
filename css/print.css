@@ -1,0 +1,1133 @@
+/* ============================================================================
+   css/print.css — "Security print" design for the public student page (index.html)
+
+   The page borrows from the thing it issues: security paper, engraved line
+   work (guilloche), a microtext rule, and the ID card itself as the one loud
+   element. Colours come from the EBSU crest: shield green and the blue of the
+   river band. Everything else stays quiet.
+
+   Fonts: Besley (headings, a Clarendon — the face of certificates and
+   banknotes) and Source Sans 3 (everything you read or type).
+   ============================================================================ */
+
+/* Palette: forest greens #051F20 · #0B2B26 · #163832 · #235347 · #8EB69B · #DAF1DE.
+   #EEF8F0 and #C6E4CE / #B4D4BE are lighter mixes of the same family.
+   Rule: the sage #8EB69B is never text on a light background (contrast 1.9:1). */
+:root,
+:root[data-theme="light"] {
+  --paper: #DAF1DE;
+  --sheet: #EEF8F0;
+  --ink: #051F20;
+  --ink-2: #235347;
+  --rule: #B4D4BE;
+  --green: #235347;          /* buttons */
+  --green-hover: #163832;
+  --green-ink: #F2FAF3;
+  --green-soft: #C6E4CE;
+  --blue: #163832;           /* links, focus ring, the pay button */
+  --blue-hover: #051F20;
+  --blue-ink: #F2FAF3;
+  --blue-soft: #C6E4CE;
+  --red: #A8261C;
+  --red-soft: #FBE9E7;
+  --amber: #7A5200;
+  --amber-soft: #FBF1D9;
+  --band: #0B2B26;           /* header and footer */
+  --band-ink: #DAF1DE;
+  --band-ink-2: #8EB69B;
+  --engrave: rgba(35, 83, 71, 0.30);   /* colour of the line work */
+  --card-shadow: 0 1px 1px rgba(5, 31, 32, .12), 0 18px 40px -18px rgba(5, 31, 32, .55);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --paper: #051F20;
+  --sheet: #0B2B26;
+  --ink: #DAF1DE;
+  --ink-2: #8EB69B;
+  --rule: #235347;
+  --green: #8EB69B;
+  --green-hover: #A9CDB4;
+  --green-ink: #051F20;
+  --green-soft: #163832;
+  --blue: #B9DEC3;
+  --blue-hover: #DAF1DE;
+  --blue-ink: #051F20;
+  --blue-soft: #163832;
+  --red: #F08A82;
+  --red-soft: #3A1B18;
+  --amber: #E0A458;
+  --amber-soft: #33270F;
+  --band: #0B2B26;
+  --band-ink: #DAF1DE;
+  --band-ink-2: #8EB69B;
+  --engrave: rgba(142, 182, 155, 0.22);
+  --card-shadow: 0 18px 40px -18px rgba(0, 0, 0, .85);
+  color-scheme: dark;
+}
+
+/* Names the passport-guide block (bottom of this file) still expects. */
+:root {
+  --font-display: 'Besley', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace;
+  --mc-bg: var(--paper);
+  --mc-bg-alt: var(--paper);
+  --mc-bg-elevated: var(--sheet);
+  --mc-surface: var(--sheet);
+  --mc-surface-solid: var(--sheet);
+  --mc-surface-hover: var(--green-soft);
+  --mc-input-bg: var(--sheet);
+  --mc-border: var(--rule);
+  --mc-border-subtle: var(--rule);
+  --mc-border-bright: var(--green);
+  --mc-blue: var(--blue);
+  --mc-blue-hover: var(--blue-hover);
+  --mc-blue-soft: var(--blue-soft);
+  --mc-gold: var(--amber);
+  --mc-gold-bright: var(--amber);
+  --mc-gold-soft: var(--amber-soft);
+  --mc-gold-border: var(--amber);
+  --mc-emerald: var(--green);
+  --mc-emerald-hover: var(--green-hover);
+  --mc-emerald-soft: var(--green-soft);
+  --mc-emerald-border: var(--green);
+  --mc-danger: var(--red);
+  --mc-danger-soft: var(--red-soft);
+  --mc-warning: var(--amber);
+  --mc-warning-soft: var(--amber-soft);
+  --mc-text: var(--ink);
+  --mc-text-secondary: var(--ink-2);
+  --mc-text-muted: var(--ink-2);
+  --mc-text-dim: var(--ink-2);
+  --text-xs: 0.78rem;
+  --text-sm: 0.88rem;
+  --text-base: 1rem;
+  --text-lg: 1.15rem;
+  --text-xl: 1.4rem;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --shadow-glass: none;
+  --shadow-card: none;
+}
+
+/* ── Base ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body.print-body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+
+.print-body h1, .print-body h2, .print-body h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.print-body p { margin: 0; }
+.print-body a { color: var(--blue); text-underline-offset: 3px; }
+.print-body a:hover { color: var(--blue-hover); }
+.print-body img { max-width: 100%; }
+
+.wrap {
+  width: min(1140px, 100% - 40px);
+  margin-inline: auto;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* ── Security-print devices ───────────────────────────────────── */
+/* Engraved band: an SVG used as a mask so it takes the theme colour. */
+.guilloche-band {
+  height: 48px;
+  background-color: var(--engrave);
+  -webkit-mask: url("../images/guilloche-band.svg") repeat-x center / auto 48px;
+  mask: url("../images/guilloche-band.svg") repeat-x center / auto 48px;
+}
+
+/* Microtext rule: looks like a line until you lean in. */
+.microtext {
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  font-size: 5.5px;
+  line-height: 9px;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+  color: var(--green);
+  border-block: 1px solid var(--rule);
+  user-select: none;
+}
+
+/* ── Header ───────────────────────────────────────────────────── */
+.site-head {
+  border-bottom: 1px solid var(--rule);
+  background: var(--band);
+  color: var(--band-ink);
+}
+
+.site-head-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-block: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--band-ink) !important;
+}
+
+.brand-crest {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 3px;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  line-height: 1.15;
+}
+
+.brand-sub {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--band-ink-2);
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px 22px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  font-size: 0.95rem;
+}
+
+.site-nav a {
+  color: var(--band-ink);
+  text-decoration: none;
+  padding: 6px 0;
+  border-bottom: 2px solid transparent;
+}
+
+.site-nav a:hover { border-bottom-color: var(--band-ink-2); color: var(--band-ink); }
+.site-nav a:focus-visible { outline: 2px solid var(--band-ink); outline-offset: 3px; }
+
+.site-head .theme-toggle-btn {
+  background: transparent;
+  color: var(--band-ink);
+  border: 1px solid rgba(218, 241, 222, 0.35);
+  box-shadow: none;
+}
+.site-head .theme-toggle-btn:hover { background: rgba(218, 241, 222, 0.10); border-color: var(--band-ink-2); }
+
+/* ── Hero: application on the left, the card on the right ─────── */
+.hero { padding: 44px 0 0; overflow: hidden; }
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: 56px;
+  align-items: start;
+  padding-bottom: 56px;
+}
+
+.hero-title {
+  font-size: clamp(2.35rem, 1.5rem + 3.4vw, 3.9rem);
+  letter-spacing: -0.015em;
+  line-height: 1.02 !important;
+  max-width: 14ch;
+}
+
+.hero-lede {
+  margin-top: 18px !important;
+  font-size: 1.15rem;
+  color: var(--ink-2);
+  max-width: 46ch;
+}
+
+.hero-need {
+  margin-top: 10px !important;
+  max-width: 46ch;
+}
+
+/* The specimen sits on a large engraved rosette. */
+.hero-art {
+  position: relative;
+  padding: 34px 0 0;
+}
+
+.hero-art::before {
+  content: "";
+  position: absolute;
+  width: 640px;
+  height: 640px;
+  left: 50%;
+  top: -70px;
+  transform: translateX(-42%);
+  background-color: var(--engrave);
+  -webkit-mask: url("../images/guilloche-rosette.svg") center / contain no-repeat;
+  mask: url("../images/guilloche-rosette.svg") center / contain no-repeat;
+  pointer-events: none;
+}
+
+.specimen-note {
+  position: relative;
+  margin-top: 18px !important;
+  font-size: 0.95rem;
+  color: var(--ink-2);
+  max-width: 40ch;
+}
+
+/* ── The ID card (specimen in the hero, real data in step 6) ──── */
+.idcard {
+  position: relative;
+  width: 100%;
+  max-width: 470px;
+  background: #FFFFFF;
+  color: #14213D;
+  border-radius: 16px;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  font-family: var(--font-sans);
+  line-height: 1.25;
+  isolation: isolate;
+}
+
+.idcard::after {              /* faint rosette printed into the card stock */
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 330px;
+  height: 330px;
+  right: -90px;
+  bottom: -120px;
+  background-color: rgba(10, 107, 58, 0.16);
+  -webkit-mask: url("../images/guilloche-rosette.svg") center / contain no-repeat;
+  mask: url("../images/guilloche-rosette.svg") center / contain no-repeat;
+}
+
+.idcard-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 10px 14px;
+  background: #1F4AA8;
+  color: #FFFFFF;
+}
+
+.idcard-crest {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 3px;
+  padding: 1px;
+  flex-shrink: 0;
+}
+
+.idcard-uni {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.98rem;
+  letter-spacing: 0.01em;
+}
+
+.idcard-kind {
+  font-size: 0.74rem;
+  opacity: 0.9;
+}
+
+.idcard-title {
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: #B3261E;
+  padding: 7px 10px 0;
+}
+
+.idcard-body {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  gap: 14px;
+  padding: 10px 14px 12px;
+  align-items: start;
+}
+
+.idcard-photo {
+  width: 96px;
+  height: 118px;
+  object-fit: cover;
+  border: 2px solid #1F4AA8;
+  border-radius: 4px;
+  background: #dfe8e1;
+  display: block;
+}
+
+.idcard-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px 12px;
+  margin: 0;
+}
+
+.idcard-fields div { min-width: 0; }
+.idcard-fields .wide { grid-column: 1 / -1; }
+
+.idcard-fields dt {
+  font-size: 0.66rem;
+  color: #5A6478;
+  margin: 0;
+}
+
+.idcard-fields dd {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.idcard-fields .name dd {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* The reg number is what gets checked most, so it is the largest value on the card. */
+.idcard-fields .matric dd {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: #0B1F4D;
+  letter-spacing: 0.02em;
+}
+
+.idcard-qr {
+  background: #fff;
+  padding: 4px;
+  border: 1px solid #D5DBE6;
+  line-height: 0;
+}
+
+.idcard-qr img, .idcard-qr canvas { display: block; }
+
+.idcard-mrz {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: #2A3550;
+  padding: 7px 14px 9px;
+  border-top: 1px solid #D5DBE6;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.idcard-overprint {            /* SPECIMEN, the way a sample document is voided */
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 9vw, 3.6rem);
+  letter-spacing: 0.14em;
+  color: rgba(179, 38, 30, 0.20);
+  transform: rotate(-16deg);
+}
+
+.idcard-status {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* Issued card (step 6) holds a scannable QR, so it may grow taller. */
+.idcard--issued { max-width: 560px; margin-inline: auto; }
+.idcard--issued .idcard-body { grid-template-columns: 96px minmax(0, 1fr); }
+.idcard--issued .idcard-qr-row {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 10px;
+  border-top: 1px solid #D5DBE6;
+  font-size: 0.82rem;
+  color: #5A6478;
+}
+
+/* ── The application form ─────────────────────────────────────── */
+.apply {
+  margin-top: 30px;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-top: 4px solid var(--green);
+  border-radius: 4px;
+}
+
+.apply-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 22px 0;
+}
+
+.apply-title {
+  font-size: 1.3rem;
+}
+
+.apply-time { font-size: 0.9rem; color: var(--ink-2); }
+
+.apply-body { padding: 14px 22px 22px; }
+
+/* Steps: a real sequence, so they are numbered. */
+.onb-stepper {
+  list-style: none;
+  display: flex;
+  gap: 4px;
+  padding: 0;
+  margin: 0 0 20px;
+  border-bottom: 1px solid var(--rule);
+  counter-reset: step;
+}
+
+.onb-step-pill {
+  counter-increment: step;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 8px 2px 9px;
+  font-size: 0.82rem;
+  color: var(--ink-2);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.onb-step-pill::before {
+  content: counter(step) ". ";
+  font-variant-numeric: tabular-nums;
+}
+
+.onb-step-pill.completed { color: var(--green); }
+.onb-step-pill.completed::before { content: "\2713\00a0"; }
+
+.onb-step-pill.active {
+  color: var(--ink);
+  font-weight: 700;
+  border-bottom-color: var(--green);
+}
+
+.onb-panel { display: none; }
+.onb-panel.active { display: block; }
+
+.onb-form { display: flex; flex-direction: column; gap: 18px; }
+
+.onb-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.98rem;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+
+.onb-hint {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  margin-top: 6px !important;
+}
+
+.onb-input,
+.onb-select {
+  width: 100%;
+  font: inherit;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1.5px solid var(--ink-2);
+  border-radius: 3px;
+  padding: 11px 12px;
+  min-height: 48px;
+}
+
+.onb-input::placeholder { color: var(--ink-2); opacity: 0.75; }
+
+.onb-input:focus,
+.onb-select:focus {
+  outline: 3px solid var(--blue);
+  outline-offset: 1px;
+  border-color: var(--blue);
+}
+
+.onb-input--code {
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.onb-dob {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1.1fr;
+  gap: 10px;
+}
+
+.onb-turnstile { display: flex; justify-content: flex-start; min-height: 4px; }
+
+.onb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 18px;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 3px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+}
+
+.onb-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.onb-btn-primary,
+.onb-btn-success {
+  background: var(--green);
+  color: var(--green-ink) !important;
+}
+.onb-btn-primary:hover:not(:disabled),
+.onb-btn-success:hover:not(:disabled) { background: var(--green-hover); }
+
+.onb-btn-gold {                       /* the pay button */
+  background: var(--blue);
+  color: var(--blue-ink) !important;
+}
+.onb-btn-gold:hover:not(:disabled) { background: var(--blue-hover); }
+
+.onb-btn-outline {
+  background: transparent;
+  color: var(--ink) !important;
+  border-color: var(--ink-2);
+}
+.onb-btn-outline:hover:not(:disabled) { border-color: var(--ink); background: var(--green-soft); }
+
+.onb-btn-danger {
+  background: transparent;
+  color: var(--red) !important;
+  border-color: var(--red);
+}
+.onb-btn-danger:hover { background: var(--red-soft); }
+
+.onb-btn-small { width: auto; min-height: 34px; padding: 5px 12px; font-size: 0.88rem; }
+.onb-btn-auto { width: auto; }
+
+.onb-linkbtn {
+  background: none;
+  border: none;
+  padding: 6px 0;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.onb-linkbtn:hover { color: var(--blue-hover); }
+
+.onb-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+
+.onb-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.onb-stack { display: flex; flex-direction: column; gap: 12px; }
+
+.onb-foot {
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  font-size: 0.95rem;
+  color: var(--ink-2);
+}
+
+/* A record shown back to the student. */
+.onb-student-card {
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--blue);
+  background: var(--paper);
+  border-radius: 3px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+
+.onb-record-q { font-size: 0.95rem; color: var(--ink-2); }
+
+.onb-masked {
+  font-family: var(--font-mono);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin: 4px 0 12px;
+  overflow-wrap: anywhere;
+}
+
+.onb-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px 20px;
+  margin: 0;
+}
+
+.onb-facts dt { font-size: 0.88rem; color: var(--ink-2); }
+.onb-facts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.onb-facts .big dd { font-family: var(--font-display); font-size: 1.6rem; line-height: 1.1; }
+.onb-facts .code dd { font-family: var(--font-mono); letter-spacing: 0.03em; }
+
+.onb-preview {
+  display: none;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto 16px;
+  border-radius: 12px;
+}
+
+.onb-alert {
+  display: none;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border-left: 4px solid var(--ink-2);
+  border-radius: 0 3px 3px 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.98rem;
+}
+
+.onb-alert-error   { border-left-color: var(--red);   background: var(--red-soft); }
+.onb-alert-warn    { border-left-color: var(--amber); background: var(--amber-soft); }
+.onb-alert-success { border-left-color: var(--green); background: var(--green-soft); }
+.onb-alert-info    { border-left-color: var(--blue);  background: var(--blue-soft); }
+.onb-alert a { color: inherit; font-weight: 600; }
+
+.onb-demo {
+  border: 1.5px dashed var(--amber);
+  background: var(--amber-soft);
+  border-radius: 3px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  font-size: 0.95rem;
+}
+.onb-demo .onb-btn { margin-top: 10px; }
+
+.onb-stop {
+  border: 1.5px solid var(--red);
+  background: var(--red-soft);
+  border-radius: 3px;
+  padding: 20px;
+}
+.onb-stop h3 { font-size: 1.25rem; margin-bottom: 8px; }
+.onb-stop p { margin-bottom: 16px; }
+.onb-stop .onb-row { justify-content: flex-start; gap: 10px; }
+
+/* Step 6 */
+.issued-ref {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+  color: var(--ink-2);
+  margin-bottom: 16px;
+}
+.issued-ref strong { font-family: var(--font-mono); color: var(--ink); letter-spacing: 0.03em; }
+
+.issued-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 18px 0 22px; }
+
+.livepass {
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 18px;
+  text-align: center;
+}
+.livepass h3 { font-size: 1.15rem; margin-bottom: 6px; }
+.livepass p { font-size: 0.95rem; color: var(--ink-2); max-width: 52ch; margin: 0 auto 14px; }
+
+.livepass-box {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 0 auto 14px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--rule);
+}
+.livepass-timer { font-weight: 700; color: #0A6B3A; font-variant-numeric: tabular-nums; }
+
+/* ── Sections below the hero ──────────────────────────────────── */
+.section { padding: 64px 0; }
+.section--sheet { background: var(--sheet); border-block: 1px solid var(--rule); }
+
+.section-title { font-size: clamp(1.7rem, 1.3rem + 1.4vw, 2.3rem); max-width: 22ch; }
+.section-lede { margin-top: 12px !important; color: var(--ink-2); max-width: 60ch; }
+
+/* How it works: four steps as ruled rows, not cards. */
+.steps {
+  list-style: none;
+  margin: 34px 0 0;
+  padding: 0;
+  counter-reset: how;
+  border-top: 1px solid var(--rule);
+}
+
+.steps li {
+  counter-increment: how;
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 20rem) minmax(0, 1fr);
+  gap: 8px 28px;
+  align-items: baseline;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.steps li::before {
+  content: counter(how);
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 500;
+  line-height: 0.9;
+  color: var(--green);
+}
+
+.steps h3 { font-size: 1.3rem; }
+.steps p { color: var(--ink-2); max-width: 56ch; }
+
+/* How a card is checked: three plain columns divided by rules. */
+.checks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 34px;
+  border-top: 2px solid var(--ink);
+}
+
+.checks > div { padding: 22px 26px 4px 0; }
+.checks > div + div { padding-left: 26px; border-left: 1px solid var(--rule); }
+.checks h3 { font-size: 1.25rem; margin-bottom: 10px; }
+.checks p { color: var(--ink-2); }
+
+/* Help */
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 34px;
+  margin-top: 30px;
+}
+.help-grid h3 { font-size: 1.2rem; margin-bottom: 8px; }
+.help-grid p { color: var(--ink-2); margin-bottom: 10px; }
+.help-phones { font-size: 1.15rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.help-phones a { color: var(--ink); }
+
+/* ── Footer ───────────────────────────────────────────────────── */
+.site-foot { background: var(--band); color: var(--band-ink-2); }
+.site-foot a { color: var(--band-ink); }
+.site-foot a:hover { color: #FFFFFF; }
+.site-foot .microtext { color: var(--band-ink-2); border-color: rgba(142, 182, 155, 0.35); }
+
+.site-foot-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+  padding: 34px 0 40px;
+  font-size: 0.92rem;
+  color: var(--band-ink-2);
+}
+
+.site-foot-inner > div:first-child { max-width: 62ch; }
+.site-foot strong { color: var(--band-ink); }
+.foot-name { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--band-ink); margin-bottom: 8px; }
+.foot-motto { font-style: italic; margin-bottom: 10px !important; }
+.foot-links { display: flex; flex-direction: column; gap: 8px; }
+
+/* ── Find-my-payment dialog ───────────────────────────────────── */
+.dialog-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(8, 19, 13, 0.72);
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.dialog {
+  width: 100%;
+  max-width: 460px;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-top: 4px solid var(--blue);
+  border-radius: 4px;
+  padding: 22px;
+}
+
+.dialog-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+.dialog-head h3 { font-size: 1.3rem; }
+.dialog-close {
+  background: none; border: 1.5px solid var(--ink-2); border-radius: 3px;
+  width: 36px; height: 36px; font-size: 1rem; color: var(--ink); cursor: pointer; flex-shrink: 0;
+}
+.dialog p { color: var(--ink-2); font-size: 0.98rem; margin-bottom: 16px; }
+
+/* ── Small screens ────────────────────────────────────────────── */
+@media (max-width: 940px) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+  .hero-art { padding-top: 10px; }
+  .hero-art::before { width: 520px; height: 520px; top: -60px; transform: translateX(-50%); }
+  .idcard { margin-inline: auto; }
+  .specimen-note { margin-inline: auto; text-align: center; }
+  .checks { grid-template-columns: 1fr; }
+  .checks > div, .checks > div + div { padding: 20px 0 16px; border-left: 0; border-bottom: 1px solid var(--rule); }
+  .help-grid { grid-template-columns: 1fr; gap: 26px; }
+  .steps li { grid-template-columns: 3.5rem minmax(0, 1fr); }
+  .steps li p { grid-column: 2; }
+}
+
+@media (max-width: 620px) {
+  .wrap { width: min(1140px, 100% - 28px); }
+  .site-head-inner { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .site-nav { justify-content: flex-start; gap: 2px 18px; }
+  .hero { padding-top: 28px; }
+  .apply-head, .apply-body { padding-inline: 16px; }
+  /* Only the current step keeps its name; the rest show as numbers. */
+  .onb-step-pill { flex: 0 0 auto; font-size: 0; padding-inline: 6px; }
+  .onb-step-pill::before { font-size: 0.85rem; content: counter(step); }
+  .onb-step-pill.completed::before { content: "\2713"; }
+  .onb-step-pill.active { flex: 1 1 auto; font-size: 0.9rem; }
+  .onb-step-pill.active::before { content: counter(step) ". "; font-size: 0.9rem; }
+  .onb-two { grid-template-columns: 1fr; }
+  .idcard-body { grid-template-columns: 78px minmax(0, 1fr); }
+  .idcard-photo { width: 78px; height: 96px; }
+  .idcard:not(.idcard--issued) .idcard-qr { display: none; }
+  .idcard-uni { font-size: 0.9rem; }
+  .idcard-status { margin-left: 0; }
+  .section { padding: 46px 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+@media print {
+  .site-head, .hero-art, .section, .site-foot, .apply-head, .onb-stepper, .livepass,
+  .issued-actions, .guilloche-band, .microtext, .hero-title, .hero-lede, .hero-need { display: none !important; }
+  .apply { border: 0; }
+}
+
+.onb-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+
+
+/* ── Passport photograph guide (carried over unchanged from landing-pro.css) ── */
+/* ============================================================================
+   PASSPORT GUIDE MODAL (PRESERVED SELECTORS FROM index.html)
+   ============================================================================ */
+.guide-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.84);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.guide-modal-backdrop.active {
+    display: flex;
+}
+
+.guide-modal {
+    background: var(--mc-surface-solid);
+    color: var(--mc-text);
+    width: 100%;
+    max-width: 720px;
+    border-radius: 18px;
+    border: 1px solid var(--mc-border);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 92vh;
+}
+
+.guide-header {
+    background: linear-gradient(135deg, #0D182E, #1E3A8A);
+    color: #FFFFFF;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.guide-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.guide-close-btn {
+    background: rgba(255, 255, 255, 0.14);
+    border: none;
+    color: #FFFFFF;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.guide-tabs {
+    display: flex;
+    background: var(--mc-bg-elevated);
+    border-bottom: 1px solid var(--mc-border);
+    padding: 0 16px;
+}
+
+.guide-tab-btn {
+    padding: 12px 18px;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--mc-text-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+}
+
+.guide-tab-btn.active {
+    color: var(--mc-blue);
+    border-bottom-color: var(--mc-blue);
+}
+
+.guide-body {
+    padding: 22px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.guide-section {
+    display: none;
+}
+
+.guide-section.active {
+    display: block;
+}
+
+.do-dont-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.do-box {
+    background: var(--mc-emerald-soft);
+    border: 1px solid var(--mc-emerald-border);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.dont-box {
+    background: var(--mc-danger-soft);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.crop-stage-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    background: var(--mc-bg-elevated);
+    border: 1px dashed var(--mc-border);
+    border-radius: 12px;
+    padding: 18px;
+}
+
+.crop-controls {
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.crop-control-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--mc-text-secondary);
+}
+
+.crop-control-row input[type="range"] {
+    flex: 1;
+    accent-color: var(--mc-blue);
+}
+
+.guide-footer {
+    padding: 14px 24px;
+    background: var(--mc-bg-elevated);
+    border-top: 1px solid var(--mc-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+@media (max-width: 640px) { .do-dont-grid { grid-template-columns: 1fr; } }

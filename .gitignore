@@ -7,7 +7,10 @@
 .env.*
 !.env.example
 
-# Excluded from frontend deployment repository
+# Repo hygiene & non-frontend files
+project_digest.txt
+.claude/
+*.md
 supabase/
 scripts/
 mini_id_batch/
@@ -16,10 +19,10 @@ tests/
 *.csv
 *.log
 test_students_24.csv
-project_digest.txt
 
-# Node / Deno / Python
+# Node / Deno / Python / Vercel
 node_modules/
+.vercel/
 .deno/
 __pycache__/
 *.pyc
@@ -27,3 +30,6 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local backups made during edits (contain old test data, never publish)
+_backup_*/

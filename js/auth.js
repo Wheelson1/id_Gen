@@ -17,6 +17,40 @@ const AuthManager = (() => {
   const MFA_REQUIRED_ROLES = ['registrar', 'admin', 'super_admin'];
   const ALLOWED_STAFF_ROLES = ['operator', 'scanner', 'registrar', 'admin', 'super_admin', 'staff'];
 
+  // Demo / mock staff sessions exist for offline presentations only.
+  // Allowed ONLY on localhost or a private LAN address AND with DEMO_MODE: true.
+  // On any public hostname this is always false, whatever config.js says.
+  function isPrivateDemoHost() {
+    try {
+      const h = window.location.hostname;
+      const isPrivate = (
+        h === 'localhost' ||
+        h === '127.0.0.1' ||
+        h === '::1' ||
+        /^192\.168\.\d{1,3}\.\d{1,3}$/.test(h) ||
+        /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(h) ||
+        /^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(h)
+      );
+      const cfg = (typeof EBSU_CONFIG !== 'undefined') ? EBSU_CONFIG : (window.EBSU_CONFIG || null);
+      return isPrivate && Boolean(cfg && cfg.DEMO_MODE === true);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // A mock session left in this tab is honoured only in demo mode; otherwise it is discarded.
+  function readMockStaffSession() {
+    try {
+      if (!isPrivateDemoHost()) {
+        sessionStorage.removeItem('ebsu_mock_staff_session');
+        return null;
+      }
+      return sessionStorage.getItem('ebsu_mock_staff_session');
+    } catch (e) {
+      return null;
+    }
+  }
+
   // ── Initialise Supabase client ─────────────────────────────────
   function init() {
     if (window.ebsuSupabase) {
@@ -45,12 +79,12 @@ const AuthManager = (() => {
     const cleanInput = input.toLowerCase().replace(/[^a-z0-9]/g, '');
     
     // Check for user-defined test identifier: 1234567890 or EBSU/2021/101397
-    const isTestAuth =
+    const isTestAuth = isPrivateDemoHost() && (
       cleanInput === '1234567890' ||
       cleanInput === 'ebsu2021101397' ||
       cleanInput === '2021101397' ||
       input === 'admin+test@example.com' ||
-      input === 'editor+test@example.com';
+      input === 'editor+test@example.com');
 
     if (isTestAuth) {
       const mockUser = {
@@ -94,7 +128,7 @@ const AuthManager = (() => {
 
     const email = input.toLowerCase();
     if (!email || !password || !email.includes('@')) {
-      throw new Error('Enter a valid staff email, or use test Reg No: 1234567890 / Matric: EBSU/2021/101397');
+      throw new Error('Enter your staff email address and password.');
     }
 
     const endpoint =
@@ -112,7 +146,10 @@ const AuthManager = (() => {
         body: JSON.stringify({ email, password }),
       });
     } catch (netErr) {
-      // Resilient fallback for testing when remote server is offline
+      if (!isPrivateDemoHost()) {
+        throw new Error('Could not reach the sign-in server. Check your internet connection and try again.');
+      }
+      // Demo mode only: offline fallback for presentations on this computer
       const mockUser = {
         id: '22222222-2222-4222-a222-222222222222',
         email,
@@ -180,7 +217,7 @@ const AuthManager = (() => {
   // ── TOTP MFA Helpers ───────────────────────────────────────────
   async function getMfaStatus() {
     try {
-      const mock = sessionStorage.getItem('ebsu_mock_staff_session');
+      const mock = readMockStaffSession();
       if (mock) {
         return {
           currentLevel: 'aal2',
@@ -332,7 +369,7 @@ const AuthManager = (() => {
     }, WARNING_TIMEOUT_MS);
 
     _inactivityTimer = setTimeout(() => {
-      const currentPath = window.location.pathname.split('/').pop() || 'hub.html';
+      const currentPath = window.location.pathname.split('/').pop() || 'app.html';
       logout(`login.html?reason=timeout&next=${encodeURIComponent(currentPath)}`);
     }, INACTIVITY_TIMEOUT_MS);
 
@@ -359,7 +396,7 @@ const AuthManager = (() => {
   // ── Session & Role Getters ─────────────────────────────────────
   async function getSession() {
     try {
-      const mock = sessionStorage.getItem('ebsu_mock_staff_session');
+      const mock = readMockStaffSession();
       if (mock) {
         const parsed = JSON.parse(mock);
         if (parsed && (!parsed.expires_at || parsed.expires_at > Math.floor(Date.now() / 1000))) {
@@ -455,6 +492,7 @@ const AuthManager = (() => {
     startInactivityTimer,
     stopInactivityTimer,
     defaultHomeForRole,
+    isPrivateDemoHost,
     setStudentSession,
     getStudentSession,
     ALLOWED_STAFF_ROLES,

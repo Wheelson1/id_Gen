@@ -28,7 +28,7 @@ const EBSU_CONFIG = {
   MINT_PASS_URL:          'https://qsrfvfdojtmsinewxetz.supabase.co/functions/v1/mint-pass',
 
   // ── Cloudflare Turnstile site key (safe to expose) ────────────────────────
-  TURNSTILE_SITE_KEY:     '1x00000000000000000000AA',
+  TURNSTILE_SITE_KEY:     '0x4AAAAAAAzX9vW1qP8mK2nL',
 
   // ── Ed25519 public key (safe to expose) ───────────────────────────────────
   // Run:  deno run supabase/scripts/generate-keys.ts
@@ -36,13 +36,11 @@ const EBSU_CONFIG = {
   // The matching private key goes into Supabase secrets as ED25519_PRIVATE_KEY.
   ED25519_PUBLIC_KEY: 'BASE64_ENCODED_32_BYTE_PUBLIC_KEY',
 
-  // ── Demo Mode (MUST BE FALSE IN PRODUCTION) ──────────────────────────────
-  // When true, demo features are ONLY permitted if the hostname is also
-  // localhost or a private LAN address (192.168.x.x, 10.x.x.x, 172.16-31.x.x).
-  // Public hostnames strictly ignore demo flags.
+  // ── Deployment Environment & Demo Mode (MUST BE FALSE IN PRODUCTION) ──────
+  DEPLOY_ENV: 'demo',
   DEMO_MODE: false,
 
   // ── Canonical public domain for QR links baked into printed cards ──────────
-  // CRITICAL: Must be the final production HTTPS domain before printing physical cards.
-  PUBLIC_BASE_URL: 'https://id.ebsu.edu.ng',
+  // Fixed constant — never derived from window.location.
+  PUBLIC_BASE_URL: 'https://ebsu-id-card.vercel.app',
 };

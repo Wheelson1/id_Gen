@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student ID Portal — EBSU Digital ID</title>
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#FAF9F5">
+  <meta name="theme-color" content="#0B2B26">
   <script>
     (function() {
       try {
@@ -14,17 +14,14 @@
         document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme-preference', p);
         var m = document.querySelector('meta[name="theme-color"]');
-        if (m) m.setAttribute('content', d ? '#262624' : '#FAF9F5');
+        if (m) m.setAttribute('content', '#0B2B26');
       } catch(e) {
         document.documentElement.setAttribute('data-theme', 'light');
       }
     })();
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" />
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/shared.css">
   <link rel="stylesheet" href="css/card3d.css">
@@ -95,10 +92,10 @@
       right: 20px;
       z-index: 9998;
       padding: 12px 20px;
-      background: rgba(20, 40, 70, 0.95);
-      border: 1px solid #1e3050;
-      border-radius: 10px;
-      color: #ccddf0;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
       font-size: 12px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.4);
       animation: fadeIn 0.3s ease;
@@ -121,12 +118,12 @@
   </div>
 
   <!-- Toast Notification -->
-  <div id="status-toast" class="toast" style="display:none;position:fixed;top:20px;right:20px;background:#fff;border-left:4px solid #1558c0;padding:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);z-index:9999;">
+  <div id="status-toast" class="toast" style="display:none;position:fixed;top:20px;right:20px;background:var(--surface);border-left:4px solid var(--accent);padding:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);z-index:9999;">
     <span id="status-text"></span>
   </div>
 
   <div class="portal-container">
-    <div style="border-radius: 8px 8px 0 0; overflow: hidden; margin: -20px -20px 20px -20px; height: 110px; position: relative; border-bottom: 2px solid #e2e8f0;">
+    <div style="border-radius: 8px 8px 0 0; overflow: hidden; margin: -20px -20px 20px -20px; height: 110px; position: relative; border-bottom: 2px solid var(--line);">
       <img src="images/banner_welcome_in.jpg" alt="Welcome In" style="width: 100%; height: 100%; object-fit: cover;" />
     </div>
     <div class="portal-header">
@@ -143,35 +140,34 @@
             <p><strong>Digital ID Locked</strong></p>
           </div>
         </div>
-        <p style="font-size:13px; color:#475569; line-height:1.5; margin-bottom:14px;">
+        <p style="font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:14px;">
           Students do not need an email or password. Unlock your issued card with your <strong>JAMB/Matric Number</strong>, <strong>Date of Birth</strong>, and <strong>Payment Reference</strong>, or start the 6-step onboarding wizard.
         </p>
 
-        <div style="background: rgba(21, 88, 192, 0.08); border: 1px solid rgba(21, 88, 192, 0.25); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 12px; line-height: 1.5;">
-          <div style="font-weight: 700; color: #1558c0; margin-bottom: 2px;">⚡ Active Test Credentials:</div>
-          <div>Reg No: <strong>1234567890</strong> · Matric: <strong>EBSU/2021/101397</strong></div>
-          <div>DOB: <strong>26th Feb 2003 (2003-02-26)</strong></div>
-          <button type="button" id="btn-quick-fill-portal" style="margin-top: 6px; width: 100%; background: #1558c0; color: #fff; border: none; padding: 7px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
-            ⚡ Quick-Fill & Unlock Student ID
+        <!-- Demo unlock: shown only on localhost/LAN with DEMO_MODE: true. Removed from the page everywhere else. -->
+        <div id="portal-demo-box" hidden style="background: rgba(21, 88, 192, 0.08); border: 1px solid rgba(21, 88, 192, 0.25); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 12px; line-height: 1.5;">
+          <strong>DEMO MODE — this computer only.</strong> Opens a sample card that is not signed.
+          <button type="button" id="btn-quick-fill-portal" style="margin-top: 6px; width: 100%; background: var(--accent); color: var(--accent-ink); border: none; padding: 7px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
+            Open sample student ID
           </button>
         </div>
 
         <label class="label" for="portal-matric">JAMB or Matriculation Number</label>
-        <input id="portal-matric" type="text" class="input" value="1234567890" placeholder="1234567890 or EBSU/2021/101397" style="text-transform:uppercase; margin-bottom:10px;" />
+        <input id="portal-matric" type="text" class="input" placeholder="Your JAMB or Matric number" autocomplete="off" style="text-transform:uppercase; margin-bottom:10px;" />
 
         <label class="label" for="portal-dob">Date of Birth</label>
-        <input id="portal-dob" type="date" class="input" value="2003-02-26" style="margin-bottom:10px;" />
+        <input id="portal-dob" type="date" class="input" style="margin-bottom:10px;" />
 
         <label class="label" for="portal-ref">Payment Receipt Reference</label>
-        <input id="portal-ref" type="text" class="input" value="EBSU-PAY-2021-101397" placeholder="EBSU-PAY-2021-101397" style="text-transform:uppercase; margin-bottom:12px;" />
+        <input id="portal-ref" type="text" class="input" placeholder="e.g. EBSU-CARD-..." autocomplete="off" style="text-transform:uppercase; margin-bottom:12px;" />
 
         <button id="btn-unlock-card" class="btn-primary btn-full">🔓 Unlock My Paid Digital ID</button>
 
         <div style="margin-top:14px; text-align:center; display:flex; flex-direction:column; gap:8px;">
-          <a href="index.html#generate-section" style="font-size:13px; color:#1558c0; text-decoration:underline; font-weight:800;">
+          <a href="index.html#generate-section" style="font-size:13px; color:var(--accent); text-decoration:underline; font-weight:800;">
             ✨ First time or haven't paid yet? Start 6-Step ID Onboarding (₦2,500) →
           </a>
-          <a href="app.html#/support" style="font-size:12px; color:#b45309; text-decoration:none; font-weight:700;">
+          <a href="app.html#/support" style="font-size:12px; color:var(--warning); text-decoration:none; font-weight:700;">
             🎧 Need help or wrong details? Open Support Desk →
           </a>
         </div>
@@ -180,7 +176,7 @@
 
     <!-- DASHBOARD -->
     <div id="dashboard-section" class="dashboard-section">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 20px;">
         <h3 style="margin:0;">Welcome, <span id="dash-name"></span></h3>
         <button id="btn-logout" class="btn-outline" style="padding: 5px 10px;">Logout</button>
       </div>
@@ -196,40 +192,40 @@
 
       <!-- Quick Action Buttons: QR Pass for Scanner & Direct Card PNG Download -->
       <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:14px 0 16px 0;">
-        <button type="button" id="btn-show-qr-modal" class="btn-primary" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; font-size:13px; font-weight:800; border-radius:30px; background:linear-gradient(135deg, #1558c0, #1d4ed8); box-shadow:0 4px 14px rgba(21,88,192,0.25); cursor:pointer;">
+        <button type="button" id="btn-show-qr-modal" class="btn-primary" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; font-size:13px; font-weight:800; border-radius:4px; background:var(--accent); color:var(--accent-ink); border:none; box-shadow:none; cursor:pointer;">
           📱 Show Full-Screen QR Pass for Scanner
         </button>
-        <button type="button" id="btn-quick-dl-png" class="btn-primary" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; font-size:13px; font-weight:800; border-radius:30px; background:linear-gradient(135deg, #059669, #10b981); box-shadow:0 4px 14px rgba(16,185,129,0.25); cursor:pointer;">
+        <button type="button" id="btn-quick-dl-png" class="btn-primary" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; font-size:13px; font-weight:800; border-radius:30px; background: var(--accent); box-shadow: none; cursor:pointer;">
           📥 Download Card (PNG)
         </button>
       </div>
 
       <!-- Large QR Pass Modal (Full Screen Ready for Scanning against PC Webcam) -->
       <div id="modal-qr-pass" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.85); backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:16px;">
-        <div style="background:#ffffff; color:#0f172a; border-radius:18px; max-width:380px; width:100%; padding:24px 20px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.4); position:relative;">
-          <button type="button" id="btn-close-qr-modal" style="position:absolute; top:12px; right:12px; background:#f1f5f9; border:none; border-radius:50%; width:32px; height:32px; font-size:16px; cursor:pointer; font-weight:bold; color:#475569;">✕</button>
+        <div style="background:var(--surface); color:var(--ink); border-radius:18px; max-width:380px; width:100%; padding:24px 20px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.4); position:relative;">
+          <button type="button" id="btn-close-qr-modal" style="position:absolute; top:12px; right:12px; background:var(--sunken); border:none; border-radius:50%; width:32px; height:32px; font-size:16px; cursor:pointer; font-weight:bold; color:var(--muted);">✕</button>
           
-          <div style="font-size:11px; font-weight:800; letter-spacing:0.8px; color:#1558c0; text-transform:uppercase; margin-bottom:4px;">Ebonyi State University</div>
-          <div style="font-size:10px; color:#64748b; margin-bottom:12px; font-weight:600;">OFFICIAL STUDENT DIGITAL GATE PASS</div>
+          <div style="font-size:11px; font-weight:800; letter-spacing:0.8px; color:var(--accent); text-transform:uppercase; margin-bottom:4px;">Ebonyi State University</div>
+          <div style="font-size:10px; color:var(--muted); margin-bottom:12px; font-weight:600;">OFFICIAL STUDENT DIGITAL GATE PASS</div>
           
-          <div style="background:#f8fafc; border:2px solid #e2e8f0; border-radius:14px; padding:14px; display:inline-block; margin-bottom:12px;">
+          <div style="background:var(--surface); border:2px solid var(--line); border-radius:14px; padding:14px; display:inline-block; margin-bottom:12px;">
             <canvas id="modal-qr-canvas" width="220" height="220" style="display:block;"></canvas>
           </div>
 
-          <div id="modal-pass-name" style="font-size:15px; font-weight:800; color:#0f172a; margin-bottom:2px;">NNAJI WILSON SOMTOCHUKWU</div>
-          <div id="modal-pass-matric" style="font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:700; color:#1e40af; margin-bottom:8px;">EBSU/2021/101397</div>
+          <div id="modal-pass-name" style="font-size:15px; font-weight:800; color:var(--ink); margin-bottom:2px;">NNAJI WILSON SOMTOCHUKWU</div>
+          <div id="modal-pass-matric" style="font-family:var(--font-code); font-size:13px; font-weight:700; color:var(--accent); margin-bottom:8px;">EBSU/2021/101397</div>
 
-          <div style="display:inline-flex; align-items:center; gap:6px; background:#ecfdf5; border:1px solid #10b981; color:#065f46; font-size:11px; font-weight:700; padding:4px 12px; border-radius:20px; margin-bottom:12px;">
-            <span style="width:8px; height:8px; border-radius:50%; background:#10b981; display:inline-block;"></span>
+          <div style="display:inline-flex; align-items:center; gap:6px; background:var(--badge-valid-bg); border:1px solid var(--success); color:var(--success); font-size:11px; font-weight:700; padding:4px 12px; border-radius:20px; margin-bottom:12px;">
+            <span style="width:8px; height:8px; border-radius:50%; background:var(--accent); display:inline-block;"></span>
             <span id="modal-pass-status">CRYPTOGRAPHICALLY SIGNED PASS</span>
           </div>
 
-          <p style="font-size:11px; color:#64748b; margin:0; line-height:1.4;">
+          <p style="font-size:11px; color:var(--muted); margin:0; line-height:1.4;">
             Hold this QR code steady in front of the PC's webcam to verify entrance.
           </p>
 
           <div style="margin-top:14px; display:flex; gap:8px; justify-content:center;">
-            <button type="button" id="btn-modal-dl-png" class="btn-primary" style="background:#059669; border:none; padding:8px 18px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+            <button type="button" id="btn-modal-dl-png" class="btn-primary" style="background:var(--accent); border:none; padding:8px 18px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
               📥 Download Card (PNG)
             </button>
           </div>
@@ -270,27 +266,27 @@
         </p>
       </div>
 
-      <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;" />
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);" />
 
       <h4>Campus Footprint (Identity Log)</h4>
-      <p style="font-size: 13px; color: #555; margin-bottom:10px;">Your living record of campus activities.</p>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom:10px;">Your living record of campus activities.</p>
       <div id="activity-feed" class="activity-feed">
         <!-- Activities will load here -->
-        <p style="color:#aaa; text-align:center; margin-top: 20px;">No recent activity</p>
+        <p style="color:var(--muted); text-align:center; margin-top: 20px;">No recent activity</p>
       </div>
 
-      <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;" />
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);" />
 
       <h4>Passport Photo Policy</h4>
-      <p style="font-size: 13px; color: #555; margin-bottom:10px;">Passport photos and signatures are verified and managed by authorized ICT Identity Bureau staff.</p>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom:10px;">Passport photos and signatures are verified and managed by authorized ICT Identity Bureau staff.</p>
       <div id="photo-status" class="status-msg"></div>
 
-      <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;" />
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);" />
 
       <h4>Card Security</h4>
-      <div id="paystack-mock" style="display:none; background:#fffbeb; padding:15px; border:1px solid #f59e0b; border-radius:8px; margin-bottom:10px;">
-        <h4 style="margin-top:0;color:#b45309">Lost Card Reported — Staff Approval Required</h4>
-        <p style="margin:0; font-size:13px; color:#78350f;">Your current card is now marked as <strong>lost_card</strong> and blocked at all verification terminals. Visit the ICT Identity Bureau with your receipt for staff-approved reissue.</p>
+      <div id="paystack-mock" style="display:none; background:var(--badge-warning-bg); padding:15px; border:1px solid var(--warning); border-radius:8px; margin-bottom:10px;">
+        <h4 style="margin-top:0;color:var(--warning)">Lost Card Reported — Staff Approval Required</h4>
+        <p style="margin:0; font-size:13px; color:var(--warning);">Your current card is now marked as <strong>lost_card</strong> and blocked at all verification terminals. Visit the ICT Identity Bureau with your receipt for staff-approved reissue.</p>
       </div>
       <button id="btn-report-lost" class="btn-danger action-btn">🚨 Report Card as Lost/Stolen</button>
     </div>

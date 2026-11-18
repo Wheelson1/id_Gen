@@ -51,16 +51,17 @@ const CC_DEFAULTS = {
   // Typography
   headerFontSize:   36,
   titleFontSize:    38,
-  matricFontSize:   22,
+  matricFontSize:   32,   // the reg number itself (v2: was 22)
+  matricLabelFontSize: 19,
   fieldFontSize:    22,
   bloodFontSize:    20,
-  sigLabelFontSize: 14,
+  sigLabelFontSize: 18,   // v2: was 14
 
   // Photo (left column)
   photoX: 20,  photoY: 210, photoW: 310, photoH: 360,
 
   // Matric row
-  matricLabelX: 20, matricY: 180,
+  matricLabelX: 20, matricY: 189,
 
   // Centre column
   fieldLabelX: 340, fieldValueX: 435,
@@ -74,13 +75,29 @@ const CC_DEFAULTS = {
   logoX: 805, logoY: 205, logoW: 125, logoH: 125, logoAlpha: 1.0,
 
   // Right column — QR code
-  qrX: 760, qrY: 345, qrSize: 215,
+  qrX: 760, qrY: 360, qrSize: 215,
 
-  // Right column — signature label (sits ABOVE the sig box)
-  sigLabelX: 760, sigLabelY: 570,
+  // Centre column, under the details — signature label (v2: moved from the right column)
+  sigLabelX: 340, sigLabelY: 522,
 
-  // Right column — signature box
-  sigBoxX: 760, sigBoxY: 582, sigBoxW: 220, sigBoxH: 46,
+  // Centre column — signature area, 400 x 92 (v2: was 220 x 46)
+  sigBoxX: 340, sigBoxY: 530, sigBoxW: 400, sigBoxH: 92,
+
+  // Layout version. Saved templates older than this get the v2 positions
+  // for the reg number, signature and QR (see getMergedConfig).
+  layoutVersion: 2,
+
+  // ── Adjustable in the Card Design Lab (defaults = the standard EBSU card) ──
+  headerH: 90,                       // header band height
+  titleX: 505, titleY: 135,          // card title (centre x, baseline y)
+  matricW: 955,                      // width available to the reg number row
+  fieldsW: 410,                      // width available to name / faculty / department
+  watermarkX: 505, watermarkY: 415,  // watermark centre
+  showBorder: true, showTitle: true, showMatricLines: true,
+  showWatermark: true, showLogo: true, showVitals: true, showSignature: true,
+
+  // Back card
+  backHeaderH: 80, backTermsY: 120, backTermsSpacing: 45, backFooterH: 55,
 
   // Centre watermark
   watermarkAlpha: 0.10, watermarkSize: 340,
@@ -91,14 +108,58 @@ const CC_DEFAULTS = {
   backTermsBodySize:  18
 };
 
+// Words printed on the card that a school can change in the Card Design Lab.
+const CARD_TEXT_DEFAULTS = {
+  cardTitle: 'STUDENT IDENTITY CARD',
+  matricLabel: 'MATRIC NO.',
+  signatureLabel: 'Signature',
+  termsTitle: 'TERMS & CONDITIONS OF USE',
+  terms: [
+    '1. This card is the property of the University and must be returned on demand.',
+    '2. This card is strictly non-transferable. Misuse attracts disciplinary action.',
+    '3. Loss must be reported immediately to the Student Affairs Office.',
+    '4. Carry this card at all times within the University premises.',
+    '5. Present for access to library, exam halls and academic facilities.',
+    '6. Tampering renders this card invalid and attracts disciplinary action.'
+  ],
+  backFooterRight: 'If found, return to Student Affairs Office'
+};
+
+function getMergedText(template) {
+  let src = template && template.text;
+  if (!src && typeof CardTemplate !== 'undefined' && CardTemplate.get) {
+    const t = CardTemplate.get();
+    src = t && t.text;
+  }
+  const out = Object.assign({}, CARD_TEXT_DEFAULTS, src || {});
+  if (!Array.isArray(out.terms) || !out.terms.length) out.terms = CARD_TEXT_DEFAULTS.terms.slice();
+  return out;
+}
+
 // ── CONFIG HELPER ────────────────────────────────────────────────
+// Keys that v2 resized/moved. A saved template older than v2 still carries the
+// old small values, so these are reset to the v2 defaults for it.
+const CC_V2_KEYS = [
+  'matricFontSize', 'matricLabelFontSize', 'matricY', 'sigLabelFontSize',
+  'qrX', 'qrY', 'qrSize', 'sigLabelX', 'sigLabelY', 'sigBoxX', 'sigBoxY', 'sigBoxW', 'sigBoxH'
+];
+
+function upgradeLayout(merged, savedLayout) {
+  if (!savedLayout || Number(savedLayout.layoutVersion || 1) < 2) {
+    CC_V2_KEYS.forEach(k => { merged[k] = CC_DEFAULTS[k]; });
+    merged.layoutVersion = 2;
+  }
+  return merged;
+}
+
 function getMergedConfig(template) {
   if (template && template.layout) {
-    return Object.assign({}, CC_DEFAULTS, template.layout);
+    return upgradeLayout(Object.assign({}, CC_DEFAULTS, template.layout), template.layout);
   }
   if (typeof CardTemplate !== 'undefined' && CardTemplate.get) {
     const t = CardTemplate.get();
-    return Object.assign({}, CC_DEFAULTS, (t && t.layout) || {}, window.CardConfig || {});
+    const saved = (t && t.layout) || null;
+    return Object.assign(upgradeLayout(Object.assign({}, CC_DEFAULTS, saved || {}), saved), window.CardConfig || {});
   }
   return Object.assign({}, CC_DEFAULTS, window.CardConfig || {});
 }
@@ -305,9 +366,7 @@ function buildQRData(st) {
 
   const publicBaseUrl = (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.PUBLIC_BASE_URL)
     ? EBSU_CONFIG.PUBLIC_BASE_URL
-    : ((typeof window !== 'undefined' && window.location && window.location.origin && !window.location.origin.startsWith('file:') && !window.location.origin.includes('null'))
-      ? window.location.origin
-      : 'https://id.ebsu.edu.ng');
+    : 'https://ebsu-id-card.vercel.app';
 
   // Case 1: 60s rotating pass (EBSU2 token)
   if (st.token && st.token.startsWith('EBSU2:')) {
@@ -372,6 +431,7 @@ function drawCard(canvas, arg1, arg2, arg3, arg4) {
 
   const CC = getMergedConfig(template);
   const col = getMergedColors(template);
+  const TX = getMergedText(template);
   const schoolName = (template && template.institution && template.institution.name) || 
                      (typeof AppState !== 'undefined' && AppState.get ? AppState.get('schoolName') : null) || 
                      'EBONYI STATE UNIVERSITY, ABAKALIKI';
@@ -395,51 +455,66 @@ function drawCard(canvas, arg1, arg2, arg3, arg4) {
 
   // Header bar
   c.fillStyle = col.headerBg || '#1558c0';
-  c.fillRect(0, 0, W, S(90));
+  c.fillRect(0, 0, W, S(CC.headerH));
 
   // University name — centred in header
   c.fillStyle = col.headerText || '#ffffff';
   c.font      = 'bold ' + S(CC.headerFontSize) + 'px Arial,sans-serif';
   c.textAlign = 'center';
+  c.textBaseline = 'middle';
   c.fillText(
     schoolName.toUpperCase(),
-    S(505), S(55), S(971)
+    S(505), S(CC.headerH / 2 + 2), S(971)
   );
+  c.textBaseline = 'alphabetic';
 
   // Card border
-  c.strokeStyle = col.borderColor || '#6ab0e0';
-  c.lineWidth   = S(2);
-  c.strokeRect(S(1), S(1), W - S(2), H - S(2));
+  if (CC.showBorder !== false) {
+    c.strokeStyle = col.borderColor || '#6ab0e0';
+    c.lineWidth   = S(2);
+    c.strokeRect(S(1), S(1), W - S(2), H - S(2));
+  }
 
   // Card title
-  c.fillStyle = col.titleColor || '#CC0000';
-  c.font      = 'bold ' + S(CC.titleFontSize) + 'px Arial,sans-serif';
-  c.textAlign = 'center';
-  c.fillText('STUDENT IDENTITY CARD', S(505), S(135));
+  if (CC.showTitle !== false) {
+    c.fillStyle = col.titleColor || '#CC0000';
+    c.font      = 'bold ' + S(CC.titleFontSize) + 'px Arial,sans-serif';
+    c.textAlign = 'center';
+    c.fillText(TX.cardTitle, S(CC.titleX), S(CC.titleY), S(971));
+  }
 
-  // Top divider
-  c.strokeStyle = '#4A86E8';
-  c.lineWidth   = S(2);
-  c.beginPath(); c.moveTo(0, S(150)); c.lineTo(W, S(150)); c.stroke();
+  // Lines above and below the reg number row follow the row when it moves.
+  const lineCol = col.lineColor || '#4A86E8';
+  const bandTop = CC.matricY - Math.round(CC.matricFontSize * 1.22);
+  const bandBottom = CC.matricY + 14;
+  if (CC.showMatricLines !== false) {
+    c.strokeStyle = lineCol;
+    c.lineWidth   = S(2);
+    c.beginPath(); c.moveTo(0, S(bandTop)); c.lineTo(W, S(bandTop)); c.stroke();
+  }
 
   // Matric row
   c.textAlign = 'left';
+  // The reg number is the most-checked detail on the card, so it is large,
+  // bold and dark; the label beside it is smaller.
   c.fillStyle = col.matricLabel || '#003399';
-  c.font      = 'bold ' + S(CC.matricFontSize) + 'px Arial,sans-serif';
-  const matLabel  = 'MATRIC NUMBER:';
+  c.font      = 'bold ' + S(CC.matricLabelFontSize || 19) + 'px Arial,sans-serif';
+  const matLabel  = TX.matricLabel;
   const matLabelW = c.measureText(matLabel).width;
   c.fillText(matLabel, S(CC.matricLabelX), S(CC.matricY));
 
-  c.fillStyle = '#4A86E8';
-  const matValX = S(CC.matricLabelX) + matLabelW + S(8);
-  const matMaxW = Math.max(0, S(CC.qrX - 10) - matValX);
+  c.fillStyle = col.matricValue || '#0B1F4D';
+  const matValX = S(CC.matricLabelX) + matLabelW + S(14);
+  const matMaxW = Math.max(0, S(CC.matricLabelX + CC.matricW) - matValX);
   const studentMatric = st.matric || st.schoolRegNo || st.jambNo || '—';
-  drawFittedText(c, studentMatric, matValX, S(CC.matricY), matMaxW, S(CC.matricFontSize));
+  drawFittedText(c, studentMatric, matValX, S(CC.matricY), matMaxW, S(CC.matricFontSize), 'bold');
 
   // Bottom divider
-  c.strokeStyle = '#4A86E8';
-  c.lineWidth   = S(2);
-  c.beginPath(); c.moveTo(0, S(195)); c.lineTo(W, S(195)); c.stroke();
+  if (CC.showMatricLines !== false) {
+    c.strokeStyle = lineCol;
+    c.lineWidth   = S(2);
+    c.beginPath(); c.moveTo(0, S(bandBottom)); c.lineTo(W, S(bandBottom)); c.stroke();
+  }
 
   // Photo placeholder box
   const PX = S(CC.photoX), PY = S(CC.photoY),
@@ -448,20 +523,22 @@ function drawCard(canvas, arg1, arg2, arg3, arg4) {
   c.fillRect(PX, PY, PW, PH);
 
   // Blood Group & Genotype (Bottom Left)
-  c.textAlign = 'left';
-  c.fillStyle = col.labelColor || '#000';
-  c.font      = 'bold ' + S(CC.bloodFontSize) + 'px Arial,sans-serif';
-  c.fillText('Blood Group', S(CC.bloodX), S(CC.bloodY));
-  c.fillStyle = col.valueColor || '#222';
-  c.font      = S(CC.bloodFontSize) + 'px Arial,sans-serif';
-  c.fillText(st.blood || st.bloodGroup || '—', S(CC.bloodValueX), S(CC.bloodY));
+  if (CC.showVitals !== false) {
+    c.textAlign = 'left';
+    c.fillStyle = col.labelColor || '#000';
+    c.font      = 'bold ' + S(CC.bloodFontSize) + 'px Arial,sans-serif';
+    c.fillText('Blood Group', S(CC.bloodX), S(CC.bloodY));
+    c.fillStyle = col.valueColor || '#222';
+    c.font      = S(CC.bloodFontSize) + 'px Arial,sans-serif';
+    c.fillText(st.blood || st.bloodGroup || '—', S(CC.bloodValueX), S(CC.bloodY));
 
-  c.fillStyle = col.labelColor || '#000';
-  c.font      = 'bold ' + S(CC.bloodFontSize) + 'px Arial,sans-serif';
-  c.fillText('Genotype', S(CC.genoX), S(CC.genoY));
-  c.fillStyle = col.valueColor || '#222';
-  c.font      = S(CC.bloodFontSize) + 'px Arial,sans-serif';
-  c.fillText(st.genotype || '—', S(CC.bloodValueX), S(CC.genoY));
+    c.fillStyle = col.labelColor || '#000';
+    c.font      = 'bold ' + S(CC.bloodFontSize) + 'px Arial,sans-serif';
+    c.fillText('Genotype', S(CC.genoX), S(CC.genoY));
+    c.fillStyle = col.valueColor || '#222';
+    c.font      = S(CC.bloodFontSize) + 'px Arial,sans-serif';
+    c.fillText(st.genotype || '—', S(CC.bloodValueX), S(CC.genoY));
+  }
 
   // Centre column data rows
   const studentName = st.fullName || st.name || '—';
@@ -478,7 +555,7 @@ function drawCard(canvas, arg1, arg2, arg3, arg4) {
 
   const nameLabelW = c.measureText(nameLabel).width;
   const nameValX = S(CC.fieldLabelX) + nameLabelW + S(12);
-  const nameMaxW = Math.max(0, S(CC.qrX - 10) - nameValX);
+  const nameMaxW = Math.max(0, S(CC.fieldLabelX + CC.fieldsW) - nameValX);
 
   c.fillStyle = col.valueColor || '#222222';
   const nameRes = drawCardName(c, studentName, nameValX, nameLabelY, nameMaxW, S(CC.fieldFontSize), 'bold', 'Arial,sans-serif');
@@ -502,33 +579,37 @@ function drawCard(canvas, arg1, arg2, arg3, arg4) {
 
     const labelW = c.measureText(label).width;
     const rowValX = S(CC.fieldLabelX) + labelW + S(12);
-    const fMaxW = Math.max(0, S(CC.qrX - 10) - rowValX);
+    const fMaxW = Math.max(0, S(CC.fieldLabelX + CC.fieldsW) - rowValX);
 
     c.fillStyle = col.valueColor || '#222222';
     drawFittedText(c, val || '—', rowValX, ty, fMaxW, S(CC.fieldFontSize), '');
   });
 
-  // Signature label
-  c.fillStyle = col.labelColor || '#000';
-  c.font      = 'bold ' + S(CC.sigLabelFontSize) + 'px Arial,sans-serif';
-  c.textAlign = 'left';
-  c.fillText('Signature', S(CC.sigLabelX), S(CC.sigLabelY));
+  if (CC.showSignature !== false) {
+    // Signature label
+    c.fillStyle = col.labelColor || '#000';
+    c.font      = 'bold ' + S(CC.sigLabelFontSize) + 'px Arial,sans-serif';
+    c.textAlign = 'left';
+    c.fillText(TX.signatureLabel, S(CC.sigLabelX), S(CC.sigLabelY));
 
-  // Signature box
-  c.fillStyle   = '#EFEFEF';
-  c.fillRect(S(CC.sigBoxX), S(CC.sigBoxY), S(CC.sigBoxW), S(CC.sigBoxH));
-  c.strokeStyle = '#CCCCCC';
-  c.lineWidth   = S(1);
-  c.strokeRect(S(CC.sigBoxX), S(CC.sigBoxY), S(CC.sigBoxW), S(CC.sigBoxH));
+    // Signature area: no grey box, just a signing line along the bottom,
+    // so the signature reads as ink on the card.
+    c.strokeStyle = '#9AA3B2';
+    c.lineWidth   = S(1.5);
+    c.beginPath();
+    c.moveTo(S(CC.sigBoxX), S(CC.sigBoxY + CC.sigBoxH));
+    c.lineTo(S(CC.sigBoxX + CC.sigBoxW), S(CC.sigBoxY + CC.sigBoxH));
+    c.stroke();
 
-  // Signature placeholder if not uploaded
-  if (!st.sig && !st.signatureUrl) {
-    const sigCX = S(CC.sigBoxX) + S(CC.sigBoxW) / 2;
-    const sigCY = S(CC.sigBoxY) + S(CC.sigBoxH) / 2 + S(5);
-    c.fillStyle = '#aaaaaa';
-    c.font      = 'italic ' + S(13) + 'px Arial,sans-serif';
-    c.textAlign = 'center';
-    c.fillText('sign here', sigCX, sigCY);
+    // Signature placeholder if not uploaded
+    if (!st.sig && !st.signatureUrl) {
+      const sigCX = S(CC.sigBoxX) + S(CC.sigBoxW) / 2;
+      const sigCY = S(CC.sigBoxY) + S(CC.sigBoxH) / 2 + S(8);
+      c.fillStyle = '#aaaaaa';
+      c.font      = 'italic ' + S(20) + 'px Arial,sans-serif';
+      c.textAlign = 'center';
+      c.fillText('sign here', sigCX, sigCY);
+    }
   }
 
   // ── 2. Cached Media Chain: Watermark -> Crest -> QR -> Sig -> Photo ───
@@ -538,15 +619,18 @@ function drawCard(canvas, arg1, arg2, arg3, arg4) {
   const logoSrc = customLogo || defaultLargeCrest;
 
   getCachedImage(logoSrc, (crestL) => {
-    const wm = S(CC.watermarkSize);
-    c.save();
-    c.globalAlpha = CC.watermarkAlpha;
-    c.drawImage(crestL, S(505) - wm / 2, S(415) - wm / 2, wm, wm);
-    c.restore();
+    if (CC.showWatermark !== false) {
+      const wm = S(CC.watermarkSize);
+      c.save();
+      c.globalAlpha = CC.watermarkAlpha;
+      c.drawImage(crestL, S(CC.watermarkX) - wm / 2, S(CC.watermarkY) - wm / 2, wm, wm);
+      c.restore();
+    }
     stepLogo(crestL);
   }, () => stepLogo(null));
 
   function stepLogo(cachedLogo) {
+    if (CC.showLogo === false) { stepQR(); return; }
     if (cachedLogo) {
       c.save();
       c.globalAlpha = (typeof CC.logoAlpha === 'number' && CC.logoAlpha > 0.05) ? CC.logoAlpha : 1.0;
@@ -685,10 +769,10 @@ function drawCard(canvas, arg1, arg2, arg3, arg4) {
         const targetRatio = targetW / targetH;
         let dw, dh;
         if (ratio > targetRatio) {
-          dw = targetW * 0.92;
+          dw = targetW * 0.98;
           dh = dw / ratio;
         } else {
-          dh = targetH * 0.88;
+          dh = targetH * 0.98;
           dw = dh * ratio;
         }
         const dx = targetX + (targetW - dw) / 2;
@@ -717,7 +801,7 @@ function drawCard(canvas, arg1, arg2, arg3, arg4) {
 
   function stepSig() {
     const sigSrc = st.sig || st.signatureUrl;
-    if (!sigSrc) { stepPhoto(); return; }
+    if (!sigSrc || CC.showSignature === false) { stepPhoto(); return; }
     getCachedImage(sigSrc, (img) => {
       drawCleanSignature(c, img, S(CC.sigBoxX), S(CC.sigBoxY), S(CC.sigBoxW), S(CC.sigBoxH));
       stepPhoto();
@@ -803,59 +887,55 @@ function drawBackCard(canvas, arg1, arg2, arg3) {
   c.imageSmoothingQuality = 'high';
   const S = n => Math.round(n * scale);
 
-  c.fillStyle = '#fff';
+  const col = getMergedColors(template);
+  const TX = getMergedText(template);
+  const band = col.headerBg || '#1a3a8a';
+
+  c.fillStyle = col.bodyBg || '#fff';
   c.fillRect(0, 0, W, H);
 
-  c.strokeStyle = '#6ab0e0';
-  c.lineWidth   = S(2);
-  c.strokeRect(S(1), S(1), W - S(2), H - S(2));
+  if (CC.showBorder !== false) {
+    c.strokeStyle = col.borderColor || '#6ab0e0';
+    c.lineWidth   = S(2);
+    c.strokeRect(S(1), S(1), W - S(2), H - S(2));
+  }
 
-  const grad = c.createLinearGradient(0, 0, W, 0);
-  grad.addColorStop(0, '#1a3a8a');
-  grad.addColorStop(1, '#2255cc');
-  c.fillStyle = grad;
-  c.fillRect(0, 0, W, S(80));
+  c.fillStyle = band;
+  c.fillRect(0, 0, W, S(CC.backHeaderH));
 
-  c.fillStyle = '#fff';
+  c.fillStyle = col.headerText || '#fff';
   c.font      = 'bold ' + S(CC.backHeaderFontSize) + 'px Arial,sans-serif';
   c.textAlign = 'center';
-  c.fillText(
-    schoolName.toUpperCase(),
-    W / 2, S(50), S(951)
-  );
+  c.textBaseline = 'middle';
+  c.fillText(schoolName.toUpperCase(), W / 2, S(CC.backHeaderH / 2 + 2), S(951));
+  c.textBaseline = 'alphabetic';
 
-  c.fillStyle = '#cc0000';
-  c.fillRect(0, S(80), W, S(5));
+  c.fillStyle = col.titleColor || '#cc0000';
+  c.fillRect(0, S(CC.backHeaderH), W, S(5));
 
-  c.fillStyle = '#cc0000';
+  c.fillStyle = col.titleColor || '#cc0000';
   c.font      = 'bold ' + S(CC.backTermsHeadSize) + 'px Arial,sans-serif';
   c.textAlign = 'left';
-  c.fillText('TERMS & CONDITIONS OF USE', S(30), S(120));
+  c.fillText(TX.termsTitle, S(30), S(CC.backTermsY), S(951));
 
-  const terms = [
-    '1. This card is the property of the University and must be returned on demand.',
-    '2. This card is strictly non-transferable. Misuse attracts disciplinary action.',
-    '3. Loss must be reported immediately to the Student Affairs Office.',
-    '4. Carry this card at all times within the University premises.',
-    '5. Present for access to library, exam halls and academic facilities.',
-    '6. Tampering renders this card invalid and attracts disciplinary action.'
-  ];
-
-  c.fillStyle = '#222';
+  c.fillStyle = col.valueColor || '#222';
   c.font      = S(CC.backTermsBodySize) + 'px Arial,sans-serif';
-  let ty = S(158);
-  terms.forEach(t => { c.fillText(t, S(30), ty); ty += S(45); });
+  let ty = S(CC.backTermsY + 38);
+  TX.terms.forEach(line => { c.fillText(line, S(30), ty, S(951)); ty += S(CC.backTermsSpacing); });
 
-  c.fillStyle = grad;
-  c.fillRect(0, H - S(55), W, S(55));
+  c.fillStyle = band;
+  c.fillRect(0, H - S(CC.backFooterH), W, S(CC.backFooterH));
 
-  c.fillStyle = 'rgba(255,255,255,0.90)';
+  c.fillStyle = col.headerText || 'rgba(255,255,255,0.90)';
   c.font      = S(CC.backTermsBodySize) + 'px Arial,sans-serif';
   c.textAlign = 'left';
+  c.textBaseline = 'middle';
+  const footY = H - S(CC.backFooterH / 2);
   const sessionText = (st && st.session) ? `Issued: ${st.session}  •  ` : '';
-  c.fillText(sessionText + 'Valid Until: ' + expiryYear, S(30), H - S(18));
+  c.fillText(sessionText + 'Valid Until: ' + expiryYear, S(30), footY);
   c.textAlign = 'right';
-  c.fillText('If found, return to Student Affairs Office', W - S(30), H - S(18));
+  c.fillText(TX.backFooterRight, W - S(30), footY);
+  c.textBaseline = 'alphabetic';
 }
 
 // Canonical Render Function Alias
@@ -869,4 +949,8 @@ if (typeof window !== 'undefined') {
   window.CardCanvas.drawCardName = drawCardName;
   window.CardCanvas.drawCard = drawCard;
   window.CardCanvas.drawBackCard = drawBackCard;
+  window.CardCanvas.defaults = () => JSON.parse(JSON.stringify(CC_DEFAULTS));
+  window.CardCanvas.textDefaults = () => JSON.parse(JSON.stringify(CARD_TEXT_DEFAULTS));
+  window.CardCanvas.mergedLayout = getMergedConfig;
+  window.CardCanvas.mergedText = getMergedText;
 }

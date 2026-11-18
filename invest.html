@@ -6,7 +6,7 @@
     <title>For Institutions &amp; Investors | EBSU SID Cryptographic Credential Platform</title>
     <meta name="description" content="Institutional overview, cryptographic security architecture, product tour, and illustrative per-campus revenue model for the EBSU Smart Student Identity Platform.">
     <meta name="color-scheme" content="light dark">
-    <meta name="theme-color" content="#FAF9F5">
+    <meta name="theme-color" content="#DAF1DE">
     <script>
       (function() {
         try {
@@ -15,15 +15,12 @@
           document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
           document.documentElement.setAttribute('data-theme-preference', p);
           var m = document.querySelector('meta[name="theme-color"]');
-          if (m) m.setAttribute('content', d ? '#262624' : '#FAF9F5');
+          if (m) m.setAttribute('content', d ? '#051F20' : '#DAF1DE');
         } catch(e) {
           document.documentElement.setAttribute('data-theme', 'light');
         }
       })();
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/landing-pro.css">
 </head>
@@ -59,7 +56,7 @@
                 <a href="#security-spec" class="mc-nav-link">Security Architecture</a>
                 <a href="#product-tour" class="mc-nav-link">Product Tour</a>
                 <a href="#business-model" class="mc-nav-link">Revenue Model</a>
-                <a href="mobile.html" class="mc-nav-link" style="color:#d4a574; font-weight:800;">📱 Mobile Demo</a>
+                <a href="mobile.html" class="mc-nav-link" style="color:#8EB69B; font-weight:800;">📱 Mobile Demo</a>
                 <a href="index.html" class="mc-nav-link">Student Portal</a>
                 <a href="verify.html?standalone=1&autostart=1" class="mc-nav-link mc-nav-verify">🛡️ Verify Card</a>
                 <button type="button" class="theme-toggle-btn" aria-label="Toggle Theme"></button>
@@ -83,7 +80,7 @@
                 </p>
 
                 <div class="mc-hero-actions">
-                    <a href="mobile.html" class="mc-cta-primary" style="background:linear-gradient(135deg, #1558c0, #3b82f6);">
+                    <a href="mobile.html" class="mc-cta-primary">
                         <span>📱 Try Phone-to-PC Scanner Demo</span>
                         <span aria-hidden="true">→</span>
                     </a>
@@ -173,7 +170,7 @@
 
             <div class="mc-security-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
                 <article class="mc-security-card" style="border-color:rgba(239, 68, 68, 0.35);">
-                    <span class="mc-security-tag" style="background:var(--mc-danger-soft); color:#FCA5A5;">LEGACY UNIVERSITY ID WORKFLOW</span>
+                    <span class="mc-security-tag" style="background:var(--mc-danger-soft); color:var(--error);">LEGACY UNIVERSITY ID WORKFLOW</span>
                     <h3>Vulnerable, Manual &amp; Unverifiable</h3>
                     <ul style="margin:8px 0 0; padding-left:18px; color:var(--mc-text-muted); font-size:var(--text-sm); display:flex; flex-direction:column; gap:10px;">
                         <li><strong>30-Second Photocopy Forgery:</strong> Static plastic cards and unencrypted QR codes can be duplicated at any business centre.</li>
@@ -359,22 +356,22 @@
 
                     <!-- Calculator Live Output -->
                     <div class="mc-calc-output">
-                        <div class="mono" style="font-size:0.72rem; color:#94A3B8; text-transform:uppercase; letter-spacing:0.08em;">
+                        <div class="mono" style="font-size:0.72rem; color:#8EB69B; text-transform:uppercase; letter-spacing:0.08em;">
                             ILLUSTRATIVE GROSS ISSUANCE REVENUE PER CYCLE
                         </div>
                         <div id="calc-gross-total" class="mc-calc-figure">₦25,000,000</div>
-                        <div id="calc-formula-line" class="mono" style="font-size:0.8rem; color:#60A5FA; margin-bottom:18px;">
+                        <div id="calc-formula-line" class="mono" style="font-size:0.8rem; color:#8EB69B; margin-bottom:18px;">
                             10,000 students × ₦2,500 × 1 campus
                         </div>
 
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.12);">
                             <div>
-                                <div style="font-size:0.7rem; color:#94A3B8; text-transform:uppercase;">University Retained / IGR</div>
-                                <div id="calc-uni-share" class="mono" style="font-size:1.1rem; font-weight:800; color:#34D399; margin-top:4px;">₦17,500,000</div>
+                                <div style="font-size:0.7rem; color:#8EB69B; text-transform:uppercase;">University Retained / IGR</div>
+                                <div id="calc-uni-share" class="mono" style="font-size:1.1rem; font-weight:800; color:#8EB69B; margin-top:4px;">₦17,500,000</div>
                             </div>
                             <div>
-                                <div style="font-size:0.7rem; color:#94A3B8; text-transform:uppercase;">Platform Infrastructure Share</div>
-                                <div id="calc-platform-share" class="mono" style="font-size:1.1rem; font-weight:800; color:#FDE68A; margin-top:4px;">₦7,500,000</div>
+                                <div style="font-size:0.7rem; color:#8EB69B; text-transform:uppercase;">Platform Infrastructure Share</div>
+                                <div id="calc-platform-share" class="mono" style="font-size:1.1rem; font-weight:800; color:#C6E4CE; margin-top:4px;">₦7,500,000</div>
                             </div>
                         </div>
                     </div>
@@ -453,7 +450,7 @@
         <div class="mc-container">
             <div class="mc-footer-inner">
                 <div style="max-width:540px;">
-                    <div style="font-family:var(--font-display); font-weight:800; font-size:0.95rem; color:#F8FAFC; margin-bottom:6px;">
+                    <div style="font-family:var(--font-display); font-weight:800; font-size:0.95rem; color:#EEF8F0; margin-bottom:6px;">
                         EBSU Smart Identity Platform · Institutional Briefing
                     </div>
                     <p style="margin:0 0 8px;">

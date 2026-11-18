@@ -446,14 +446,14 @@ const BulkStudio = (() => {
     const estimatedPages = Math.ceil(selected.length / 8);
 
     modal.innerHTML = `
-      <div style="background:#0c1b2f; border:1px solid #d4a574; border-radius:18px; max-width:540px; width:100%; padding:28px; box-shadow:0 24px 60px rgba(0,0,0,0.7); position:relative; color:#e2edf8;">
-        <button type="button" onclick="document.getElementById('bulk-failsafe-modal').style.display='none'" style="position:absolute; top:16px; right:18px; background:none; border:none; color:#6080a0; font-size:22px; cursor:pointer;">✕</button>
+      <div style="background:#0c1b2f; border:1px solid var(--accent); border-radius:18px; max-width:540px; width:100%; padding:28px; box-shadow:0 24px 60px rgba(0,0,0,0.7); position:relative; color:#e2edf8;">
+        <button type="button" onclick="document.getElementById('bulk-failsafe-modal').style.display='none'" style="position:absolute; top:16px; right:18px; background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer;">✕</button>
 
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
           <div style="font-size:32px;">🛡️</div>
           <div>
             <h3 style="font-size:18px; font-weight:800; color:#fff; margin:0;">High-Volume Production Fail-Safe Guard</h3>
-            <span style="font-size:11px; color:#d4a574; font-weight:700;">System Stability &amp; Memory Protection Active</span>
+            <span style="font-size:11px; color:var(--warning); font-weight:700;">System Stability &amp; Memory Protection Active</span>
           </div>
         </div>
 
@@ -461,17 +461,17 @@ const BulkStudio = (() => {
           <div style="font-size:12px; font-weight:800; color:#f0d4a8; margin-bottom:4px;">
             ⚠️ Heavy Request Volume: ${selected.length} Student Cards Selected (${estimatedPages} Standard A4 Sheets)
           </div>
-          <div style="font-size:11px; color:#cbd5e1; line-height:1.5;">
+          <div style="font-size:11px; color:var(--muted); line-height:1.5;">
             Rendering hundreds of 300 DPI security cards in a single uninterrupted burst can overload browser GPU/RAM and cause tab crashes (STATUS_ACCESS_VIOLATION).
           </div>
         </div>
 
-        <p style="font-size:12px; color:#94a3b8; line-height:1.6; margin-bottom:16px;">
+        <p style="font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:16px;">
           <strong>Fail-Safe Arrangement:</strong> The production engine will process this volume in <strong>sequential sections</strong> (8 cards / 1 sheet per section). This yields execution back to the browser between sections, prevents crashes, and lets you print sheet-by-sheet or all together.
         </p>
 
         <div style="background:#071220; border:1px solid #1e3558; border-radius:10px; padding:14px; margin-bottom:20px;">
-          <label style="font-size:11px; font-weight:700; color:#93c5fd; display:block; margin-bottom:8px;">
+          <label style="font-size:11px; font-weight:700; color:var(--accent); display:block; margin-bottom:8px;">
             SELECT SECTION CHUNK SIZE:
           </label>
           <div style="display:flex; flex-direction:column; gap:8px;">
@@ -495,10 +495,10 @@ const BulkStudio = (() => {
             const selectedSize = parseInt(document.querySelector('input[name=\\'failsafe-chunk-size\\']:checked').value, 10) || 8;
             document.getElementById('bulk-failsafe-modal').style.display='none';
             BulkStudio.startSectionedProduction(BulkStudio.getSelectedStudents(), selectedSize);
-          " style="flex:1; background:linear-gradient(135deg, #1558c0, #3b82f6); color:#fff; border:none; padding:12px; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; box-shadow:0 4px 15px rgba(21,88,192,0.4);">
+          " style="flex:1; background: var(--accent); color: var(--accent-ink); border:none; padding:12px; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; box-shadow: none;">
             ▶ Start Safe Sectioned Generation
           </button>
-          <button type="button" onclick="document.getElementById('bulk-failsafe-modal').style.display='none'" style="background:transparent; border:1px solid #475569; color:#94a3b8; padding:12px 18px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">
+          <button type="button" onclick="document.getElementById('bulk-failsafe-modal').style.display='none'" style="background:transparent; border:1px solid #475569; color:var(--muted); padding:12px 18px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">
             Cancel
           </button>
         </div>
@@ -618,7 +618,7 @@ const BulkStudio = (() => {
               <div class="cr80-row"><span class="k">GRADUATION / EXPIRY:</span> <strong class="v" style="color:#0044cc;">${s.expiry}</strong></div>
             </div>
             <div class="cr80-qr-box">
-              <div style="background:#fff; border:1px solid #1a365d; border-radius:2px; padding:1px; display:inline-block;">
+              <div style="background:var(--surface); border:1px solid #1a365d; border-radius:2px; padding:1px; display:inline-block;">
                 <img src="${qrDataUrl}" style="width:14mm; height:14mm; display:block;" alt="Card QR" />
               </div>
               <div style="font-size:6.5pt; font-weight:800; margin-top:1.5px; color:#1a365d;">VERIFIED</div>
@@ -655,11 +655,11 @@ const BulkStudio = (() => {
     const readySections = sections.filter(s => s.status === 'ready');
 
     modal.innerHTML = `
-      <div style="background:#0c1b2e; border-bottom:1px solid #1e3050; padding:14px 24px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+      <div style="background:#0c1b2e; border-bottom:1px solid var(--line); padding:14px 24px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
         <div style="display:flex; align-items:center; gap:12px;">
           <span style="font-size:24px;">📦</span>
           <div>
-            <div style="font-size:16px; font-weight:800; color:#d4a574;">
+            <div style="font-size:16px; font-weight:800; color:var(--warning);">
               Sectioned Bulk ID Generation Console
             </div>
             <div style="font-size:11px; color:#8090a8;">
@@ -669,10 +669,10 @@ const BulkStudio = (() => {
         </div>
 
         <div style="display:flex; gap:10px; align-items:center;">
-          <button type="button" onclick="BulkStudio.togglePauseQueue()" style="background:#1e293b; color:#cbd5e1; border:1px solid #475569; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">
+          <button type="button" onclick="BulkStudio.togglePauseQueue()" style="background:var(--sunken); color:var(--muted); border:1px solid #475569; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">
             ${_sectionQueueState.isPaused ? '▶ Resume' : '⏸ Pause'}
           </button>
-          <button type="button" onclick="BulkStudio.printAllReadySections()" ${readySections.length === 0 ? 'disabled' : ''} style="background:linear-gradient(135deg, #1558c0, #3b82f6); color:#fff; border:none; padding:8px 18px; border-radius:6px; font-size:12px; font-weight:800; cursor:pointer; opacity:${readySections.length === 0 ? 0.5 : 1};">
+          <button type="button" onclick="BulkStudio.printAllReadySections()" ${readySections.length === 0 ? 'disabled' : ''} style="background: var(--accent); color: var(--accent-ink); border:none; padding:8px 18px; border-radius:6px; font-size:12px; font-weight:800; cursor:pointer; opacity:${readySections.length === 0 ? 0.5 : 1};">
             🖨️ Print All Ready Sections (${readySections.length}/${total})
           </button>
           <button type="button" onclick="BulkStudio.closeSectionConsole()" style="background:#334155; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">
@@ -682,15 +682,15 @@ const BulkStudio = (() => {
       </div>
 
       <!-- Live Animated Progress Bar -->
-      <div style="background:#091424; padding:12px 24px; border-bottom:1px solid #1e3050; flex-shrink:0;">
+      <div style="background:#091424; padding:12px 24px; border-bottom:1px solid var(--line); flex-shrink:0;">
         <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-          <span style="color:#93c5fd; font-weight:700;">
+          <span style="color:var(--accent); font-weight:700;">
             ${pct < 100 ? `Generating Section ${Math.min(completedCount + 1, total)} of ${total}...` : '✓ All Sections Successfully Generated & Cryptographically Sealed'}
           </span>
-          <span style="color:#34d399; font-weight:800;">${pct}% Complete</span>
+          <span style="color:var(--success); font-weight:800;">${pct}% Complete</span>
         </div>
-        <div style="height:8px; background:#1e293b; border-radius:4px; overflow:hidden;">
-          <div style="width:${pct}%; height:100%; background:linear-gradient(90deg, #1558c0, #34d399); transition:width 0.3s ease;"></div>
+        <div style="height:8px; background:var(--sunken); border-radius:4px; overflow:hidden;">
+          <div style="width:${pct}%; height:100%; background: var(--accent); transition:width 0.3s ease;"></div>
         </div>
       </div>
 
@@ -701,11 +701,11 @@ const BulkStudio = (() => {
             const isReady = sec.status === 'ready';
             const isGen = sec.status === 'generating';
             return `
-              <div style="background:${isReady ? '#0d1f36' : isGen ? '#132847' : '#081322'}; border:1px solid ${isReady ? '#10b981' : isGen ? '#3b82f6' : '#1e3050'}; border-radius:12px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; gap:12px;">
+              <div style="background:${isReady ? '#0d1f36' : isGen ? '#132847' : '#081322'}; border:1px solid ${isReady ? 'var(--success)' : isGen ? 'var(--accent)' : 'var(--line)'}; border-radius:12px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; gap:12px;">
                 <div>
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                     <strong style="color:#fff; font-size:13px;">Section ${sec.pageNumber} of ${total}</strong>
-                    <span style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:12px; background:${isReady ? 'rgba(16,185,129,0.15)' : isGen ? 'rgba(59,130,246,0.15)' : 'rgba(100,116,139,0.15)'}; color:${isReady ? '#34d399' : isGen ? '#60a5fa' : '#94a3b8'};">
+                    <span style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:12px; background:${isReady ? 'rgba(16,185,129,0.15)' : isGen ? 'rgba(59,130,246,0.15)' : 'rgba(100,116,139,0.15)'}; color:${isReady ? 'var(--success)' : isGen ? 'var(--accent)' : 'var(--muted)'};">
                       ${isReady ? '✓ READY' : isGen ? '⚡ GENERATING...' : '⏳ IN QUEUE'}
                     </span>
                   </div>
@@ -715,10 +715,10 @@ const BulkStudio = (() => {
                 </div>
 
                 <div style="display:flex; gap:8px;">
-                  <button type="button" onclick="BulkStudio.printSingleSection(${idx})" ${!isReady ? 'disabled' : ''} style="flex:1; background:${isReady ? '#1558c0' : '#1e293b'}; color:#fff; border:none; padding:7px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:${isReady ? 'pointer' : 'not-allowed'}; opacity:${isReady ? 1 : 0.4};">
+                  <button type="button" onclick="BulkStudio.printSingleSection(${idx})" ${!isReady ? 'disabled' : ''} style="flex:1; background:${isReady ? 'var(--accent)' : 'var(--sunken)'}; color:#fff; border:none; padding:7px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:${isReady ? 'pointer' : 'not-allowed'}; opacity:${isReady ? 1 : 0.4};">
                     🖨️ Print Sheet ${sec.pageNumber}
                   </button>
-                  <button type="button" onclick="BulkStudio.previewSingleSection(${idx})" ${!isReady ? 'disabled' : ''} style="background:transparent; border:1px solid ${isReady ? '#4a90d9' : '#334155'}; color:${isReady ? '#93c5fd' : '#64748b'}; padding:7px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:${isReady ? 'pointer' : 'not-allowed'}; opacity:${isReady ? 1 : 0.4};">
+                  <button type="button" onclick="BulkStudio.previewSingleSection(${idx})" ${!isReady ? 'disabled' : ''} style="background:transparent; border:1px solid ${isReady ? '#4a90d9' : '#334155'}; color:${isReady ? 'var(--accent)' : 'var(--muted)'}; padding:7px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:${isReady ? 'pointer' : 'not-allowed'}; opacity:${isReady ? 1 : 0.4};">
                     👁️ Preview
                   </button>
                 </div>
@@ -782,9 +782,10 @@ const BulkStudio = (() => {
         <title>Batch ID Cards Print Sheet — ${title}</title>
         <style>
           @page { size: A4 portrait; margin: 8mm; }
-          body { font-family: 'Inter', sans-serif; background: #fff; color: #000; margin: 0; padding: 0; }
-          .print-toolbar { background: #0c1b2e; color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
-          .print-btn { background: #1558c0; color: #fff; border: none; padding: 8px 18px; border-radius: 6px; font-weight: 700; cursor: pointer; }
+          :root { --accent: #235347; --accent-ink: #FFFFFF; --surface: #FFFFFF; --sunken: #EEEEEE; --ink: #000000; --muted: #444444; --line: #CCCCCC; --warning: #7A5200; --success: #1D6B44; }
+          body { font-family: 'Source Sans 3', 'Segoe UI', sans-serif; background: #fff; color: #000; margin: 0; padding: 0; }
+          .print-toolbar { background: #0B2B26; color: #DAF1DE; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+          .print-btn { background: #8EB69B; color: #051F20; border: none; padding: 8px 18px; border-radius: 6px; font-weight: 700; cursor: pointer; }
           .sheet-grid { display: grid; grid-template-columns: repeat(2, 85.6mm); gap: 6mm 10mm; justify-content: center; padding: 10mm 0; }
           
           /* Standard CR80 Size: 85.6mm x 53.98mm */
@@ -819,7 +820,7 @@ const BulkStudio = (() => {
         <div class="print-toolbar">
           <div>
             <strong>Ebonyi State University — Bulk ID Printing Sheet</strong>
-            <span style="margin-left: 14px; font-size: 12px; color: #94a3b8;">${title}</span>
+            <span style="margin-left: 14px; font-size: 12px; color: var(--muted);">${title}</span>
           </div>
           <button class="print-btn" onclick="window.print()">🖨️ Click to Print</button>
         </div>
@@ -839,22 +840,22 @@ const BulkStudio = (() => {
     }
 
     modal.innerHTML = `
-      <div style="background:#0c1b2e; color:#fff; padding:14px 24px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e3050; flex-shrink:0;">
+      <div style="background:#0c1b2e; color:#fff; padding:14px 24px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); flex-shrink:0;">
         <div>
-          <strong style="font-size:16px; color:#d4a574;">🖨️ Massive Bulk ID Print Sheet</strong>
-          <span style="margin-left:14px; font-size:12px; color:#94a3b8;">CR80 ID Cards (Standard 8 per A4 Page)</span>
+          <strong style="font-size:16px; color:var(--warning);">🖨️ Massive Bulk ID Print Sheet</strong>
+          <span style="margin-left:14px; font-size:12px; color:var(--muted);">CR80 ID Cards (Standard 8 per A4 Page)</span>
         </div>
         <div style="display:flex; gap:10px;">
-          <button onclick="window.print()" style="background:#1558c0; color:#fff; border:none; padding:8px 18px; border-radius:6px; font-weight:800; cursor:pointer;">
+          <button onclick="window.print()" style="background:var(--accent); color: var(--accent-ink); border:none; padding:8px 18px; border-radius:6px; font-weight:800; cursor:pointer;">
             🖨️ Send to Printer
           </button>
-          <button onclick="document.getElementById('bulk-print-modal').style.display='none'" style="background:#1e293b; color:#fff; border:1px solid #475569; padding:8px 14px; border-radius:6px; font-weight:700; cursor:pointer;">
+          <button onclick="document.getElementById('bulk-print-modal').style.display='none'" style="background:var(--sunken); color:#fff; border:1px solid #475569; padding:8px 14px; border-radius:6px; font-weight:700; cursor:pointer;">
             ✕ Close Preview
           </button>
         </div>
       </div>
-      <div style="flex:1; overflow-y:auto; padding:20px; background:#e2e8f0; display:flex; justify-content:center;">
-        <div style="background:#fff; padding:10mm; box-shadow:0 10px 30px rgba(0,0,0,0.25); border-radius:8px; max-width:210mm;">
+      <div style="flex:1; overflow-y:auto; padding:20px; background:var(--sunken); display:flex; justify-content:center;">
+        <div style="background:var(--surface); padding:10mm; box-shadow:0 10px 30px rgba(0,0,0,0.25); border-radius:8px; max-width:210mm;">
           <style>
             .sheet-grid { display: grid; grid-template-columns: repeat(2, 85.6mm); gap: 6mm 10mm; justify-content: center; }
             .cr80-print-card {
@@ -917,7 +918,7 @@ const BulkStudio = (() => {
     if (!container) return;
 
     if (_activeFaculty === 'ALL') {
-      container.innerHTML = '<span style="font-size:11px; color:#6080a0;">Select a specific faculty above to view and multi-select its departments.</span>';
+      container.innerHTML = '<span style="font-size:11px; color:var(--muted);">Select a specific faculty above to view and multi-select its departments.</span>';
       return;
     }
 
@@ -938,7 +939,7 @@ const BulkStudio = (() => {
 
     container.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span style="font-size:11px; font-weight:800; color:#d4a574; text-transform:uppercase;">
+        <span style="font-size:11px; font-weight:800; color:var(--warning); text-transform:uppercase;">
           Departments in ${_activeFaculty} (${fac.duration} Yrs Course):
         </span>
         <button type="button" class="btn-text-gold" onclick="BulkStudio.selectAllDepartmentsInFaculty('${_activeFaculty}')">
@@ -960,7 +961,7 @@ const BulkStudio = (() => {
     if (countEl) countEl.textContent = `${list.length} Students found (${_selectedStudentIds.size} selected for print)`;
 
     if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:#6080a0;">No students match the selected department or search criteria.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--muted);">No students match the selected department or search criteria.</td></tr>`;
       return;
     }
 
@@ -979,7 +980,7 @@ const BulkStudio = (() => {
           </td>
           <td style="padding:10px 8px;">
             ${s.dept}
-            <div style="font-size:10px; color:#64748b;">${s.faculty}</div>
+            <div style="font-size:10px; color:var(--muted);">${s.faculty}</div>
           </td>
           <td style="padding:10px 8px; text-align:center;">
             <span class="badge-duration">${s.duration} Yrs</span>

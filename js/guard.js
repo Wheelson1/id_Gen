@@ -45,7 +45,7 @@ const Guard = (() => {
   }
 
   function currentRelativeTarget() {
-    const file = window.location.pathname.split('/').pop() || 'hub.html';
+    const file = window.location.pathname.split('/').pop() || 'app.html';
     return file + (window.location.search || '') + (window.location.hash || '');
   }
 

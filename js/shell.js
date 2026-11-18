@@ -45,7 +45,7 @@ const ShellApp = (() => {
       { id: 'requests', label: 'Requests', icon: '📥', group: 'Operations' },
       { id: 'scanner', label: 'Scanner', icon: '📷', group: 'Operations' },
       { id: 'my-activity', label: 'My Activity', icon: '⚡', group: 'Operations' },
-      { id: 'templates', label: 'Card Templates', icon: '🎨', group: 'Registry & Admin' },
+      { id: 'templates', label: 'Card Design Lab', icon: '🎨', group: 'Registry & Admin' },
       { id: 'revocation', label: 'Revocation & Status Desk', icon: '🛡️', group: 'Registry & Admin' },
       { id: 'staff', label: 'Staff Management', icon: '👥', group: 'Registry & Admin' },
       { id: 'registrations', label: 'Registrations Review', icon: '📝', group: 'Registry & Admin' },
@@ -96,7 +96,7 @@ const ShellApp = (() => {
   const DEFAULT_LOCAL_STUDENTS = [
     {
       id: 'ebsu-student-2021-101397',
-      name: 'NNAJI WILSON SOMTOCHUKWU',
+      name: 'DEMO STUDENT ONE',
       matric: 'EBSU/2021/101397',
       school_reg_no: 'EBSU/2021/101397',
       jamb_no: '1234567890',
@@ -107,12 +107,12 @@ const ShellApp = (() => {
       session: '2024/2025',
       blood: 'O+',
       genotype: 'AA',
-      expiry: 2025,
+      expiry: 2029,
       photo_url: 'images/demo_user_photo.jpg',
       sig_url: 'images/demo_user_sig.png',
       status: 'active',
       card_fee_paid_at: new Date().toISOString(),
-      card_fee_exempt: true,
+      card_fee_exempt: false,
       card_signature: 'ED25519_VERIFIED_1234567890',
       qr_string: 'EBSU1:EBSU/2021/101397:ED25519_VERIFIED_1234567890',
       created_at: '2021-10-15T08:00:00Z',
@@ -135,7 +135,7 @@ const ShellApp = (() => {
       sig_url: 'images/demo_user_sig.png',
       status: 'active',
       card_fee_paid_at: new Date().toISOString(),
-      card_fee_exempt: true,
+      card_fee_exempt: false,
       card_signature: 'ED25519_VERIFIED_98421',
       qr_string: 'EBSU1:EBSU/2024/98421:ED25519_VERIFIED_98421',
       created_at: '2024-09-10T10:00:00Z',
@@ -185,11 +185,11 @@ const ShellApp = (() => {
         expiry: parseInt(st.expiry, 10) || (new Date().getFullYear() + 4),
         photo_url: st.photo || st.photo_url || null,
         sig_url: st.sig || st.sig_url || null,
-        card_signature: st.card_signature || 'ED25519_ADMIN_ISSUED_' + Date.now(),
-        qr_string: st.qrString || st.qr_string || `EBSU1:${cleanMatric}:${Date.now()}:SIG`,
+        card_signature: st.card_signature || 'UNSIGNED_LOCAL_RECORD',
+        qr_string: st.qrString || st.qr_string || null,
         status: 'active',
         card_fee_paid_at: new Date().toISOString(),
-        card_fee_exempt: true,
+        card_fee_exempt: Boolean(st.card_fee_exempt),
         created_at: new Date().toISOString(),
       };
 
@@ -280,6 +280,7 @@ const ShellApp = (() => {
     generate: {
       async mount(el, ctx) {
         const currentYear = new Date().getFullYear();
+        const isAdminRole = ['admin', 'super_admin'].includes(ctx.role);
         el.innerHTML = `
           <div class="sh-grid-2">
             <div class="sh-card">
@@ -327,13 +328,25 @@ const ShellApp = (() => {
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
                   <div>
                     <label class="sh-label" for="sg-photo">Passport Photo (Max 500 KB)</label>
-                    <input id="sg-photo" type="file" accept="image/*" class="sh-input" />
+                    <input id="sg-photo" type="file" accept="image/jpeg,image/png,image/webp" class="sh-input" />
                   </div>
                   <div>
                     <label class="sh-label" for="sg-sig">Holder Signature</label>
-                    <input id="sg-sig" type="file" accept="image/*" class="sh-input" />
+                    <input id="sg-sig" type="file" accept="image/jpeg,image/png,image/webp" class="sh-input" />
                   </div>
                 </div>
+
+                ${isAdminRole ? `
+                <div style="padding:10px 12px;border-radius:8px;border:1px solid var(--sh-border);margin-bottom:12px;">
+                  <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;cursor:pointer;">
+                    <input type="checkbox" id="sg-exempt-cb" />
+                    <span>Grant Card Fee Exemption (Admin Only — Counted in Weekly Audit Report)</span>
+                  </label>
+                  <div id="sg-exempt-reason-wrap" style="display:none;margin-top:8px;">
+                    <label class="sh-label" for="sg-exempt-reason">Mandatory Exemption Reason *</label>
+                    <input id="sg-exempt-reason" class="sh-input" style="margin:0;" placeholder="e.g. Scholarship / VC Waiver Ref #..." />
+                  </div>
+                </div>` : ''}
 
                 <div id="sg-msg" style="margin-bottom:12px;font-size:12px;font-weight:700;"></div>
                 <div style="display:flex;gap:10px;">
@@ -350,6 +363,11 @@ const ShellApp = (() => {
             </div>
           </div>
         `;
+
+        document.getElementById('sg-exempt-cb')?.addEventListener('change', e => {
+          const wrap = document.getElementById('sg-exempt-reason-wrap');
+          if (wrap) wrap.style.display = e.target.checked ? 'block' : 'none';
+        });
 
         let photoB64 = null;
         let sigB64 = null;
@@ -440,7 +458,7 @@ const ShellApp = (() => {
           document.getElementById('sg-expiry').value = data.expiry || currentYear + 4;
           photoB64 = data.photo_url || null;
           sigB64 = data.sig_url || null;
-          currentQr = data.qr_string || (data.card_signature ? `EBSU1:${data.matric}:${data.card_signature}` : `EBSU1:${data.matric}:TESTSIG`);
+          currentQr = data.qr_string || null; // never invent a QR for a record that has no real one
           if (currentQr) document.getElementById('sg-download').disabled = false;
           const feeStatus = data.card_fee_paid_at ? 'CARD FEE: PAID' : (data.card_fee_exempt ? 'CARD FEE: EXEMPT' : 'CARD FEE: UNPAID');
           if (msg) { msg.style.color = 'var(--sh-green)'; msg.textContent = `Loaded ${data.name} (${feeStatus})`; }
@@ -452,19 +470,53 @@ const ShellApp = (() => {
           const btn = document.getElementById('sg-submit');
           const msg = document.getElementById('sg-msg');
           const st = getDraftStudent();
+          const exemptChecked = Boolean(document.getElementById('sg-exempt-cb')?.checked);
+          const exemptReason = (document.getElementById('sg-exempt-reason')?.value || '').trim();
+          if (exemptChecked) {
+            if (!isAdminRole) {
+              if (msg) { msg.style.color = 'var(--sh-red)'; msg.textContent = 'Only admin or super_admin may grant card_fee_exempt.'; }
+              return;
+            }
+            if (exemptReason.length < 5) {
+              if (msg) { msg.style.color = 'var(--sh-red)'; msg.textContent = 'A mandatory exemption reason (min 5 characters) is required for card_fee_exempt.'; }
+              return;
+            }
+          }
+
           btn.disabled = true;
           btn.textContent = 'Issuing & Signing Card (Ed25519)…';
           if (msg) msg.textContent = '';
 
           const regNo = (st.matric || '').trim().toUpperCase();
-          const cleanId = 'ebsu-card-' + (regNo || 'AUTO_' + Date.now()).replace(/[^A-Za-z0-9]/g, '_');
-          const localSig = 'ED25519_ADMIN_ISSUED_' + Date.now();
-          currentQr = `EBSU1:${regNo}:${Date.now()}:${localSig}`;
+          const resetBtn = () => {
+            btn.disabled = false;
+            btn.textContent = '🔐 Sign & Issue Card (Ed25519)';
+          };
+          const fail = text => {
+            // Nothing was signed: clear any QR, block the download, say so plainly.
+            currentQr = null;
+            redraw();
+            const dl = document.getElementById('sg-download');
+            if (dl) dl.disabled = true;
+            if (msg) { msg.style.color = 'var(--sh-red)'; msg.textContent = text; }
+            resetBtn();
+          };
 
-          // Attempt remote signing if configured and online
+          // Local demo cards are allowed ONLY on a private host with DEMO_MODE: true,
+          // and are always labelled as unsigned. Production never fabricates a signature.
+          const demoAllowed = (typeof Guard !== 'undefined' && typeof Guard.isPrivateDemoHost === 'function')
+            ? Guard.isPrivateDemoHost()
+            : false;
+
+          let issued = null;      // server response when the card was really signed
+          let failReason = '';
+
           try {
             const session = await AuthManager.getSession();
-            if (session && session.access_token && !session.access_token.startsWith('MOCK_')) {
+            const hasRealSession = Boolean(session && session.access_token && !session.access_token.startsWith('MOCK_'));
+            if (!hasRealSession) {
+              failReason = 'You are not signed in with a real staff account, so the signing server was not contacted.';
+            } else {
               const res = await fetch(EBSU_CONFIG.ISSUE_CARD_URL, {
                 method: 'POST',
                 headers: {
@@ -481,21 +533,37 @@ const ShellApp = (() => {
                   blood: st.blood,
                   genotype: st.genotype,
                   expiry: st.expiry,
+                  card_fee_exempt: exemptChecked,
+                  card_fee_exempt_reason: exemptChecked ? exemptReason : undefined,
                   photo_b64: photoB64 && photoB64.startsWith('data:') ? photoB64 : undefined,
                   sig_b64: sigB64 && sigB64.startsWith('data:') ? sigB64 : undefined,
                 }),
-              }).catch(() => null);
-
-              if (res && res.ok) {
-                const data = await res.json().catch(() => ({}));
-                if (data && data.qr_string) currentQr = data.qr_string;
+              });
+              const data = await res.json().catch(() => ({}));
+              if (res.ok && data && data.qr_string) {
+                issued = data;
+              } else {
+                const detail = Array.isArray(data.details) ? ' ' + data.details.join('; ') : '';
+                failReason = (data.error || `The signing server answered HTTP ${res.status}.`) + detail;
               }
             }
           } catch (netErr) {
-            console.warn('Network issue-card skipped, issued locally:', netErr);
+            console.warn('issue-card request failed:', netErr);
+            failReason = 'Could not reach the signing server. Check the internet connection and try again.';
           }
 
-          // Always add to persistent local student registry effortlessly!
+          if (!issued && !demoAllowed) {
+            fail(`✗ Card NOT issued. ${failReason}`);
+            return;
+          }
+
+          const isDemoCard = !issued;
+          const cleanId = issued && issued.card_id
+            ? issued.card_id
+            : 'demo-card-' + (regNo || 'AUTO_' + Date.now()).replace(/[^A-Za-z0-9]/g, '_');
+          const cardSig = issued ? (issued.signature || '') : 'DEMO_UNSIGNED';
+          currentQr = issued ? issued.qr_string : `DEMO-UNSIGNED:${regNo}:${Date.now()}`;
+
           saveStudentToLocalRegistry({
             id: cleanId,
             name: st.name,
@@ -512,18 +580,23 @@ const ShellApp = (() => {
             photo: photoB64,
             sig: sigB64,
             qrString: currentQr,
-            card_signature: localSig,
+            card_signature: cardSig,
+            card_fee_exempt: exemptChecked,
           });
 
           redraw();
           document.getElementById('sg-download').disabled = false;
           if (msg) {
-            msg.style.color = 'var(--sh-green)';
-            msg.textContent = `✓ Issued & Ed25519 Signed! ${st.name} is saved in the student registry.`;
+            if (isDemoCard) {
+              msg.style.color = 'var(--sh-red)';
+              msg.textContent = `⚠ DEMO PREVIEW ONLY — this card is NOT signed and will fail verification. (${failReason})`;
+            } else {
+              msg.style.color = 'var(--sh-green)';
+              msg.textContent = `✓ Issued & Ed25519 signed by the server. ${st.name} — card ${String(cleanId).slice(0, 8)}.`;
+            }
           }
           if (typeof loadRecentActivity === 'function') loadRecentActivity();
-          btn.disabled = false;
-          btn.textContent = '🔐 Sign & Issue Card (Ed25519)';
+          resetBtn();
         });
 
         document.getElementById('sg-download')?.addEventListener('click', () => {
@@ -559,14 +632,14 @@ const ShellApp = (() => {
               </div>
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                 <span id="bulk-selected-count-badge" class="sh-pill active" style="font-size:11px;padding:5px 10px;">0 Selected for Batch Print</span>
-                <button type="button" id="bs-print-sheet-btn" class="sh-btn" style="background:linear-gradient(135deg,#1558c0,#2563eb);">
+                <button type="button" id="bs-print-sheet-btn" class="sh-btn" style="background:var(--accent);color:var(--accent-ink);">
                   🖨️ Generate &amp; Print CR80 Batch Sheet (8 / A4)
                 </button>
               </div>
             </div>
 
             <!-- Multi-Route Ingestion Bar (CSV / Excel / Sample Template) -->
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:12px;border-radius:10px;border:1px solid var(--sh-border);background:rgba(15,23,42,0.35);margin-bottom:14px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:12px;border-radius:10px;border:1px solid var(--sh-border);background:var(--sunken);margin-bottom:14px;">
               <div>
                 <label class="sh-label" for="bs-csv-upload">📄 Ingest CSV Roster (.csv)</label>
                 <input id="bs-csv-upload" type="file" accept=".csv" class="sh-input" style="margin:0;font-size:11px;" />
@@ -710,7 +783,7 @@ const ShellApp = (() => {
         let parsedRows = [];
 
         document.getElementById('bk-sample-btn')?.addEventListener('click', () => {
-          const csv = 'matric,name,faculty,dept,level,blood,genotype,expiry\nEBSU/2024/100001,NNAJI WILSON SOMTOCHUKWU,Science,Computer Science,200 Level,O+,AA,2029\n';
+          const csv = 'matric,name,faculty,dept,level,blood,genotype,expiry\nEBSU/2024/100001,DEMO STUDENT ONE,Science,Computer Science,200 Level,O+,AA,2029\n';
           const blob = new Blob([csv], { type: 'text/csv' });
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
@@ -835,7 +908,7 @@ const ShellApp = (() => {
             </div>
 
             <!-- Fast Add Student Panel -->
-            <div id="stu-add-panel" style="display:none;background:var(--sh-card-elevated, #0c1626);border:1px solid var(--sh-blue-lt, #3b82f6);border-radius:10px;padding:16px;margin-bottom:16px;">
+            <div id="stu-add-panel" style="display:none;background:var(--sh-card-elevated);border:1px solid var(--sh-blue-lt);border-radius:10px;padding:16px;margin-bottom:16px;">
               <h4 style="margin:0 0 12px;color:#fff;font-size:14px;display:flex;align-items:center;gap:6px;">
                 <span>➕ Rapid Student Registration (Admin)</span>
               </h4>
@@ -1034,7 +1107,7 @@ const ShellApp = (() => {
                 <td>${esc(s.expiry || '2025')}</td>
                 <td>
                   <button type="button" class="sh-btn sh-btn-secondary" style="padding:4px 8px;font-size:11px;" onclick="window.location.hash='#/generate'; setTimeout(()=>{ const inp=document.getElementById('sg-matric'); if(inp){ inp.value='${esc(s.matric)}'; document.getElementById('gen-lookup-btn')?.click(); } }, 120);">🪪 Issue Card</button>
-                  <button type="button" class="sh-btn" style="padding:4px 8px;font-size:11px;background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);margin-left:4px;" onclick="if(confirm('Remove student ${esc(s.name)} from registry?')){ const list = getLocalStudents().filter(x => x.matric.toUpperCase() !== '${esc(s.matric).toUpperCase()}'); localStorage.setItem('ebsu_local_students', JSON.stringify(list)); location.reload(); }">✕</button>
+                  <button type="button" class="sh-btn" style="padding:4px 8px;font-size:11px;background:var(--badge-error-bg);color:var(--error);border:1px solid var(--error);margin-left:4px;" onclick="if(confirm('Remove student ${esc(s.name)} from registry?')){ const list = getLocalStudents().filter(x => x.matric.toUpperCase() !== '${esc(s.matric).toUpperCase()}'); localStorage.setItem('ebsu_local_students', JSON.stringify(list)); location.reload(); }">✕</button>
                 </td>
               </tr>`
             )
@@ -1312,7 +1385,7 @@ const ShellApp = (() => {
               const phone = localMatch?.phone || localMatch?.phone_number || '';
               if (phone) {
                 staffCallLink = `
-                  <div style="margin-top:8px;padding:6px 12px;background:rgba(2,132,199,0.12);border:1px solid rgba(2,132,199,0.3);border-radius:6px;font-size:12px;">
+                  <div style="margin-top:8px;padding:6px 12px;background:var(--badge-neutral-bg);border:1px solid var(--line);border-radius:6px;font-size:12px;">
                     🛡️ <strong style="color:var(--sh-brand);">Staff Privileged Contact:</strong> 
                     <a href="tel:${esc(phone)}" style="color:var(--sh-brand);font-weight:700;text-decoration:none;">📞 Call ${esc(phone)}</a>
                   </div>`;
@@ -1435,85 +1508,18 @@ const ShellApp = (() => {
       unmount() { },
     },
 
-    // ── CARD TEMPLATES ─────────────────────────────────────────────
+    // ── CARD DESIGN LAB (js/cardLab.js) ─────────────────────────────
     templates: {
-      async mount(el) {
-        const tpl = (typeof CardTemplate !== 'undefined' && CardTemplate.load) ? await CardTemplate.load() : {};
-        const colors = tpl.colors || {};
-        el.innerHTML = `
-          <div class="sh-grid-2">
-            <div class="sh-card">
-              <div class="sh-card-title"><span>🎨 School Card Template Studio</span></div>
-              <label class="sh-label" for="tp-school">Header School Title</label>
-              <input id="tp-school" class="sh-input" value="${esc(tpl.institution?.name || 'EBONYI STATE UNIVERSITY, ABAKALIKI')}" />
-
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div>
-                  <label class="sh-label" for="tp-header-bg">Header Colour</label>
-                  <input id="tp-header-bg" type="color" class="sh-input" style="height:42px;" value="${esc(colors.headerBg || '#1558c0')}" />
-                </div>
-                <div>
-                  <label class="sh-label" for="tp-title-col">Title Accent Colour</label>
-                  <input id="tp-title-col" type="color" class="sh-input" style="height:42px;" value="${esc(colors.titleColor || '#cc0000')}" />
-                </div>
-              </div>
-              <button type="button" id="tp-save-btn" class="sh-btn">💾 Save School Template</button>
-              <span id="tp-msg" style="margin-left:10px;font-size:12px;font-weight:700;"></span>
-            </div>
-            <div class="sh-card" style="text-align:center;">
-              <div class="sh-card-title"><span>Template Preview</span></div>
-              <canvas id="tp-canvas" width="1011" height="638" style="width:100%;max-width:460px;border-radius:10px;border:1px solid var(--sh-border);"></canvas>
-            </div>
-          </div>
-        `;
-
-        function preview() {
-          const c = document.getElementById('tp-canvas');
-          if (!c || typeof drawCard !== 'function') return;
-          const draftTpl = {
-            ...tpl,
-            institution: { ...tpl.institution, name: document.getElementById('tp-school')?.value || '' },
-            colors: {
-              ...colors,
-              headerBg: document.getElementById('tp-header-bg')?.value || '#1558c0',
-              titleColor: document.getElementById('tp-title-col')?.value || '#cc0000',
-            },
-          };
-          drawCard(c, draftTpl, {
-            name: 'SAMPLE STUDENT',
-            matric: 'EBSU/2025/100001',
-            faculty: 'Science',
-            dept: 'Computer Science',
-            level: '100 Level',
-            blood: 'O+',
-            genotype: 'AA',
-            expiry: 2029,
-          }, 1);
+      async mount(el, ctx) {
+        if (typeof CardLab === 'undefined') {
+          el.innerHTML = '<div class="sh-card">The Card Design Lab could not load. Refresh the page.</div>';
+          return;
         }
-
-        ['tp-school', 'tp-header-bg', 'tp-title-col'].forEach(id => {
-          document.getElementById(id)?.addEventListener('input', preview);
-        });
-
-        document.getElementById('tp-save-btn')?.addEventListener('click', async () => {
-          const msg = document.getElementById('tp-msg');
-          const res = await CardTemplate.save({
-            institution: { ...tpl.institution, name: document.getElementById('tp-school')?.value || '' },
-            colors: {
-              ...colors,
-              headerBg: document.getElementById('tp-header-bg')?.value || '#1558c0',
-              titleColor: document.getElementById('tp-title-col')?.value || '#cc0000',
-            },
-          });
-          if (msg) {
-            msg.style.color = res.success ? 'var(--sh-green)' : 'var(--sh-amber)';
-            msg.textContent = res.success ? '✓ Saved to Supabase' : 'Saved locally (' + (res.error || '') + ')';
-          }
-        });
-
-        preview();
+        await CardLab.mount(el, ctx || _ctx);
       },
-      unmount() { },
+      unmount() {
+        if (typeof CardLab !== 'undefined') CardLab.unmount();
+      },
     },
 
     // ── REVOCATION & STATUS DESK (REASON REQUIRED) ─────────────────
@@ -1892,7 +1898,7 @@ const ShellApp = (() => {
             .map(t => {
               const isSel = selectedTicket && selectedTicket.id === t.id;
               return `
-                <div data-tkt-id="${esc(t.id)}" style="padding:12px;border-radius:10px;border:1.5px solid ${isSel ? 'var(--sh-blue)' : 'var(--sh-border)'};background:${isSel ? 'rgba(59,130,246,0.08)' : 'transparent'};cursor:pointer;">
+                <div data-tkt-id="${esc(t.id)}" style="padding:12px;border-radius:10px;border:1.5px solid ${isSel ? 'var(--sh-blue)' : 'var(--sh-border)'};background:${isSel ? 'var(--badge-neutral-bg)' : 'transparent'};cursor:pointer;">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
                     <code style="font-size:11px;font-weight:800;color:var(--sh-blue);">${esc(t.ticket_no)}</code>
                     <span class="sh-pill ${t.status === 'open' ? 'provisional' : t.status === 'resolved' ? 'active' : ''}">${esc(t.status)}</span>
@@ -1953,7 +1959,7 @@ const ShellApp = (() => {
               ${(msgs || [])
                 .map(
                   m => `
-                  <div style="align-self:${m.sender_role === 'staff' ? 'flex-end' : 'flex-start'};max-width:82%;padding:10px 12px;border-radius:10px;background:${m.sender_role === 'staff' ? 'rgba(59,130,246,0.16)' : 'rgba(148,163,184,0.14)'};border:1px solid var(--sh-border);">
+                  <div style="align-self:${m.sender_role === 'staff' ? 'flex-end' : 'flex-start'};max-width:82%;padding:10px 12px;border-radius:10px;background:${m.sender_role === 'staff' ? 'var(--badge-neutral-bg)' : 'var(--badge-neutral-bg)'};border:1px solid var(--sh-border);">
                     <div style="font-size:10px;font-weight:800;color:var(--sh-muted);margin-bottom:3px;">
                       ${esc(m.sender_name)} (${esc(m.sender_role.toUpperCase())}) · ${m.created_at ? esc(new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : ''}
                     </div>
@@ -2150,26 +2156,52 @@ const ShellApp = (() => {
       async mount(el, ctx) {
         el.innerHTML = `
           <div class="sh-card">
-            <div class="sh-card-title"><span>📈 School Status &amp; Payment Breakdown</span></div>
+            <div class="sh-card-title"><span>📈 School Status, Payment &amp; Weekly Exemption Report</span></div>
             <div id="rp-body">Calculating metrics…</div>
           </div>
         `;
-        const { data } = await ctx.client.from('students').select('status,fees_paid,faculty');
+        const [{ data }, { data: weeklyReport }] = await Promise.all([
+          ctx.client.from('students').select('status,fees_paid,card_fee_paid_at,card_fee_exempt,card_fee_exempt_at,faculty'),
+          ctx.client.rpc('get_weekly_exemption_report', { p_school_id: ctx.schoolId || null }).catch(() => ({ data: null })),
+        ]);
         const rows = data || [];
         const byStatus = {};
         let paidCount = 0;
+        let exemptTotalCount = 0;
+        let exemptWeeklyCount = 0;
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
         rows.forEach(r => {
           byStatus[r.status] = (byStatus[r.status] || 0) + 1;
-          if (r.fees_paid) paidCount++;
+          if (r.card_fee_paid_at || r.fees_paid) paidCount++;
+          if (r.card_fee_exempt) {
+            exemptTotalCount++;
+            if (r.card_fee_exempt_at && new Date(r.card_fee_exempt_at).getTime() >= sevenDaysAgo) {
+              exemptWeeklyCount++;
+            }
+          }
         });
+        const rpcRow = Array.isArray(weeklyReport) && weeklyReport[0] ? weeklyReport[0] : null;
+        if (rpcRow) {
+          exemptTotalCount = Number(rpcRow.exempt_total_count ?? exemptTotalCount);
+          exemptWeeklyCount = Number(rpcRow.exempt_last_7_days_count ?? exemptWeeklyCount);
+        }
         const body = document.getElementById('rp-body');
         if (body) {
           body.innerHTML = `
-            <p style="font-size:13px;">Total Students in School Scope: <strong>${rows.length}</strong> · Card Fee Paid: <strong>${paidCount}</strong></p>
+            <p style="font-size:13px;">
+              Total Students in School Scope: <strong>${rows.length}</strong> ·
+              Card Fee Paid: <strong>${paidCount}</strong> ·
+              Card Fee Exempt (Total): <strong>${exemptTotalCount}</strong> ·
+              Card Fee Exempt (Weekly / Last 7 Days): <strong>${exemptWeeklyCount}</strong>
+            </p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
               ${Object.entries(byStatus)
               .map(([k, v]) => `<div class="sh-card" style="margin:0;min-width:140px;"><div class="sh-stat-label">${esc(k)}</div><div class="sh-stat-val">${v}</div></div>`)
               .join('')}
+              <div class="sh-card" style="margin:0;min-width:160px;">
+                <div class="sh-stat-label">Weekly Exempt (7d)</div>
+                <div class="sh-stat-val" style="color:var(--sh-amber);">${exemptWeeklyCount}</div>
+              </div>
             </div>
           `;
         }
@@ -2177,19 +2209,34 @@ const ShellApp = (() => {
       unmount() { },
     },
 
-    // ── SETTINGS (SCHOOL BRANDING, CARD FEE, HOTLINE) ──────────────
+    // ── SETTINGS (SCHOOL BRANDING, CARD FEE, SPLIT & HOTLINE) ──────
     settings: {
       async mount(el, ctx) {
         const s = ctx.school || {};
         el.innerHTML = `
           <div class="sh-card" style="max-width:600px;">
-            <div class="sh-card-title"><span>⚙️ School Settings (Branding, Card Fee &amp; Hotline)</span></div>
+            <div class="sh-card-title"><span>⚙️ School Settings (Branding, Card Fee, Split &amp; Hotline)</span></div>
             <form id="st-form" novalidate>
               <label class="sh-label" for="st-name">Institution Name</label>
               <input id="st-name" class="sh-input" value="${esc(s.name || 'EBONYI STATE UNIVERSITY, ABAKALIKI')}" required />
 
-              <label class="sh-label" for="st-fee">Card Fee Amount (in Kobo / minor units, e.g. 250000 = ₦2,500)</label>
-              <input id="st-fee" type="number" class="sh-input" value="${esc(s.card_fee_amount ?? 250000)}" required />
+              <label class="sh-label" for="st-fee">Card Fee Amount (in Kobo / minor units, e.g. 300000 = ₦3,000)</label>
+              <input id="st-fee" type="number" class="sh-input" value="${esc(s.card_fee_amount ?? 300000)}" required />
+
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+                <div>
+                  <label class="sh-label" for="st-ps-sub">Paystack Subaccount</label>
+                  <input id="st-ps-sub" class="sh-input" placeholder="ACCT_..." value="${esc(s.paystack_subaccount_code || '')}" />
+                </div>
+                <div>
+                  <label class="sh-label" for="st-ps-split">Paystack Split Code</label>
+                  <input id="st-ps-split" class="sh-input" placeholder="SPL_..." value="${esc(s.paystack_split_code || '')}" />
+                </div>
+                <div>
+                  <label class="sh-label" for="st-flw-sub">Flutterwave Subaccount</label>
+                  <input id="st-flw-sub" class="sh-input" placeholder="RS_..." value="${esc(s.flutterwave_subaccount_id || '')}" />
+                </div>
+              </div>
 
               <label class="sh-label" for="st-phone">Support Hotline Phone</label>
               <input id="st-phone" class="sh-input" value="${esc(s.hotline_phone || '')}" />
@@ -2218,7 +2265,10 @@ const ShellApp = (() => {
           }
           const updates = {
             name: document.getElementById('st-name').value.trim(),
-            card_fee_amount: parseInt(document.getElementById('st-fee').value || '250000', 10),
+            card_fee_amount: parseInt(document.getElementById('st-fee').value || '300000', 10),
+            paystack_subaccount_code: document.getElementById('st-ps-sub')?.value.trim() || null,
+            paystack_split_code: document.getElementById('st-ps-split')?.value.trim() || null,
+            flutterwave_subaccount_id: document.getElementById('st-flw-sub')?.value.trim() || null,
             hotline_phone: document.getElementById('st-phone').value.trim(),
             hotline_whatsapp: document.getElementById('st-wa').value.trim(),
             hotline_email: document.getElementById('st-email').value.trim(),
@@ -2262,7 +2312,7 @@ const ShellApp = (() => {
                 <label class="sh-label" for="ns-name">Full Institution Name</label>
                 <input id="ns-name" class="sh-input" placeholder="UNIVERSITY OF NIGERIA, NSUKKA" required />
                 <label class="sh-label" for="ns-fee">Card Fee (Kobo)</label>
-                <input id="ns-fee" type="number" class="sh-input" value="250000" required />
+                <input id="ns-fee" type="number" class="sh-input" value="300000" required />
                 <div id="ns-msg" style="margin-bottom:10px;font-size:12px;font-weight:700;"></div>
                 <button type="submit" class="sh-btn">Create School Tenant</button>
               </form>
@@ -2294,7 +2344,7 @@ const ShellApp = (() => {
           const msg = document.getElementById('ns-msg');
           const code = document.getElementById('ns-code').value.trim().toUpperCase();
           const name = document.getElementById('ns-name').value.trim();
-          const fee = parseInt(document.getElementById('ns-fee').value || '250000', 10);
+          const fee = parseInt(document.getElementById('ns-fee').value || '300000', 10);
           const { error } = await ctx.client.from('schools').insert({ code, name, card_fee_amount: fee });
           if (msg) {
             msg.style.color = error ? 'var(--sh-red)' : 'var(--sh-green)';
@@ -2322,7 +2372,7 @@ const ShellApp = (() => {
         `;
         const [{ data: schools }, { data: students }, { data: staff }] = await Promise.all([
           ctx.client.from('schools').select('id,code,name'),
-          ctx.client.from('students').select('school_id,fees_paid'),
+          ctx.client.from('students').select('school_id,fees_paid,card_fee_paid_at'),
           ctx.client.from('staff_profiles').select('school_id'),
         ]);
         const tbody = document.getElementById('cs-tbody');
@@ -2330,7 +2380,7 @@ const ShellApp = (() => {
         tbody.innerHTML = (schools || [])
           .map(sch => {
             const st = (students || []).filter(x => x.school_id === sch.id);
-            const paid = st.filter(x => x.fees_paid).length;
+            const paid = st.filter(x => x.card_fee_paid_at || x.fees_paid).length;
             const sf = (staff || []).filter(x => x.school_id === sch.id).length;
             return `
               <tr>
@@ -2359,10 +2409,10 @@ const ShellApp = (() => {
               ${hasCard
                 ? `<div style="margin-bottom:10px;font-size:12px;color:var(--sh-green);font-weight:700;">Receipt Ref: <code>${esc(ctx.studentSession?.payment_reference || 'CONFIRMED')}</code></div>
                    <canvas id="st-card-canvas" width="1011" height="638" style="width:100%;max-width:480px;border-radius:12px;border:1px solid var(--sh-border);"></canvas>
-                   <div id="st-dl-panel" style="margin-top:16px;text-align:left;background:rgba(15,23,42,0.35);padding:14px;border-radius:10px;border:1px solid var(--sh-border);">
+                   <div id="st-dl-panel" style="margin-top:16px;text-align:left;background:var(--sunken);padding:14px;border-radius:10px;border:1px solid var(--sh-border);">
                      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                        <strong style="font-size:13px;">🖨️ Download &amp; Print Card</strong>
-                       <span id="st-dl-quota" style="font-size:11px;font-weight:700;color:var(--sh-blue);background:rgba(2,132,199,0.15);padding:3px 8px;border-radius:10px;">3 of 3 downloads left today</span>
+                       <span id="st-dl-quota" style="font-size:11px;font-weight:700;color:var(--sh-blue);background:var(--badge-neutral-bg);padding:3px 8px;border-radius:10px;">3 of 3 downloads left today</span>
                      </div>
                      <div id="st-dl-err" style="display:none;color:var(--sh-red);font-size:12px;margin-bottom:8px;font-weight:600;"></div>
                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -2385,7 +2435,7 @@ const ShellApp = (() => {
                    <p style="font-size:12px;color:var(--sh-muted);margin-top:0;">
                      Single-use anti-screenshot pass. Rotates automatically every 60 seconds and is bound to a server-side replay nonce.
                    </p>
-                   <div style="display:inline-block;padding:12px;background:#fff;border-radius:12px;border:2px solid var(--sh-blue);margin-bottom:10px;">
+                   <div style="display:inline-block;padding:12px;background:var(--surface);border-radius:12px;border:2px solid var(--sh-blue);margin-bottom:10px;">
                      <canvas id="st-rotating-qr-canvas" width="180" height="180"></canvas>
                    </div>
                    <div style="max-width:260px;margin:0 auto 6px auto;height:6px;background:var(--sh-border);border-radius:4px;overflow:hidden;">
@@ -2448,46 +2498,44 @@ const ShellApp = (() => {
           await mintLivePass();
           document.getElementById('st-rotate-pass-btn')?.addEventListener('click', mintLivePass);
 
-          // Download Panel Action Handlers (Server-enforced limit 3/day & static signed card)
+          // Download Panel Action Handlers (Server-enforced limit 3/day per student_id)
           async function requestDownload(format) {
             const onbId = ctx.studentSession?.onboarding_session_id || ctx.studentSession?.session_id;
-            const storageKey = `ebsu_dl_${new Date().toISOString().slice(0, 10)}`;
-            const currentCount = parseInt(sessionStorage.getItem(storageKey) || '0', 10);
-            if (currentCount >= 3) {
-              throw new Error('Daily download limit (3 per day) reached for today.');
+            if (!onbId) {
+              throw new Error('Active verified student onboarding session is required to download.');
             }
-
-            if (onbId) {
-              const confirmUrl =
-                (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.CONFIRM_IDENTITY_URL) ||
-                `${EBSU_CONFIG?.SUPABASE_URL}/functions/v1/confirm-identity`;
-              try {
-                const res = await fetch(confirmUrl, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', ...(EBSU_CONFIG?.SUPABASE_ANON_KEY ? { apikey: EBSU_CONFIG.SUPABASE_ANON_KEY } : {}) },
-                  body: JSON.stringify({ action: 'log_download', session_id: onbId, format }),
-                });
-                const data = await res.json().catch(() => ({}));
-                if (res.ok && data.downloads_today !== undefined) {
-                  const left = Math.max(0, 3 - data.downloads_today);
-                  const quotaEl = document.getElementById('st-dl-quota');
-                  if (quotaEl) quotaEl.textContent = `${left} of 3 downloads left today`;
-                }
-              } catch (e) {}
+            const confirmUrl =
+              (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.CONFIRM_IDENTITY_URL) ||
+              `${EBSU_CONFIG?.SUPABASE_URL}/functions/v1/confirm-identity`;
+            const res = await fetch(confirmUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(EBSU_CONFIG?.SUPABASE_ANON_KEY ? { apikey: EBSU_CONFIG.SUPABASE_ANON_KEY, Authorization: `Bearer ${EBSU_CONFIG.SUPABASE_ANON_KEY}` } : {}),
+              },
+              body: JSON.stringify({ action: 'log_download', session_id: onbId, format }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+              throw new Error(data.error || 'Daily download limit (3 per day) reached for today.');
             }
-
-            sessionStorage.setItem(storageKey, String(currentCount + 1));
-            const quotaEl = document.getElementById('st-dl-quota');
-            if (quotaEl) quotaEl.textContent = `${Math.max(0, 2 - currentCount)} of 3 downloads left today`;
+            if (data.downloads_today !== undefined) {
+              const left = Math.max(0, 3 - data.downloads_today);
+              const quotaEl = document.getElementById('st-dl-quota');
+              if (quotaEl) quotaEl.textContent = `${left} of 3 downloads left today`;
+            }
           }
 
           function getStaticShellCardCanvas(side = 'front') {
             const cvs = document.createElement('canvas');
             cvs.width = 1011;
             cvs.height = 638;
+            const baseUrl = (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.PUBLIC_BASE_URL)
+              ? EBSU_CONFIG.PUBLIC_BASE_URL
+              : 'https://ebsu-id-card.vercel.app';
             const staticQr = (typeof buildQRData === 'function')
-              ? buildQRData({ cardId: s.student_id || s.id, card_signature: s.card_signature || 'ED25519_STATIC' })
-              : `https://id.ebsu.edu.ng/c/${s.student_id || s.id}.${s.card_signature || 'ED25519_STATIC'}`;
+              ? buildQRData({ cardId: s.card_id || s.student_id || s.id, card_signature: s.card_signature || 'ED25519_STATIC' })
+              : `${baseUrl}/c/${s.card_id || s.student_id || s.id}.${s.card_signature || 'ED25519_STATIC'}`;
             const cardObj = {
               id: s.student_id || s.id,
               name: s.name,
@@ -2571,7 +2619,7 @@ const ShellApp = (() => {
               const cb = getStaticShellCardCanvas('back');
               const pw = window.open('', '_blank');
               if (!pw) return;
-              pw.document.write(`<!DOCTYPE html><html><head><title>Print ID — ${esc(s.name)}</title><style>body{text-align:center;padding:20px;font-family:sans-serif;}@media print{.no-print{display:none!important;}}</style></head><body><div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:#1558c0;color:#fff;border:none;border-radius:6px;font-weight:700;">Print / Save as PDF (CR80)</button></div><div style="margin:20px 0;"><img src="${cf.toDataURL('image/png')}" style="width:85.6mm;height:54mm;border-radius:3mm;" /></div><div style="margin:20px 0;"><img src="${cb.toDataURL('image/png')}" style="width:85.6mm;height:54mm;border-radius:3mm;" /></div></body></html>`);
+              pw.document.write(`<!DOCTYPE html><html><head><title>Print ID — ${esc(s.name)}</title><style>body{text-align:center;padding:20px;font-family:sans-serif;}@media print{.no-print{display:none!important;}}</style></head><body><div class="no-print"><button onclick="window.print()" style="padding:10px 20px;background:var(--accent);color: var(--accent-ink);border:none;border-radius:6px;font-weight:700;">Print / Save as PDF (CR80)</button></div><div style="margin:20px 0;"><img src="${cf.toDataURL('image/png')}" style="width:85.6mm;height:54mm;border-radius:3mm;" /></div><div style="margin:20px 0;"><img src="${cb.toDataURL('image/png')}" style="width:85.6mm;height:54mm;border-radius:3mm;" /></div></body></html>`);
               pw.document.close();
             } catch (err) {
               const errEl = document.getElementById('st-dl-err');
@@ -2613,7 +2661,7 @@ const ShellApp = (() => {
           <div class="sh-card">
             <div class="sh-card-title"><span>🖨️ Download &amp; Print ID Card</span></div>
             ${paid
-            ? `<p style="font-size:13px;">Your card fee (₦2,500) is confirmed. Use the button below to view or print your official CR80 card (max 3 downloads/day).</p>
+            ? `<p style="font-size:13px;">Your card fee (₦3,000) is confirmed. Use the button below to view or print your official CR80 card (max 3 downloads/day).</p>
                  <a href="#/my-card" class="sh-btn" style="text-decoration:none;">Open Card &amp; Download</a>`
             : `<p style="font-size:13px;color:var(--sh-amber);">🔒 Download and Print are locked until your Card Fee payment is verified.</p>`
           }
@@ -2702,7 +2750,7 @@ const ShellApp = (() => {
                 </div>
 
                 <label class="sh-label" for="sr-name">Full Name (Surname First) *</label>
-                <input id="sr-name" class="sh-input" placeholder="NNAJI WILSON SOMTOCHUKWU" style="text-transform:uppercase;" required />
+                <input id="sr-name" class="sh-input" placeholder="SURNAME FIRSTNAME MIDDLENAME" style="text-transform:uppercase;" required />
 
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
                   <div>
@@ -2972,7 +3020,7 @@ const ShellApp = (() => {
             msgsEl.innerHTML = (data.messages || [])
               .map(
                 m => `
-                <div style="align-self:${m.sender_role === 'student' ? 'flex-end' : 'flex-start'};max-width:85%;padding:8px 10px;border-radius:8px;background:${m.sender_role === 'student' ? 'rgba(59,130,246,0.16)' : 'rgba(16,185,129,0.14)'};border:1px solid var(--sh-border);font-size:12px;">
+                <div style="align-self:${m.sender_role === 'student' ? 'flex-end' : 'flex-start'};max-width:85%;padding:8px 10px;border-radius:8px;background:${m.sender_role === 'student' ? 'var(--badge-neutral-bg)' : 'var(--badge-valid-bg)'};border:1px solid var(--sh-border);font-size:12px;">
                   <div style="font-size:10px;font-weight:800;color:var(--sh-muted);">${esc(m.sender_name)} (${esc(m.sender_role.toUpperCase())})</div>
                   <div style="white-space:pre-wrap;">${esc(m.body)}</div>
                 </div>`
@@ -3266,6 +3314,15 @@ const ShellApp = (() => {
       }
 
       _ctx.school = _ctx.schoolsList.find(s => s.id === _ctx.schoolId) || _ctx.schoolsList[0] || null;
+    }
+
+    // Demo sessions carry the school in the sign-in data instead.
+    if (!_ctx.schoolId) _ctx.schoolId = _ctx.user?.app_metadata?.school_id || null;
+
+    // Every card drawn in the console uses this school's saved design.
+    if (typeof CardTemplate !== 'undefined' && CardTemplate.setSchool) {
+      CardTemplate.setSchool(_ctx.schoolId);
+      try { await CardTemplate.load(); } catch (e) {}
     }
 
     // Populate Sidebar Header & User Footer

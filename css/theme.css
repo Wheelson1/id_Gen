@@ -1,54 +1,82 @@
 /**
- * EBSU Smart Identity Platform — Theme System (css/theme.css)
- * Warm-Neutral Dual Mode (Light & Dark)
- * WCAG AA Contrast Compliant | Zero Flash on Load
+ * EBSU Student ID — Theme System (css/theme.css)
+ * The one source of colour and type for every page.
+ *
+ * Palette (forest greens): #051F20 #0B2B26 #163832 #235347 #8EB69B #DAF1DE
+ * #EEF8F0, #D2ECD8 and #B4D4BE are lighter mixes of the same family.
+ * Rule: the sage #8EB69B is never text on a light background (1.9:1).
+ * Red and amber are kept for errors and warnings; the ID card keeps crest blue.
  */
+
+/* ── Fonts, served from this site (fonts/) so pages look the same offline ──
+   Besley: headings. Source Sans 3: everything you read or type. */
+@font-face { font-family: 'Besley'; font-style: normal; font-weight: 500; font-display: swap; src: url('../fonts/besley-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Besley'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/besley-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Besley'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/besley-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Source Sans 3'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/source-sans-3-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Source Sans 3'; font-style: italic; font-weight: 400; font-display: swap; src: url('../fonts/source-sans-3-latin-400-italic.woff2') format('woff2'); }
+@font-face { font-family: 'Source Sans 3'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/source-sans-3-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Source Sans 3'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/source-sans-3-latin-700-normal.woff2') format('woff2'); }
+
+:root {
+  --font-ui: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-head: 'Besley', Georgia, 'Times New Roman', serif;
+  --font-code: ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace;
+}
 
 :root,
 :root[data-theme="light"] {
-  --bg: #FAF9F5;
-  --surface: #FFFFFF;
-  --sunken: #F3F1EA;
-  --ink: #1F1E1B;
-  --muted: #6B675F;
-  --line: #E4E0D8;
-  --accent: #1558C0;
-  --accent-hover: #0F47A0;
-  --accent-ink: #FFFFFF;
-  --success: #1F7A4D;
-  --warning: #A15C07;
-  --error: #B3261E;
-  --shadow: 0 1px 2px rgba(31, 30, 27, 0.08);
+  --bg: #DAF1DE;
+  --surface: #EEF8F0;
+  --sunken: #D2ECD8;
+  --ink: #051F20;
+  --muted: #235347;
+  --line: #B4D4BE;
+  --accent: #235347;
+  --accent-hover: #163832;
+  --accent-ink: #F2FAF3;
+  --success: #1D6B44;
+  --warning: #7A5200;
+  --error: #A8261C;
+  --shadow: 0 1px 2px rgba(5, 31, 32, 0.10);
+
+  /* Header / footer band */
+  --band: #0B2B26;
+  --band-ink: #DAF1DE;
+  --band-ink-2: #8EB69B;
 
   /* Status badge tinted backgrounds */
-  --badge-valid-bg: rgba(31, 122, 77, 0.12);
-  --badge-warning-bg: rgba(161, 92, 7, 0.12);
-  --badge-error-bg: rgba(179, 38, 30, 0.12);
-  --badge-neutral-bg: rgba(107, 103, 95, 0.12);
+  --badge-valid-bg: rgba(29, 107, 68, 0.14);
+  --badge-warning-bg: rgba(122, 82, 0, 0.12);
+  --badge-error-bg: rgba(168, 38, 28, 0.12);
+  --badge-neutral-bg: rgba(35, 83, 71, 0.12);
 
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --bg: #262624;
-  --surface: #30302E;
-  --sunken: #1F1E1D;
-  --ink: #ECE9E1;
-  --muted: #A8A398;
-  --line: #42413D;
-  --accent: #6FA0F0;
-  --accent-hover: #8DB6F5;
-  --accent-ink: #1F1E1D;
-  --success: #5FBF8A;
+  --bg: #051F20;
+  --surface: #0B2B26;
+  --sunken: #031617;
+  --ink: #DAF1DE;
+  --muted: #8EB69B;
+  --line: #235347;
+  --accent: #8EB69B;
+  --accent-hover: #A9CDB4;
+  --accent-ink: #051F20;
+  --success: #6CCB95;
   --warning: #E0A458;
   --error: #F08A82;
   --shadow: none;
 
-  /* Status badge tinted backgrounds */
-  --badge-valid-bg: rgba(95, 191, 138, 0.16);
+  --band: #0B2B26;
+  --band-ink: #DAF1DE;
+  --band-ink-2: #8EB69B;
+
+  --badge-valid-bg: rgba(108, 203, 149, 0.16);
   --badge-warning-bg: rgba(224, 164, 88, 0.16);
   --badge-error-bg: rgba(240, 138, 130, 0.16);
-  --badge-neutral-bg: rgba(168, 163, 152, 0.16);
+  --badge-neutral-bg: rgba(142, 182, 155, 0.16);
 
   color-scheme: dark;
 }
@@ -57,7 +85,7 @@
 body {
   background-color: var(--bg);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-ui);
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
@@ -268,3 +296,27 @@ input[type="radio"] {
   }
 }
 
+
+/* ── Plain buttons for pages without their own button styles ── */
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--muted);
+  border-radius: 4px;
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-secondary:hover:not(:disabled) { background: var(--sunken); }

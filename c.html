@@ -9,45 +9,55 @@
   <meta name="robots" content="noindex, nofollow">
   <title>EBSU Student ID Card Verification</title>
   <style>
+    @font-face { font-family: 'Besley'; font-weight: 600; font-display: swap; src: url('/fonts/besley-latin-600-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Source Sans 3'; font-weight: 400; font-display: swap; src: url('/fonts/source-sans-3-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Source Sans 3'; font-weight: 600; font-display: swap; src: url('/fonts/source-sans-3-latin-600-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Source Sans 3'; font-weight: 700; font-display: swap; src: url('/fonts/source-sans-3-latin-700-normal.woff2') format('woff2'); }
+    /* Forest-green palette, same as the rest of the site (css/theme.css).
+       This page stands alone because it is opened from printed QR codes. */
     :root {
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --muted: #64748b;
-      --brand: #0284c7;
-      --green-bg: #ecfdf5;
-      --green-border: #10b981;
-      --green-text: #065f46;
-      --red-bg: #fef2f2;
-      --red-border: #ef4444;
-      --red-text: #991b1b;
-      --amber-bg: #fffbeb;
-      --amber-border: #f59e0b;
-      --amber-text: #92400e;
+      --bg: #DAF1DE;
+      --card-bg: #EEF8F0;
+      --border: #B4D4BE;
+      --text: #051F20;
+      --muted: #235347;
+      --brand: #163832;
+      --band: #0B2B26;
+      --band-ink: #DAF1DE;
+      --band-ink-2: #8EB69B;
+      --green-bg: #C6E4CE;
+      --green-border: #1D6B44;
+      --green-text: #0B3A26;
+      --red-bg: #FBE9E7;
+      --red-border: #A8261C;
+      --red-text: #7F1D16;
+      --amber-bg: #FBF1D9;
+      --amber-border: #7A5200;
+      --amber-text: #5C3D00;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0b1120;
-        --card-bg: #1e293b;
-        --border: #334155;
-        --text: #f8fafc;
-        --muted: #94a3b8;
-        --brand: #38bdf8;
-        --green-bg: #064e3b;
-        --green-border: #059669;
-        --green-text: #a7f3d0;
-        --red-bg: #450a0a;
-        --red-border: #dc2626;
-        --red-text: #fecaca;
-        --amber-bg: #451a03;
-        --amber-border: #d97706;
-        --amber-text: #fde68a;
+        --bg: #051F20;
+        --card-bg: #0B2B26;
+        --border: #235347;
+        --text: #DAF1DE;
+        --muted: #8EB69B;
+        --brand: #B9DEC3;
+        --band: #031617;
+        --green-bg: #163832;
+        --green-border: #6CCB95;
+        --green-text: #DAF1DE;
+        --red-bg: #3A1B18;
+        --red-border: #F08A82;
+        --red-text: #FBD3CF;
+        --amber-bg: #33270F;
+        --amber-border: #E0A458;
+        --amber-text: #F6DDB6;
       }
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -63,29 +73,28 @@
       max-width: 440px;
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 6px;
       overflow: hidden;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 1px 1px rgba(5, 31, 32, .10), 0 18px 40px -18px rgba(5, 31, 32, .45);
     }
     .card-header {
-      padding: 20px 24px 16px;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(180deg, rgba(2, 132, 199, 0.04) 0%, transparent 100%);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--band);
+      color: var(--band-ink);
     }
     .inst-title {
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      color: var(--brand);
-      text-transform: uppercase;
+      font-family: 'Besley', Georgia, serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--band-ink);
     }
     .inst-sub {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 2px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
+      font-size: 13px;
+      color: var(--band-ink-2);
+      margin-top: 1px;
     }
     .card-body {
       padding: 24px;
@@ -95,7 +104,7 @@
       align-items: center;
       gap: 12px;
       padding: 14px 16px;
-      border-radius: 12px;
+      border-radius: 4px;
       border: 1.5px solid;
       margin-bottom: 20px;
     }
@@ -104,12 +113,12 @@
       border-color: var(--green-border);
       color: var(--green-text);
     }
-    .status-banner.invalid, .status-banner.revoked, .status-banner.tampered, .status-banner.suspended {
+    .status-banner.invalid, .status-banner.revoked, .status-banner.tampered, .status-banner.suspended, .status-banner.lost_card {
       background: var(--red-bg);
       border-color: var(--red-border);
       color: var(--red-text);
     }
-    .status-banner.expired, .status-banner.provisional, .status-banner.unpaid {
+    .status-banner.expired, .status-banner.provisional, .status-banner.unpaid, .status-banner.offline {
       background: var(--amber-bg);
       border-color: var(--amber-border);
       color: var(--amber-text);
@@ -142,9 +151,9 @@
     .photo-frame {
       width: 90px;
       height: 114px;
-      border-radius: 10px;
+      border-radius: 4px;
       border: 2px solid var(--border);
-      background: #e2e8f0;
+      background: var(--border);
       overflow: hidden;
       flex-shrink: 0;
       display: flex;
@@ -232,8 +241,11 @@
 
   <main class="verify-card" id="verify-card-container">
     <header class="card-header">
-      <div class="inst-title">Ebonyi State University</div>
-      <div class="inst-sub">Official Digital ID Verification Portal</div>
+      <img src="/crest_large.png.jpeg" alt="" width="40" height="40" style="width:40px;height:40px;object-fit:contain;background:#fff;border-radius:3px;padding:1px;flex-shrink:0;" onerror="this.remove()">
+      <div>
+        <div class="inst-title">Ebonyi State University</div>
+        <div class="inst-sub">Student ID card check</div>
+      </div>
     </header>
 
     <div class="card-body" id="card-body">
@@ -250,9 +262,6 @@
   </main>
 
   <script src="config.js"></script>
-  <script src="qr.js"></script>
-  <script src="js/cardTemplate.js"></script>
-  <script src="canvas.js"></script>
   <script>
     (function () {
       'use strict';
@@ -305,6 +314,11 @@
           cls = 'revoked';
           heading = 'CARD REVOKED';
           detail = customDetail || 'This student ID card has been revoked and is no longer valid.';
+        } else if (s === 'lost_card') {
+          icon = '✕';
+          cls = 'lost_card';
+          heading = 'REPORTED LOST OR STOLEN';
+          detail = customDetail || 'This card was reported lost or stolen and has been deactivated.';
         } else if (s === 'suspended') {
           icon = '⏸';
           cls = 'suspended';
@@ -335,6 +349,11 @@
           cls = 'tampered';
           heading = 'CRYPTOGRAPHIC SIGNATURE INVALID';
           detail = 'Card signature does not match canonical registry data.';
+        } else if (s === 'offline') {
+          icon = '⚠️';
+          cls = 'offline';
+          heading = 'Cannot reach server — Verification service offline';
+          detail = customDetail || 'Network connection unavailable. No verification verdict can be issued offline.';
         }
 
         return `
@@ -348,17 +367,18 @@
         `;
       }
 
+      // Public response strictly renders ONLY: name, photo_url, faculty, dept, level, matric, expiry, status
       function renderStudentCard(status, student, checkedAt, customDetail) {
-        timeEl.textContent = 'Verified: ' + new Date(checkedAt || Date.now()).toLocaleString();
+        timeEl.textContent = 'Checked: ' + new Date(checkedAt || Date.now()).toLocaleString();
         footerEl.style.display = 'flex';
 
-        if (!student || status === 'not_found' || status === 'tampered' || status === 'invalid') {
+        if (!student || ['not_found', 'tampered', 'invalid', 'offline'].includes(status)) {
           bodyEl.innerHTML = renderStatusBanner(status, customDetail);
           return;
         }
 
-        const photoHtml = student.photo_url || student.photo
-          ? `<img src="${escapeHtml(student.photo_url || student.photo)}" alt="Student Passport" />`
+        const photoHtml = student.photo_url
+          ? `<img src="${escapeHtml(student.photo_url)}" alt="Student Passport" />`
           : `<div class="photo-placeholder">👤</div>`;
 
         bodyEl.innerHTML = `
@@ -367,7 +387,7 @@
           <div class="student-profile">
             <div class="photo-frame">${photoHtml}</div>
             <div class="profile-info">
-              <div class="student-name">${escapeHtml(student.name || 'STUDENT NAME')}</div>
+              <div class="student-name">${escapeHtml(student.name || '—')}</div>
               <div class="student-matric">${escapeHtml(student.matric || '—')}</div>
             </div>
           </div>
@@ -376,73 +396,31 @@
             <tbody>
               <tr>
                 <td class="lbl">Faculty</td>
-                <td class="val">${escapeHtml(student.faculty || '—')}</td>
+                <td class="val">${escapeHtml(student.faculty || 'N/A')}</td>
               </tr>
               <tr>
                 <td class="lbl">Department</td>
-                <td class="val">${escapeHtml(student.dept || student.department || '—')}</td>
+                <td class="val">${escapeHtml(student.dept || 'N/A')}</td>
               </tr>
               <tr>
                 <td class="lbl">Academic Level</td>
-                <td class="val">${escapeHtml(student.level || '—')}</td>
+                <td class="val">${escapeHtml(student.level || 'N/A')}</td>
               </tr>
               <tr>
                 <td class="lbl">Valid Expiry</td>
-                <td class="val">${escapeHtml(student.expiry ? String(student.expiry) : '—')}</td>
+                <td class="val">${escapeHtml(student.expiry ? String(student.expiry) : 'N/A')}</td>
+              </tr>
+              <tr>
+                <td class="lbl">Card Status</td>
+                <td class="val">${escapeHtml((student.status || status || '').toUpperCase())}</td>
               </tr>
             </tbody>
           </table>
-          ${(status === 'valid' || status === 'expired') && student ? `
-            <div style="margin-top: 20px; text-align: center;">
-              <button type="button" id="btn-download-c-png" style="background: linear-gradient(135deg, #059669, #10b981); color: #ffffff; border: none; padding: 11px 22px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(16,185,129,0.3); transition: transform 0.15s ease;">
-                📥 Download Verified ID Card (PNG)
-              </button>
-            </div>
-          ` : ''}
         `;
-
-        if ((status === 'valid' || status === 'expired') && student) {
-          setTimeout(() => {
-            const dlBtn = document.getElementById('btn-download-c-png');
-            if (dlBtn) {
-              dlBtn.onclick = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = 1011;
-                canvas.height = 638;
-                const tpl = (typeof CardTemplate !== 'undefined' && CardTemplate.get) ? CardTemplate.get() : null;
-                const payload = {
-                  ...student,
-                  name: student.name || 'STUDENT',
-                  matric: student.matric || student.regNo || 'STUDENT',
-                  photo_url: student.photo_url || student.photo || 'images/demo_user_photo.jpg',
-                  sig_url: student.signature_url || student.sig_url || 'images/demo_user_sig.png',
-                  card_signature: student.card_signature || 'ED25519_DEMO_SIGNATURE',
-                };
-                const matricClean = String(payload.matric).replace(/\//g, '-');
-                let downloaded = false;
-                const triggerDl = () => {
-                  if (downloaded) return;
-                  downloaded = true;
-                  const a = document.createElement('a');
-                  a.href = canvas.toDataURL('image/png');
-                  a.download = `EBSU-ID-${matricClean}-VERIFIED.png`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                };
-                if (typeof drawCard === 'function') {
-                  drawCard(canvas, tpl, payload, 1.0, triggerDl);
-                  setTimeout(triggerDl, 250);
-                }
-              };
-            }
-          }, 50);
-        }
       }
 
       async function verify() {
         const path = window.location.pathname;
-        const hash = window.location.hash;
         const search = window.location.search;
 
         let cardId = null;
@@ -469,12 +447,18 @@
 
         const verifyUrl = (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.VERIFY_CARD_URL)
           ? EBSU_CONFIG.VERIFY_CARD_URL
-          : 'https://qsrfvfdojtmsinewxetz.supabase.co/functions/v1/verify-card';
+          : '';
+
+        if (!verifyUrl) {
+          renderStudentCard('offline', null, new Date(), 'Verification endpoint not configured.');
+          return;
+        }
 
         try {
           const headers = { 'Content-Type': 'application/json' };
           if (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.SUPABASE_ANON_KEY) {
             headers['apikey'] = EBSU_CONFIG.SUPABASE_ANON_KEY;
+            headers['Authorization'] = 'Bearer ' + EBSU_CONFIG.SUPABASE_ANON_KEY;
           }
 
           const payload = token
@@ -487,45 +471,16 @@
             body: JSON.stringify(payload)
           });
 
-          if (res.ok) {
+          if (res.ok || res.status === 429) {
             const data = await res.json();
             renderStudentCard(data.status, data.student, data.checked_at, data.reason);
             return;
           }
 
-          // If offline or remote call returned non-200, check local registry fallback for dev/demo
-          fallbackLocalVerify(cardId, sig, token);
-
-        } catch (fetchErr) {
-          fallbackLocalVerify(cardId, sig, token);
+          renderStudentCard('offline', null, new Date().toISOString());
+        } catch (_) {
+          renderStudentCard('offline', null, new Date().toISOString());
         }
-      }
-
-      function fallbackLocalVerify(cardId, sig, token) {
-        try {
-          const localList = JSON.parse(localStorage.getItem('ebsu_local_students') || '[]');
-          const cleanId = (cardId || '').toLowerCase();
-          const match = localList.find(s => 
-            (s.id && s.id.toLowerCase() === cleanId) || 
-            (s.matric && s.matric.toLowerCase() === cleanId) ||
-            (s.school_reg_no && s.school_reg_no.toLowerCase() === cleanId)
-          );
-
-          if (match) {
-            renderStudentCard('valid', {
-              name: match.name,
-              matric: match.matric,
-              faculty: match.faculty,
-              dept: match.dept,
-              level: match.level,
-              expiry: match.expiry,
-              photo_url: match.photo_url || match.photo
-            }, new Date().toISOString(), 'Verified via localized identity cache.');
-            return;
-          }
-        } catch (_) {}
-
-        renderStudentCard('invalid', null, new Date().toISOString(), 'Unable to contact verification server or verify signature.');
       }
 
       window.addEventListener('DOMContentLoaded', verify);
@@ -533,4 +488,3 @@
   </script>
 </body>
 </html>
-

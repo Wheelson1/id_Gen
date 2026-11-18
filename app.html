@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Command Console — EBSU Digital ID</title>
   <meta name="color-scheme" content="light dark" />
-  <meta name="theme-color" content="#FAF9F5" />
+  <meta name="theme-color" content="#0B2B26" />
   <script>
     (function() {
       try {
@@ -14,19 +14,17 @@
         document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme-preference', p);
         var m = document.querySelector('meta[name="theme-color"]');
-        if (m) m.setAttribute('content', d ? '#262624' : '#FAF9F5');
+        if (m) m.setAttribute('content', '#0B2B26');
       } catch(e) {
         document.documentElement.setAttribute('data-theme', 'light');
       }
     })();
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" />
   <link rel="stylesheet" href="css/theme.css" />
   <link rel="stylesheet" href="css/shared.css" />
+  <link rel="stylesheet" href="css/cardlab.css" />
   <link rel="stylesheet" href="css/shell.css" />
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -117,6 +115,7 @@
   <script src="js/academicRules.js"></script>
   <script src="js/cardTemplate.js"></script>
   <script src="canvas.js"></script>
+  <script src="js/cardLab.js"></script>
   <script src="cropper.js"></script>
   <script src="js/card3d.js"></script>
   <script src="js/bulkStudio.js"></script>
