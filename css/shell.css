@@ -619,3 +619,14 @@ body.shell-body {
   }
 }
 
+
+/* ── Phones: tidy top bar, scrollable tables ── */
+@media (max-width: 640px) {
+  .cmdk-trigger span, .cmdk-trigger kbd { display: none; }
+  .cmdk-trigger::before { content: "Search"; font-size: 13px; }
+  .topbar-title { font-size: 18px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .topbar-left { min-width: 0; flex: 1; }
+  .sh-table-wrap { -webkit-overflow-scrolling: touch; margin: 0 -4px; }
+  .sh-table { min-width: 560px; }
+  .sh-table td, .sh-table th { padding: 9px 8px; }
+}

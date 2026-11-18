@@ -20,7 +20,6 @@
       }
     })();
   </script>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/shared.css">
@@ -104,7 +103,13 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-  </style>
+  
+    .portal-band { display: flex; align-items: center; gap: 12px; margin: -20px -20px 20px; padding: 16px 20px; background: var(--band); color: var(--band-ink); border-radius: 12px 12px 0 0; }
+    .portal-crest { width: 44px; height: 44px; object-fit: contain; background: #fff; border-radius: 3px; padding: 1px; flex-shrink: 0; }
+    .portal-band-name { font-family: var(--font-head); font-weight: 600; font-size: 18px; line-height: 1.2; }
+    .portal-band-sub { font-size: 14px; color: var(--band-ink-2); }
+    @media (max-width: 540px) { .portal-container { margin: 0; border-radius: 0; border-left: 0; border-right: 0; min-height: 100vh; } .portal-band { border-radius: 0; } }
+</style>
 </head>
 <body>
 
@@ -123,12 +128,12 @@
   </div>
 
   <div class="portal-container">
-    <div style="border-radius: 8px 8px 0 0; overflow: hidden; margin: -20px -20px 20px -20px; height: 110px; position: relative; border-bottom: 2px solid var(--line);">
-      <img src="images/banner_welcome_in.jpg" alt="Welcome In" style="width: 100%; height: 100%; object-fit: cover;" />
-    </div>
-    <div class="portal-header">
-      <h2>🎓 EBSU Digital ID Portal</h2>
-      <p>Access and manage your student ID card securely.</p>
+    <div class="portal-band">
+      <img src="crest_large.png.jpeg" alt="Ebonyi State University crest" class="portal-crest">
+      <div>
+        <div class="portal-band-name">Ebonyi State University</div>
+        <div class="portal-band-sub">My student ID card</div>
+      </div>
     </div>
 
     <!-- AUTHENTICATION (PASSWORDLESS JAMB + DOB + PAYMENT REFERENCE OR ONBOARDING) -->
@@ -161,7 +166,8 @@
         <label class="label" for="portal-ref">Payment Receipt Reference</label>
         <input id="portal-ref" type="text" class="input" placeholder="e.g. EBSU-CARD-..." autocomplete="off" style="text-transform:uppercase; margin-bottom:12px;" />
 
-        <button id="btn-unlock-card" class="btn-primary btn-full">🔓 Unlock My Paid Digital ID</button>
+        <div id="portal-turnstile" style="margin:4px 0 10px;min-height:4px;"></div>
+        <button id="btn-unlock-card" class="btn-primary btn-full">Open my ID card</button>
 
         <div style="margin-top:14px; text-align:center; display:flex; flex-direction:column; gap:8px;">
           <a href="index.html#generate-section" style="font-size:13px; color:var(--accent); text-decoration:underline; font-weight:800;">
@@ -294,9 +300,10 @@
   </div>
 
   <!-- Scripts -->
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="js/vendor/supabase.js"></script>
+  <script defer src="js/vendor/jspdf.umd.min.js"></script>
   <!-- Required App Scripts -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
   <script defer src="config.js"></script>
   <script defer src="js/auth.js"></script>
   <script defer src="js/academicRules.js"></script>

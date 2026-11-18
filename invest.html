@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>For Institutions &amp; Investors | EBSU SID Cryptographic Credential Platform</title>
-    <meta name="description" content="Institutional overview, cryptographic security architecture, product tour, and illustrative per-campus revenue model for the EBSU Smart Student Identity Platform.">
+    <title>EBSU Student ID System | Briefing for the university</title>
+    <meta name="description" content="A forgery-proof student ID system for Ebonyi State University: signed QR cards, phone scanning at gates and exam halls, self-service issuance and fee collection.">
     <meta name="color-scheme" content="light dark">
-    <meta name="theme-color" content="#DAF1DE">
+    <meta name="theme-color" content="#0B2B26">
     <script>
       (function() {
         try {
@@ -14,610 +14,420 @@
           var d = p === 'dark' || (p === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
           document.documentElement.setAttribute('data-theme', d ? 'dark' : 'light');
           document.documentElement.setAttribute('data-theme-preference', p);
-          var m = document.querySelector('meta[name="theme-color"]');
-          if (m) m.setAttribute('content', d ? '#051F20' : '#DAF1DE');
         } catch(e) {
           document.documentElement.setAttribute('data-theme', 'light');
         }
       })();
     </script>
     <link rel="stylesheet" href="css/theme.css">
-    <link rel="stylesheet" href="css/landing-pro.css">
+    <link rel="stylesheet" href="css/print.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+    <script src="js/vendor/qrcode.min.js" defer></script>
 </head>
-<body class="mc-body">
+<body class="print-body">
 
-    <!-- Top Security Bar -->
-    <div class="mc-topbar">
-        <div class="mc-container mc-topbar-inner">
-            <div class="mc-topbar-badge">
-                <span class="mc-status-dot" aria-hidden="true"></span>
-                <span>INSTITUTIONAL &amp; INVESTOR BRIEFING · MULTI-TENANT UNIVERSITY CREDENTIAL INFRASTRUCTURE</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                <a href="index.html" style="color:var(--mc-gold); font-weight:700;">← Back to Student Portal</a>
-                <a href="verify.html" style="color:var(--mc-emerald); font-weight:700;">Open Live Gate Verifier →</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sticky Header -->
-    <header class="mc-header">
-        <div class="mc-container mc-header-inner">
-            <a href="index.html" class="mc-brand">
-                <img src="images/ebsu_logo.png" alt="EBSU Crest" class="mc-brand-logo" onerror="this.style.display='none'">
-                <div>
-                    <span class="mc-brand-title">SID Platform · Institutions</span>
-                    <span class="mc-brand-sub">Cryptographic Campus Identity</span>
-                </div>
+    <header class="site-head">
+        <div class="wrap site-head-inner">
+            <a href="invest.html" class="brand">
+                <img src="crest_large.png.jpeg" alt="Ebonyi State University crest" class="brand-crest">
+                <span>
+                    <span class="brand-name">Ebonyi State University</span>
+                    <span class="brand-sub">Student ID system briefing</span>
+                </span>
             </a>
-
-            <nav class="mc-nav" aria-label="Institutional Navigation">
-                <a href="#problem-solution" class="mc-nav-link">Problem &amp; Solution</a>
-                <a href="#security-spec" class="mc-nav-link">Security Architecture</a>
-                <a href="#product-tour" class="mc-nav-link">Product Tour</a>
-                <a href="#business-model" class="mc-nav-link">Revenue Model</a>
-                <a href="mobile.html" class="mc-nav-link" style="color:#8EB69B; font-weight:800;">📱 Mobile Demo</a>
-                <a href="index.html" class="mc-nav-link">Student Portal</a>
-                <a href="verify.html?standalone=1&autostart=1" class="mc-nav-link mc-nav-verify">🛡️ Verify Card</a>
-                <button type="button" class="theme-toggle-btn" aria-label="Toggle Theme"></button>
+            <nav class="site-nav" aria-label="Briefing">
+                <a href="#problem">The problem</a>
+                <a href="#who">Who uses it</a>
+                <a href="#security">Security</a>
+                <a href="#revenue">Card fee</a>
+                <a href="#contact">Contact</a>
+                <button type="button" class="theme-toggle-btn" aria-label="Switch between light and dark"></button>
             </nav>
         </div>
     </header>
 
-    <!-- ==================== HERO ==================== -->
-    <section class="mc-hero">
-        <div class="mc-container mc-hero-grid">
-            <div>
-                <div class="mc-eyebrow">
-                    <span>●</span>
-                    <span>FOR UNIVERSITIES &amp; INSTITUTIONAL PARTNERS</span>
-                </div>
-                <h1 class="mc-hero-title">
-                    Stop ID forgery. <span class="mc-accent-gradient">Automate campus issuance.</span>
-                </h1>
-                <p class="mc-hero-sub">
-                    A turnkey digital and physical student credential platform combining <strong>Ed25519 asymmetric cryptography</strong>, <strong>60-second anti-replay gate passes</strong>, automated per-card fee collection, and a high-speed <strong>CR80 Batch Print Studio</strong>.
-                </p>
-
-                <div class="mc-hero-actions">
-                    <a href="mobile.html" class="mc-cta-primary">
-                        <span>📱 Try Phone-to-PC Scanner Demo</span>
-                        <span aria-hidden="true">→</span>
-                    </a>
-                    <a href="#business-model" class="mc-cta-secondary">
-                        <span>Explore Revenue Calculator</span>
-                    </a>
-                    <a href="verify.html?standalone=1&autostart=1" class="mc-cta-secondary">
-                        <span>🛡️ Try Gate Verifier</span>
-                    </a>
-                </div>
-
-                <div class="mc-trust-strip">
-                    <div class="mc-trust-chip">
-                        <span class="mc-trust-chip-icon">Ed</span>
-                        <span>Ed25519 Canonical Signing</span>
-                    </div>
-                    <div class="mc-trust-chip">
-                        <span class="mc-trust-chip-icon">60s</span>
-                        <span>Single-Use Rotating Pass</span>
-                    </div>
-                    <div class="mc-trust-chip">
-                        <span class="mc-trust-chip-icon">CR80</span>
-                        <span>Batch Print Sheet Studio</span>
-                    </div>
-                    <div class="mc-trust-chip">
-                        <span class="mc-trust-chip-icon">MFA</span>
-                        <span>AAL2 Enforced Staff Enclave</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Executive Architecture Snapshot Card -->
-            <div class="mc-portal-card">
-                <div class="mc-portal-header">
-                    <div>
-                        <h2 class="mc-portal-header-title">🏛️ Reference Deployment Architecture</h2>
-                        <p class="mc-portal-header-sub">Configured for Ebonyi State University (EBSU) · Multi-school schema ready</p>
-                    </div>
-                    <span class="mc-fee-chip">PRODUCTION SPEC</span>
-                </div>
-                <div class="mc-portal-body" style="display:flex; flex-direction:column; gap:14px;">
-                    <div class="onb-student-card" style="margin-bottom:0;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <span class="mono" style="font-size:0.72rem; color:var(--mc-gold); font-weight:700;">01 · CRYPTOGRAPHIC TOKEN PROTOCOL</span>
-                            <span class="mc-sample-badge">DUAL-MODE</span>
-                        </div>
-                        <div style="font-size:0.84rem; color:var(--mc-text-secondary); line-height:1.5;">
-                            <div><strong class="mono" style="color:var(--mc-text);">EBSU1 (Printed Card):</strong> Signs <code class="mono">EBSU1|v1|card_id|matric|name|expiry</code> with an Ed25519 private key inside Deno Edge Functions.</div>
-                            <div style="margin-top:6px;"><strong class="mono" style="color:var(--mc-emerald);">EBSU2 (60s Live Pass):</strong> Mints a 60-second single-use token recorded in <code class="mono">card_pass_nonces</code> to block screenshot sharing and passback.</div>
-                        </div>
-                    </div>
-
-                    <div class="onb-student-card" style="margin-bottom:0;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <span class="mono" style="font-size:0.72rem; color:var(--mc-gold); font-weight:700;">02 · SEPARATED CARD FEE LEDGER</span>
-                            <span class="mono" style="font-size:0.75rem; color:var(--mc-emerald); font-weight:700;">₦2,500 / CARD</span>
-                        </div>
-                        <div style="font-size:0.84rem; color:var(--mc-text-secondary); line-height:1.5;">
-                            Dedicated <code class="mono">card_payments</code> ledger and <code class="mono">students.card_fee_paid_at</code> timestamp keep ID card revenue cleanly separated from general tuition/school fees.
-                        </div>
-                    </div>
-
-                    <div class="onb-student-card" style="margin-bottom:0;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <span class="mono" style="font-size:0.72rem; color:var(--mc-gold); font-weight:700;">03 · MASSIVE BATCH CR80 PRINT STUDIO</span>
-                            <span class="mono" style="font-size:0.72rem; color:var(--mc-blue);">300 DPI SHEET EXPORT</span>
-                        </div>
-                        <div style="font-size:0.84rem; color:var(--mc-text-secondary); line-height:1.5;">
-                            Staff operators import thousands of verified student records via Excel/CSV, auto-match passport photos, and export print-ready CR80 sheets and ZIP archives.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== THE PROBLEM & THE SOLUTION ==================== -->
-    <section id="problem-solution" class="mc-section mc-section-alt">
-        <div class="mc-container">
-            <div class="mc-section-header">
-                <div class="mc-eyebrow">WHY LEGACY CAMPUS IDs FAIL</div>
-                <h2 class="mc-section-title">The Problem vs. The SID Platform</h2>
-                <p class="mc-section-desc">
-                    Traditional PVC cards with static barcodes offer zero protection against colour photocopying, exam impersonation, or unverified fee collection.
-                </p>
-            </div>
-
-            <div class="mc-security-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
-                <article class="mc-security-card" style="border-color:rgba(239, 68, 68, 0.35);">
-                    <span class="mc-security-tag" style="background:var(--mc-danger-soft); color:var(--error);">LEGACY UNIVERSITY ID WORKFLOW</span>
-                    <h3>Vulnerable, Manual &amp; Unverifiable</h3>
-                    <ul style="margin:8px 0 0; padding-left:18px; color:var(--mc-text-muted); font-size:var(--text-sm); display:flex; flex-direction:column; gap:10px;">
-                        <li><strong>30-Second Photocopy Forgery:</strong> Static plastic cards and unencrypted QR codes can be duplicated at any business centre.</li>
-                        <li><strong>Exam Hall Impersonation:</strong> Invigilators cannot verify whether a card has been revoked, suspended, or altered after printing.</li>
-                        <li><strong>Weeks of Physical Queues:</strong> Students queue at ICT centres to submit paper receipts and physical passport photos.</li>
-                        <li><strong>Revenue Leakage:</strong> Manual bank-teller verification makes reconciling per-student ID card fees slow and error-prone.</li>
-                    </ul>
-                </article>
-
-                <article class="mc-security-card" style="border-color:var(--mc-emerald-border);">
-                    <span class="mc-security-tag" style="background:var(--mc-emerald-soft); color:var(--mc-emerald);">EBSU SID CRYPTOGRAPHIC PLATFORM</span>
-                    <h3>Verifiable, Self-Service &amp; Instant</h3>
-                    <ul style="margin:8px 0 0; padding-left:18px; color:var(--mc-text-muted); font-size:var(--text-sm); display:flex; flex-direction:column; gap:10px;">
-                        <li><strong>Asymmetric Ed25519 Signatures:</strong> Every card is signed over <code class="mono">card_id + matric + name + expiry</code>. Any database name edit automatically invalidates stale signatures.</li>
-                        <li><strong>60-Second Rotating Gate Pass (<code class="mono">EBSU2</code>):</strong> Students generate a live 60-second single-use pass on their phone for exam entry; re-scanning a screenshot triggers an instant <code class="mono">REPLAYED</code> alert.</li>
-                        <li><strong>60-Second Self-Service Onboarding:</strong> Students verify JAMB + DOB, pay the ₦2,500 card fee, and frame their passport photo online.</li>
-                        <li><strong>Zero Hardware Lock-In:</strong> Campus security guards verify cards using any smartphone camera via <a href="verify.html">verify.html</a>.</li>
-                    </ul>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== SECURITY ARCHITECTURE ==================== -->
-    <section id="security-spec" class="mc-section">
-        <div class="mc-container">
-            <div class="mc-section-header">
-                <div class="mc-eyebrow">DEFENSE-IN-DEPTH</div>
-                <h2 class="mc-section-title">Four-Layer Security Architecture</h2>
-                <p class="mc-section-desc">
-                    Engineered to withstand enumeration attacks, credential replay, client-side privilege escalation, and unauthorized card issuance.
-                </p>
-            </div>
-
-            <div class="mc-steps-grid">
-                <article class="mc-step-card">
-                    <span class="mc-step-num">01 · ANTI-ENUMERATION</span>
-                    <h3>Dual-Bucket DOB Lockout + Turnstile</h3>
-                    <p>
-                        Student lookup requires JAMB + Date of Birth + Cloudflare Turnstile (failing closed if unconfigured) and enforces lockouts both per <code class="mono">(jamb_no, ip)</code> and globally per <code class="mono">jamb_no</code> across rotating IPs.
-                    </p>
-                </article>
-
-                <article class="mc-step-card">
-                    <span class="mc-step-num">02 · PRE-PAYMENT PRIVACY</span>
-                    <h3>Zero Pre-Payment PII Leakage</h3>
-                    <p>
-                        Before the ₦2,500 card fee is verified, the server withholds the student's matriculation number, official portrait URL, and QR signature from both the DOM and network responses.
-                    </p>
-                </article>
-
-                <article class="mc-step-card">
-                    <span class="mc-step-num">03 · STAFF AAL2 ENCLAVE</span>
-                    <h3>Hardware-Enforced TOTP MFA</h3>
-                    <p>
-                        Registrar, Admin, and Super Admin actions require <code class="mono">aal2</code> Multi-Factor Authentication enforced directly inside PostgreSQL Row-Level Security (<code class="mono">has_required_mfa()</code>) and Edge Functions.
-                    </p>
-                </article>
-
-                <article class="mc-step-card">
-                    <span class="mc-step-num">04 · IMMUTABLE AUDIT</span>
-                    <h3>Tamper-Evident Audit &amp; Scan Logs</h3>
-                    <p>
-                        Every card issuance, revocation, manual registration approval, and gate scan verdict (<code class="mono">valid</code>, <code class="mono">replayed</code>, <code class="mono">forged</code>) is recorded with actor and IP metadata.
-                    </p>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== PRODUCT TOUR (SAMPLE DATA ONLY) ==================== -->
-    <section id="product-tour" class="mc-section mc-section-alt">
-        <div class="mc-container">
-            <div class="mc-section-header">
-                <div class="mc-eyebrow">END-TO-END WORKFLOW PREVIEW</div>
-                <h2 class="mc-section-title">Product Tour (Sample Specimens)</h2>
-                <p class="mc-section-desc">
-                    Three integrated surfaces serve students, campus security guards, and Registrar production staff. All previews below use <strong>SAMPLE</strong> data only.
-                </p>
-            </div>
-
-            <div class="mc-security-grid">
-                <!-- Surface 1: Student Onboarding -->
-                <div class="mc-security-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="mc-security-tag">SURFACE 01 · STUDENT</span>
-                        <span class="mc-sample-badge">SAMPLE</span>
-                    </div>
-                    <h3>Self-Service Portal (<code class="mono">index.html</code>)</h3>
-                    <p>
-                        Guided 6-step onboarding with built-in 400×500px biometric photo framing, instant digital ID generation, and 60-second live gate pass minting.
-                    </p>
-                    <div style="margin-top:auto; padding-top:14px;">
-                        <a href="index.html" class="onb-btn onb-btn-outline" style="width:auto; padding:9px 16px; font-size:0.8rem;">Launch Student Portal →</a>
-                    </div>
-                </div>
-
-                <!-- Surface 2: Gate Verifier -->
-                <div class="mc-security-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="mc-security-tag" style="background:var(--mc-emerald-soft); color:var(--mc-emerald);">SURFACE 02 · GATE GUARD</span>
-                        <span class="mc-sample-badge">SAMPLE</span>
-                    </div>
-                    <h3>Live Gate Verifier (<code class="mono">verify.html</code>)</h3>
-                    <p>
-                        Scans both <code class="mono">EBSU1</code> printed cards and <code class="mono">EBSU2</code> 60-second rotating passes. Displays the student's stored high-resolution portrait for face comparison and flags replayed passes immediately.
-                    </p>
-                    <div style="margin-top:auto; padding-top:14px;">
-                        <a href="verify.html" class="onb-btn onb-btn-outline" style="width:auto; padding:9px 16px; font-size:0.8rem;">Launch Gate Verifier →</a>
-                    </div>
-                </div>
-
-                <!-- Surface 3: Registrar & Batch Studio -->
-                <div class="mc-security-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="mc-security-tag" style="background:var(--mc-gold-soft); color:var(--mc-gold-bright);">SURFACE 03 · REGISTRAR</span>
-                        <span class="mc-sample-badge">SAMPLE</span>
-                    </div>
-                    <h3>Staff Console &amp; Batch CR80 Studio</h3>
-                    <p>
-                        Authenticated staff console (<code class="mono">app.html</code>) featuring the Massive Batch Production Studio (Excel/CSV + Photo folder auto-matching, 300 DPI CR80 print sheets, and ZIP export) plus Audit &amp; Revocation controls.
-                    </p>
-                    <div style="margin-top:auto; padding-top:14px;">
-                        <a href="login.html" class="onb-btn onb-btn-outline" style="width:auto; padding:9px 16px; font-size:0.8rem;">Open Staff Login →</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== BUSINESS MODEL & ILLUSTRATIVE REVENUE CALCULATOR ==================== -->
-    <section id="business-model" class="mc-section">
-        <div class="mc-container">
-            <div class="mc-section-header">
-                <div class="mc-eyebrow">TRANSPARENT UNIT ECONOMICS</div>
-                <h2 class="mc-section-title">Business Model &amp; Illustrative Revenue Calculator</h2>
-                <p class="mc-section-desc">
-                    The platform operates on a per-credential issuance fee collected directly during student onboarding. Adjust the inputs below to model gross issuance revenue per campus cycle.
-                </p>
-            </div>
-
-            <div class="mc-calc-box">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--mc-border);">
-                    <div>
-                        <span class="mc-sample-badge" style="font-size:0.72rem;">ILLUSTRATIVE MODEL · FOR INSTITUTIONAL PLANNING ONLY</span>
-                        <h3 style="margin:8px 0 0; font-size:1.2rem; color:var(--mc-text);">Interactive Campus Issuance Calculator</h3>
-                    </div>
-                    <div style="font-size:var(--text-xs); color:var(--mc-text-muted); max-width:440px;">
-                        <strong>Note on Institutional Projections:</strong> Default values reflect the standard <strong>₦2,500</strong> card fee and an illustrative 10,000-student cohort. Audited multi-campus enrollment figures and historical issuance metrics are shared under mutual institutional briefing.
-                    </div>
-                </div>
-
-                <div class="mc-calc-grid">
-                    <!-- Calculator Controls -->
-                    <div style="display:flex; flex-direction:column; gap:18px;">
-                        <div>
-                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                                <label class="onb-label" for="calc-students" style="margin:0;">Active Students per Campus Cohort</label>
-                                <span id="calc-students-label" class="mono" style="font-weight:700; color:var(--mc-blue);">10,000 students</span>
-                            </div>
-                            <input type="range" id="calc-students" min="1000" max="60000" step="500" value="10000" style="width:100%; accent-color:var(--mc-blue);">
-                        </div>
-
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px;">
-                            <div>
-                                <label class="onb-label" for="calc-fee">ID Card Fee per Student (₦)</label>
-                                <input type="number" id="calc-fee" class="onb-input mono" value="2500" min="500" max="25000" step="100">
-                            </div>
-                            <div>
-                                <label class="onb-label" for="calc-campuses">Number of Campuses</label>
-                                <input type="number" id="calc-campuses" class="onb-input mono" value="1" min="1" max="50" step="1">
-                            </div>
-                            <div>
-                                <label class="onb-label" for="calc-share">Platform Share (%)</label>
-                                <input type="number" id="calc-share" class="onb-input mono" value="30" min="5" max="95" step="5">
-                            </div>
-                        </div>
-
-                        <div style="font-size:0.78rem; color:var(--mc-text-muted); padding:12px 14px; border-radius:10px; background:var(--mc-bg-elevated); border:1px solid var(--mc-border);">
-                            <strong>Production Checkout Isolation:</strong> In production, <code class="mono">ALLOW_LOCAL_CHECKOUT</code> defaults strictly to <code class="mono">false</code> and requires cryptographic webhook verification from Paystack. Demo sandboxes run on an isolated project so zero free cards can ever be minted in production.
-                        </div>
-                    </div>
-
-                    <!-- Calculator Live Output -->
-                    <div class="mc-calc-output">
-                        <div class="mono" style="font-size:0.72rem; color:#8EB69B; text-transform:uppercase; letter-spacing:0.08em;">
-                            ILLUSTRATIVE GROSS ISSUANCE REVENUE PER CYCLE
-                        </div>
-                        <div id="calc-gross-total" class="mc-calc-figure">₦25,000,000</div>
-                        <div id="calc-formula-line" class="mono" style="font-size:0.8rem; color:#8EB69B; margin-bottom:18px;">
-                            10,000 students × ₦2,500 × 1 campus
-                        </div>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.12);">
-                            <div>
-                                <div style="font-size:0.7rem; color:#8EB69B; text-transform:uppercase;">University Retained / IGR</div>
-                                <div id="calc-uni-share" class="mono" style="font-size:1.1rem; font-weight:800; color:#8EB69B; margin-top:4px;">₦17,500,000</div>
-                            </div>
-                            <div>
-                                <div style="font-size:0.7rem; color:#8EB69B; text-transform:uppercase;">Platform Infrastructure Share</div>
-                                <div id="calc-platform-share" class="mono" style="font-size:1.1rem; font-weight:800; color:#C6E4CE; margin-top:4px;">₦7,500,000</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== DEPLOYMENT ROADMAP & INSTITUTIONAL CONTACT ==================== -->
-    <section id="contact" class="mc-section mc-section-alt">
-        <div class="mc-container">
-            <div class="mc-helpdesk-box">
+    <main>
+        <!-- ============ HERO ============ -->
+        <section class="hero" aria-labelledby="brief-title">
+            <div class="wrap hero-grid brief-hero">
                 <div>
-                    <div class="mc-eyebrow">INSTITUTIONAL PARTNERSHIPS &amp; PILOTS</div>
-                    <h2 class="mc-section-title" style="margin-bottom:10px;">Deploy SID Platform at your campus</h2>
-                    <p class="mc-section-desc" style="margin-bottom:18px;">
-                        The database schema (<code class="mono">schools</code> tenant table, per-school fee configuration, and isolated RLS policies) is ready for multi-institution onboarding. Request a technical walkthrough or live sandbox access below.
+                    <h1 id="brief-title" class="hero-title">A student ID that can't be faked</h1>
+                    <p class="hero-lede">
+                        Every card carries a QR code signed by the university. A guard or invigilator scans it with a phone and sees, in seconds, whether the card is genuine, whose it is, and whether it has been withdrawn.
                     </p>
-                    <ul style="margin:0 0 20px; padding-left:18px; font-size:var(--text-sm); color:var(--mc-text-secondary); line-height:1.7;">
-                        <li><strong>Phase 1:</strong> Admission CSV import &amp; Registrar MFA onboarding</li>
-                        <li><strong>Phase 2:</strong> Paystack sub-account split configuration &amp; student portal launch</li>
-                        <li><strong>Phase 3:</strong> Batch CR80 physical card production &amp; campus gate guard training</li>
-                    </ul>
-                    <div class="mc-contact-row">
-                        <span class="mc-contact-label">Direct Desk</span>
-                        <div class="mc-contact-links">
-                            <a href="tel:09016054526">09016054526</a>
-                            <span style="color:var(--mc-text-dim);">·</span>
-                            <a href="tel:09035005623">09035005623</a>
-                        </div>
+                    <div class="brief-actions">
+                        <a href="mobile.html" class="onb-btn onb-btn-primary onb-btn-auto">Try the live demo</a>
+                        <a href="verify.html?standalone=1&amp;autostart=1&amp;demo=1" class="onb-btn onb-btn-outline onb-btn-auto">Open the gate scanner</a>
                     </div>
+                    <p class="brief-also">Or see <a href="index.html">what students see</a> and the <a href="login.html">registry console</a>.</p>
+
+                    <dl class="brief-facts">
+                        <div><dt>To check a card</dt><dd>A few seconds, on any phone</dd></div>
+                        <div><dt>For a student to get a card</dt><dd>About two minutes, online</dd></div>
+                        <div><dt>To copy a card</dt><dd>Useless. Copies are refused.</dd></div>
+                    </dl>
                 </div>
 
-                <!-- Institutional Inquiry Form -->
-                <div class="mc-portal-card">
-                    <div class="mc-portal-header">
-                        <div>
-                            <h3 class="mc-portal-header-title">📩 Institutional / Investor Inquiry</h3>
-                            <p class="mc-portal-header-sub">Logged directly to the Platform Administration Desk</p>
+                <div class="hero-art" aria-label="Sample card and scan result">
+                    <div class="idcard">
+                        <div class="idcard-head">
+                            <img src="crest_large.png.jpeg" alt="" class="idcard-crest">
+                            <div>
+                                <div class="idcard-uni">Ebonyi State University</div>
+                                <div class="idcard-kind">Abakaliki</div>
+                            </div>
                         </div>
+                        <div class="idcard-title">STUDENT IDENTITY CARD</div>
+                        <div class="idcard-body">
+                            <img src="images/photo-placeholder.svg" alt="" class="idcard-photo">
+                            <dl class="idcard-fields">
+                                <div class="wide name"><dt>Name</dt><dd>Nwankwo Chidimma Adaeze</dd></div>
+                                <div class="wide matric"><dt>Matric number</dt><dd>EBSU/2026/00000</dd></div>
+                                <div><dt>Department</dt><dd>Computer Science</dd></div>
+                                <div><dt>Level</dt><dd>100</dd></div>
+                            </dl>
+                            <div id="specimen-qr" class="idcard-qr" aria-hidden="true"></div>
+                        </div>
+                        <div class="idcard-overprint" aria-hidden="true">SPECIMEN</div>
                     </div>
-                    <div class="mc-portal-body">
-                        <div id="inv-alert" class="onb-alert"></div>
-                        <form id="inv-contact-form" style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="brief-verdict" aria-hidden="true">
+                        <span class="brief-verdict-mark">✓</span>
+                        <span><strong>Verified.</strong> Card is genuine and active.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="guilloche-band" aria-hidden="true"></div>
+        </section>
+
+        <!-- ============ PROBLEM ============ -->
+        <section id="problem" class="section section--sheet">
+            <div class="wrap">
+                <h2 class="section-title">What changes for the university</h2>
+                <p class="section-lede">Plastic cards with plain barcodes can be copied at any business centre, and nobody at a gate can tell a withdrawn card from a valid one.</p>
+
+                <table class="compare">
+                    <thead>
+                        <tr><th scope="col"><span class="sr-only">Issue</span></th><th scope="col">Today</th><th scope="col">With this system</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Forged cards</th>
+                            <td>A colour photocopy passes a visual check.</td>
+                            <td>The QR code is signed by the university. A copied or edited card fails the scan.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Exam impersonation</th>
+                            <td>Invigilators can't see whether a card was withdrawn or reported lost.</td>
+                            <td>Every scan asks the register. Withdrawn and lost cards are refused immediately, with the student's photo shown for comparison.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Queues for cards</th>
+                            <td>Students queue at the ICT centre with paper receipts and photos.</td>
+                            <td>Students confirm their identity, pay and get their card online, from a phone.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Card fee tracking</th>
+                            <td>Bank tellers checked by hand, hard to reconcile.</td>
+                            <td>Each payment is confirmed with the payment provider and recorded against the student.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ============ WHO ============ -->
+        <section id="who" class="section">
+            <div class="wrap">
+                <h2 class="section-title">Who uses it</h2>
+                <p class="section-lede">Three groups, each with their own screen. Nothing to install.</p>
+
+                <div class="checks">
+                    <div>
+                        <h3>Students</h3>
+                        <p>Enter their JAMB or matric number, confirm a partly hidden name, check their date of birth, pay the card fee, and receive a signed digital card they can download or print.</p>
+                        <p><a href="index.html">Open the student page</a></p>
+                    </div>
+                    <div>
+                        <h3>Security and invigilators</h3>
+                        <p>Scan the card or the student's live pass with a phone or laptop camera. They see a clear verdict and the student's stored photo to compare with the face in front of them.</p>
+                        <p><a href="verify.html?standalone=1&amp;autostart=1&amp;demo=1">Open the scanner</a></p>
+                    </div>
+                    <div>
+                        <h3>Registry and ICT staff</h3>
+                        <p>Import the admission list, issue cards one by one or in batches, print card sheets, withdraw lost cards, answer student tickets, and design the card itself.</p>
+                        <p><a href="login.html">Open the registry console</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="microtext" aria-hidden="true"></div>
+
+        <!-- ============ SECURITY ============ -->
+        <section id="security" class="section section--sheet">
+            <div class="wrap">
+                <h2 class="section-title">Why a copy doesn't work</h2>
+                <p class="section-lede">Four protections, each one closing a different way people cheat today.</p>
+
+                <ol class="steps steps--plain">
+                    <li>
+                        <h3>Signed by the university</h3>
+                        <p>Each card's QR code carries a digital signature (Ed25519) made with a key only the university's server holds. It covers the card number, matric number, name and expiry, so changing any of them breaks the signature.</p>
+                    </li>
+                    <li>
+                        <h3>A live pass that changes every minute</h3>
+                        <p>For gates and exams, students show a pass on their phone that is replaced every 60 seconds and works once. A screenshot or a forwarded picture is refused as a replay.</p>
+                    </li>
+                    <li>
+                        <h3>Checked against the register, every time</h3>
+                        <p>A valid signature isn't enough: each scan also checks whether the card has been withdrawn, reported lost, or has expired.</p>
+                    </li>
+                    <li>
+                        <h3>Protected staff accounts and a full record</h3>
+                        <p>Registry staff sign in with a password and a code from an authenticator app. Every card issued, withdrawn or scanned is logged with who did it and when. Students can't look up other people's details: the name stays hidden until the date of birth matches, and repeated guessing locks the lookup.</p>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- ============ CONTROL ============ -->
+        <section class="section">
+            <div class="wrap">
+                <h2 class="section-title">What the university controls</h2>
+                <div class="help-grid">
+                    <div>
+                        <h3>The card design</h3>
+                        <p>Registry admins design the card themselves in the Card Design Lab: layout, sizes, colours, wording and crest. The system won't save a design whose QR code would be too small to scan.</p>
+                    </div>
+                    <div>
+                        <h3>Who holds a valid card</h3>
+                        <p>A card reported lost or a student withdrawn is refused at every scanner from that moment. Every change needs a reason and is recorded.</p>
+                    </div>
+                    <div>
+                        <h3>The data and the money</h3>
+                        <p>Student records stay in the university's own database. Card fees are paid through Paystack and can be split directly into the university's account.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ REVENUE ============ -->
+        <section id="revenue" class="section section--sheet">
+            <div class="wrap">
+                <h2 class="section-title">Card fee and revenue</h2>
+                <p class="section-lede">Students pay a card fee when they get their card online. Change the numbers to see what a cohort brings in. These are illustrations, not projections.</p>
+
+                <div class="calc">
+                    <div class="calc-inputs">
+                        <label class="onb-label" for="calc-students">Students in the cohort: <span id="calc-students-label">10,000</span></label>
+                        <input type="range" id="calc-students" min="1000" max="60000" step="500" value="10000">
+                        <div class="onb-two">
                             <div>
-                                <label class="onb-label" for="inv-name">Your Full Name &amp; Title</label>
-                                <input type="text" id="inv-name" class="onb-input" placeholder="e.g. Prof. A. Okorie, DVC Administration" required>
+                                <label class="onb-label" for="calc-fee">Card fee (₦)</label>
+                                <input type="number" id="calc-fee" class="onb-input" value="2500" min="500" max="25000" step="100">
                             </div>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div>
+                                <label class="onb-label" for="calc-campuses">Campuses</label>
+                                <input type="number" id="calc-campuses" class="onb-input" value="1" min="1" max="50" step="1">
+                            </div>
+                        </div>
+                        <label class="onb-label" for="calc-share">Platform share (%)</label>
+                        <input type="number" id="calc-share" class="onb-input" value="30" min="0" max="95" step="5">
+                    </div>
+                    <div class="calc-result" aria-live="polite">
+                        <p class="calc-label">Card fees collected per cohort</p>
+                        <p id="calc-gross-total" class="calc-figure">₦25,000,000</p>
+                        <p id="calc-formula-line" class="calc-formula">10,000 students × ₦2,500 × 1 campus</p>
+                        <dl class="calc-split">
+                            <div><dt>Kept by the university</dt><dd id="calc-uni-share">₦17,500,000</dd></div>
+                            <div><dt>Platform share</dt><dd id="calc-platform-share">₦7,500,000</dd></div>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ ROLLOUT ============ -->
+        <section class="section">
+            <div class="wrap">
+                <h2 class="section-title">How we would roll it out</h2>
+                <ol class="steps">
+                    <li>
+                        <h3>Set up</h3>
+                        <p>Import the admission list, set the card fee and payment account, and give registry staff their protected accounts.</p>
+                    </li>
+                    <li>
+                        <h3>Pilot with one faculty</h3>
+                        <p>Students in one faculty get their cards online; security at selected gates and exam halls start scanning.</p>
+                    </li>
+                    <li>
+                        <h3>Campus-wide</h3>
+                        <p>Open to every student, print physical cards in batches for those who want one, and train all gate and exam staff.</p>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- ============ CONTACT ============ -->
+        <section id="contact" class="section section--sheet">
+            <div class="wrap contact-grid">
+                <div>
+                    <h2 class="section-title">Talk to us</h2>
+                    <p class="section-lede">For a walkthrough, a pilot, or technical questions from the ICT team.</p>
+                    <p class="help-phones"><a href="tel:09016054526">0901 605 4526</a><br><a href="tel:09035005623">0903 500 5623</a></p>
+                </div>
+
+                <div class="apply">
+                    <div class="apply-head"><h3 class="apply-title">Send an enquiry</h3></div>
+                    <div class="apply-body">
+                        <div id="inv-alert" class="onb-alert" role="alert"></div>
+                        <form id="inv-contact-form" class="onb-form">
+                            <div>
+                                <label class="onb-label" for="inv-name">Your name and title</label>
+                                <input type="text" id="inv-name" class="onb-input" required autocomplete="name">
+                            </div>
+                            <div class="onb-two">
                                 <div>
-                                    <label class="onb-label" for="inv-org">Institution / Organization</label>
-                                    <input type="text" id="inv-org" class="onb-input" placeholder="University or Fund Name" required>
+                                    <label class="onb-label" for="inv-org">Institution or office</label>
+                                    <input type="text" id="inv-org" class="onb-input" required>
                                 </div>
                                 <div>
-                                    <label class="onb-label" for="inv-contact">Email or Phone</label>
-                                    <input type="text" id="inv-contact" class="onb-input" placeholder="name@university.edu.ng" required>
+                                    <label class="onb-label" for="inv-contact">Email or phone</label>
+                                    <input type="text" id="inv-contact" class="onb-input" required>
                                 </div>
                             </div>
                             <div>
-                                <label class="onb-label" for="inv-message">Inquiry Details</label>
-                                <textarea id="inv-message" class="onb-input" rows="3" placeholder="Tell us about your student population, timeline, or investment inquiry..." required></textarea>
+                                <label class="onb-label" for="inv-message">Message</label>
+                                <textarea id="inv-message" class="onb-input" rows="4" required></textarea>
                             </div>
-                            <div id="inv-turnstile-container" style="margin: 4px 0 8px; min-height: 65px;"></div>
-                            <button type="submit" id="inv-submit-btn" class="onb-btn onb-btn-primary">
-                                Submit Institutional Inquiry →
-                            </button>
+                            <div id="inv-turnstile-container" class="onb-turnstile"></div>
+                            <button type="submit" id="inv-submit-btn" class="onb-btn onb-btn-primary">Send enquiry</button>
                         </form>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
-    <!-- Footer -->
-    <footer class="mc-footer">
-        <div class="mc-container">
-            <div class="mc-footer-inner">
-                <div style="max-width:540px;">
-                    <div style="font-family:var(--font-display); font-weight:800; font-size:0.95rem; color:#EEF8F0; margin-bottom:6px;">
-                        EBSU Smart Identity Platform · Institutional Briefing
-                    </div>
-                    <p style="margin:0 0 8px;">
-                        All revenue projections on this page are illustrative mathematical models based on configurable student population and card fee inputs.
-                    </p>
-                    <div>© 2026 Ebonyi State University (EBSU) Smart ID Platform. All rights reserved.</div>
-                </div>
-                <div class="mc-footer-links">
-                    <a href="index.html">Student Portal</a>
-                    <a href="verify.html">Gate Verifier</a>
-                    <a href="support.html">Student Support</a>
-                    <a href="login.html">Staff Login</a>
-                </div>
+    <footer class="site-foot">
+        <div class="microtext" aria-hidden="true"></div>
+        <div class="wrap site-foot-inner">
+            <div>
+                <div class="foot-name">Ebonyi State University, Abakaliki</div>
+                <p class="foot-motto">Development and Excellence</p>
+                <p>Revenue figures on this page are illustrations based on the numbers entered above.</p>
             </div>
+            <nav class="foot-links" aria-label="More pages">
+                <a href="index.html">Student page</a>
+                <a href="verify.html">Gate scanner</a>
+                <a href="support.html">Support Desk</a>
+                <a href="login.html">Staff sign-in</a>
+            </nav>
         </div>
     </footer>
 
-    <script src="config.js"></script>
-    <script src="js/theme.js"></script>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
     <script>
-        // 1. Interactive Illustrative Revenue Calculator
-        (function initRevenueCalculator() {
-            const elStudents = document.getElementById('calc-students');
-            const elStudentsLabel = document.getElementById('calc-students-label');
-            const elFee = document.getElementById('calc-fee');
-            const elCampuses = document.getElementById('calc-campuses');
-            const elShare = document.getElementById('calc-share');
-
-            const outGross = document.getElementById('calc-gross-total');
-            const outFormula = document.getElementById('calc-formula-line');
-            const outUni = document.getElementById('calc-uni-share');
-            const outPlatform = document.getElementById('calc-platform-share');
-
-            function formatNaira(n) {
-                return '₦' + Math.round(n).toLocaleString('en-NG');
-            }
-
-            function recalculate() {
-                const students = Math.max(0, parseInt(elStudents.value, 10) || 0);
-                const fee = Math.max(0, parseInt(elFee.value, 10) || 0);
-                const campuses = Math.max(1, parseInt(elCampuses.value, 10) || 1);
-                const sharePct = Math.min(100, Math.max(0, parseFloat(elShare.value) || 0));
-
-                elStudentsLabel.textContent = students.toLocaleString('en-NG') + ' students';
-
-                const gross = students * fee * campuses;
-                const platformAmt = gross * (sharePct / 100);
-                const uniAmt = gross - platformAmt;
-
-                outGross.textContent = formatNaira(gross);
-                outFormula.textContent =
-                    students.toLocaleString('en-NG') +
-                    ' students × ' +
-                    formatNaira(fee) +
-                    ' × ' +
-                    campuses +
-                    (campuses === 1 ? ' campus' : ' campuses') +
-                    ' (ILLUSTRATIVE)';
-                outUni.textContent = formatNaira(uniAmt) + ' (' + (100 - sharePct) + '%)';
-                outPlatform.textContent = formatNaira(platformAmt) + ' (' + sharePct + '%)';
-            }
-
-            [elStudents, elFee, elCampuses, elShare].forEach(function (input) {
-                if (input) input.addEventListener('input', recalculate);
-            });
-            recalculate();
-        })();
-
-        // 3. Institutional Inquiry Form -> support-desk Edge Function (create_ticket)
-        (function initInquiryForm() {
-            const form = document.getElementById('inv-contact-form');
-            const alertBox = document.getElementById('inv-alert');
-            const btn = document.getElementById('inv-submit-btn');
-            if (!form) return;
-
-            let turnstileWidgetId = null;
-            function renderTurnstileWidget(theme) {
-                const cfg = window.APP_CONFIG || {};
-                const sitekey = cfg.TURNSTILE_SITE_KEY;
-                const container = document.getElementById('inv-turnstile-container');
-                if (window.turnstile && sitekey && container) {
-                    try {
-                        if (turnstileWidgetId !== null) {
-                            window.turnstile.remove(turnstileWidgetId);
-                            turnstileWidgetId = null;
-                        }
-                        container.innerHTML = '';
-                        turnstileWidgetId = window.turnstile.render(container, {
-                            sitekey: sitekey,
-                            theme: theme || ((window.ThemeManager && window.ThemeManager.getResolvedTheme()) || 'auto')
-                        });
-                    } catch (e) {
-                        console.warn('Turnstile render deferred:', e);
-                    }
+        (function () {
+            // Microtext rules and the sample card's QR code (decoration only)
+            var line = 'EBONYI STATE UNIVERSITY ABAKALIKI • DEVELOPMENT AND EXCELLENCE • ';
+            var text = new Array(40).join(line);
+            document.querySelectorAll('.microtext').forEach(function (el) { el.textContent = text; });
+            document.addEventListener('DOMContentLoaded', function () {
+                var box = document.getElementById('specimen-qr');
+                if (box && typeof QRCode !== 'undefined') {
+                    new QRCode(box, { text: 'EBSU SPECIMEN CARD - NOT VALID', width: 78, height: 78, colorDark: '#14213D', colorLight: '#ffffff', correctLevel: 1 });
                 }
-            }
-            if (window.turnstile) renderTurnstileWidget();
-            else window.addEventListener('load', () => setTimeout(renderTurnstileWidget, 800));
+            });
 
-            if (window.ThemeManager) {
-                window.ThemeManager.onThemeChange(function (ev) {
-                    renderTurnstileWidget(ev.resolved);
-                });
+            // Card fee calculator
+            var elStudents = document.getElementById('calc-students');
+            var elStudentsLabel = document.getElementById('calc-students-label');
+            var elFee = document.getElementById('calc-fee');
+            var elCampuses = document.getElementById('calc-campuses');
+            var elShare = document.getElementById('calc-share');
+            var naira = function (n) { return '₦' + Math.round(n).toLocaleString('en-NG'); };
+            function recalc() {
+                var students = Math.max(0, parseInt(elStudents.value, 10) || 0);
+                var fee = Math.max(0, parseInt(elFee.value, 10) || 0);
+                var campuses = Math.max(1, parseInt(elCampuses.value, 10) || 1);
+                var share = Math.min(100, Math.max(0, parseFloat(elShare.value) || 0));
+                var gross = students * fee * campuses;
+                var platform = gross * share / 100;
+                elStudentsLabel.textContent = students.toLocaleString('en-NG');
+                document.getElementById('calc-gross-total').textContent = naira(gross);
+                document.getElementById('calc-formula-line').textContent =
+                    students.toLocaleString('en-NG') + ' students × ' + naira(fee) + ' × ' + campuses + (campuses === 1 ? ' campus' : ' campuses');
+                document.getElementById('calc-uni-share').textContent = naira(gross - platform) + ' (' + (100 - share) + '%)';
+                document.getElementById('calc-platform-share').textContent = naira(platform) + ' (' + share + '%)';
+            }
+            [elStudents, elFee, elCampuses, elShare].forEach(function (i) { i.addEventListener('input', recalc); });
+            recalc();
+
+            // Enquiry form -> support-desk (create_ticket)
+            var form = document.getElementById('inv-contact-form');
+            var alertBox = document.getElementById('inv-alert');
+            var btn = document.getElementById('inv-submit-btn');
+            var widgetId = null;
+            function cfg() { return window.EBSU_CONFIG || window.APP_CONFIG || {}; }
+            function renderTurnstile(theme) {
+                var c = cfg();
+                var box = document.getElementById('inv-turnstile-container');
+                if (!window.turnstile || !c.TURNSTILE_SITE_KEY || !box) return;
+                try {
+                    if (widgetId !== null) { window.turnstile.remove(widgetId); widgetId = null; }
+                    box.innerHTML = '';
+                    widgetId = window.turnstile.render(box, {
+                        sitekey: c.TURNSTILE_SITE_KEY,
+                        theme: theme || ((window.ThemeManager && window.ThemeManager.getResolvedTheme()) || 'auto')
+                    });
+                } catch (e) { /* the phone numbers above still work */ }
+            }
+            window.addEventListener('load', function () { setTimeout(renderTurnstile, 600); });
+            if (window.ThemeManager) window.ThemeManager.onThemeChange(function (ev) { renderTurnstile(ev.resolved); });
+
+            function showAlert(kind, text) {
+                alertBox.className = 'onb-alert onb-alert-' + kind;
+                alertBox.textContent = text;
+                alertBox.style.display = 'block';
             }
 
             form.addEventListener('submit', async function (e) {
                 e.preventDefault();
-                const name = document.getElementById('inv-name').value.trim();
-                const org = document.getElementById('inv-org').value.trim();
-                const contact = document.getElementById('inv-contact').value.trim();
-                const message = document.getElementById('inv-message').value.trim();
-
+                var name = document.getElementById('inv-name').value.trim();
+                var org = document.getElementById('inv-org').value.trim();
+                var contact = document.getElementById('inv-contact').value.trim();
+                var message = document.getElementById('inv-message').value.trim();
                 alertBox.style.display = 'none';
                 btn.disabled = true;
-                btn.textContent = 'Submitting Inquiry...';
-
+                btn.textContent = 'Sending…';
                 try {
-                    const cfg = window.APP_CONFIG || {};
-                    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) {
-                        throw new Error('Server configuration unavailable.');
-                    }
-
-                    let turnstileToken = 'local-bypass';
-                    if (window.turnstile && turnstileWidgetId !== null) {
-                        turnstileToken = window.turnstile.getResponse(turnstileWidgetId) || '';
-                    }
-
-                    const res = await fetch(cfg.SUPABASE_URL.replace(/\/$/, '') + '/functions/v1/support-desk', {
+                    var c = cfg();
+                    if (!c.SUPABASE_URL || !c.SUPABASE_ANON_KEY) throw new Error('offline');
+                    var token = (window.turnstile && widgetId !== null) ? (window.turnstile.getResponse(widgetId) || '') : '';
+                    var res = await fetch(c.SUPABASE_URL.replace(/\/$/, '') + '/functions/v1/support-desk', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'apikey': cfg.SUPABASE_ANON_KEY,
-                            'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY
-                        },
+                        headers: { 'Content-Type': 'application/json', apikey: c.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + c.SUPABASE_ANON_KEY },
                         body: JSON.stringify({
-                            action: 'create_ticket',
-                            turnstile_token: turnstileToken,
-                            student_name: name + ' (' + org + ')',
-                            jamb_no: 'INSTITUTIONAL',
-                            contact_email: contact,
-                            category: 'other',
-                            subject: 'Institutional / Investor Inquiry — ' + org,
-                            message: message
+                            action: 'create_ticket', turnstile_token: token,
+                            student_name: name + ' (' + org + ')', jamb_no: 'INSTITUTIONAL', contact_email: contact,
+                            category: 'other', subject: 'Institutional enquiry: ' + org, message: message
                         })
                     });
-                    const data = await res.json();
-                    if (!res.ok || data.error) {
-                        throw new Error(data.error || 'Could not log inquiry.');
-                    }
-                    alertBox.className = 'onb-alert onb-alert-success';
-                    alertBox.style.display = 'block';
-                    alertBox.textContent = '✅ Inquiry logged! Reference Code: ' + (data.ticket_no || 'RECEIVED') + '. Our team will reach out shortly.';
+                    var data = await res.json().catch(function () { return {}; });
+                    if (!res.ok || data.error) throw new Error(data.error || 'not sent');
+                    showAlert('success', 'Enquiry sent. Your reference is ' + (data.ticket_no || 'recorded') + '. We will get back to you.');
                     form.reset();
-                    if (window.turnstile && turnstileWidgetId !== null) {
-                        window.turnstile.reset(turnstileWidgetId);
-                    }
+                    if (window.turnstile && widgetId !== null) window.turnstile.reset(widgetId);
                 } catch (err) {
-                    alertBox.className = 'onb-alert onb-alert-warn';
-                    alertBox.style.display = 'block';
-                    alertBox.innerHTML = 'Your inquiry is ready. Please call our direct desk at <a href="tel:09016054526" class="mono">09016054526</a> or <a href="tel:09035005623" class="mono">09035005623</a> (' + (err.message || 'offline') + ').';
+                    showAlert('warn', 'Your enquiry could not be sent from here. Please call 0901 605 4526 or 0903 500 5623.');
                 } finally {
                     btn.disabled = false;
-                    btn.textContent = 'Submit Institutional Inquiry →';
+                    btn.textContent = 'Send enquiry';
                 }
             });
         })();
     </script>
+    <script src="config.js"></script>
+    <script src="js/theme.js"></script>
 </body>
 </html>

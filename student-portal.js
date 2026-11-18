@@ -106,6 +106,29 @@ document.getElementById('btn-quick-fill-portal')?.addEventListener('click', () =
   unlockBtn?.click();
 });
 
+// Cloudflare security check for the unlock form (the server refuses requests without it).
+let portalTurnstileId = null;
+let portalTurnstileToken = null;
+function renderPortalTurnstile(attempt = 0) {
+  const box = document.getElementById('portal-turnstile');
+  const cfg = (typeof EBSU_CONFIG !== 'undefined') ? EBSU_CONFIG : (window.EBSU_CONFIG || {});
+  if (!box || portalDemoAllowed() || !cfg.TURNSTILE_SITE_KEY) return;
+  if (typeof window.turnstile === 'undefined') {
+    if (attempt < 30) setTimeout(() => renderPortalTurnstile(attempt + 1), 500);
+    return;
+  }
+  try {
+    if (portalTurnstileId !== null) window.turnstile.remove(portalTurnstileId);
+    portalTurnstileToken = null;
+    portalTurnstileId = window.turnstile.render(box, {
+      sitekey: cfg.TURNSTILE_SITE_KEY,
+      callback: (tok) => { portalTurnstileToken = tok; },
+      'expired-callback': () => { portalTurnstileToken = null; },
+    });
+  } catch (e) { /* phone numbers on the page still work */ }
+}
+setTimeout(renderPortalTurnstile, 300);
+
 const unlockBtn = document.getElementById('btn-unlock-card');
 if (unlockBtn) {
   unlockBtn.addEventListener('click', async () => {
@@ -136,11 +159,11 @@ if (unlockBtn) {
       session: '2024/2025',
       blood: 'O+',
       genotype: 'AA',
-      expiry: 2025,
+      expiry: 2029,
       photo_url: 'images/demo_user_photo.jpg',
       sig_url: 'images/demo_user_sig.png',
-      card_signature: 'ED25519_TEST_SIG_1234567890',
-      qr_string: 'EBSU2:EBSU-2021-101397:1790738000:SIG1234567890',
+      card_signature: 'ED25519_DEMO_SIGNATURE',
+      qr_string: null,
       payment_reference: reference || 'EBSU-PAY-2021-101397',
       expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
     };
@@ -157,7 +180,13 @@ if (unlockBtn) {
       return;
     }
 
-    unlockBtn.textContent = 'Verifying & Unlocking...';
+    const turnstileToken = portalTurnstileToken;
+    if (!turnstileToken) {
+      return showToast('Please complete the security check, then try again.', true);
+    }
+    portalTurnstileToken = null; // each check works once
+
+    unlockBtn.textContent = 'Checking…';
     unlockBtn.disabled = true;
 
     try {
@@ -174,7 +203,7 @@ if (unlockBtn) {
           jamb_no: jambNo,
           dob,
           reference,
-          turnstile_token: 'CF_TURNSTILE_TEST_TOKEN',
+          turnstile_token: turnstileToken,
         }),
       });
       const restoreData = await res.json().catch(() => ({}));
@@ -241,8 +270,9 @@ if (unlockBtn) {
         showToast(err.message || 'Verification failed.', true);
       }
     } finally {
-      unlockBtn.textContent = '🔓 Unlock My Paid Digital ID';
+      unlockBtn.textContent = 'Open my ID card';
       unlockBtn.disabled = false;
+      renderPortalTurnstile();
     }
   });
 }
@@ -302,7 +332,7 @@ function checkSession() {
       session: '2024/2025',
       blood: 'O+',
       genotype: 'AA',
-      expiry: isLong ? 2027 : 2025,
+      expiry: isLong ? 2028 : (isExpired ? 2025 : 2029),
       photo_url: 'images/demo_user_photo.jpg',
       sig_url: 'images/demo_user_sig.png',
       card_signature: 'ED25519_DEMO_SIGNATURE',

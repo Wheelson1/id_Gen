@@ -20,11 +20,10 @@
       }
     })();
   </script>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="preconnect" href="https://qsrfvfdojtmsinewxetz.supabase.co" />
   <link rel="stylesheet" href="css/theme.css" />
   <script src="config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/vendor/supabase.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/guard.js" data-allowed-roles="scanner,operator,registrar,admin,super_admin,staff"></script>
   <script>
@@ -192,43 +191,47 @@
       .sc-body { grid-template-columns:1fr; }
       .sc-field.full { grid-column:1; }
     }
-  </style>
+  
+    /* Header: crest + name, wraps cleanly on phones */
+    .v-header { flex-wrap: wrap; row-gap: 8px; }
+    .v-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--band-ink); min-width: 0; }
+    .v-crest { width: 40px; height: 40px; object-fit: contain; background: #fff; border-radius: 3px; padding: 1px; flex-shrink: 0; }
+    .v-header-brand, .v-header-sub { display: block; }
+    .v-header-nav { flex-wrap: wrap; justify-content: flex-end; }
+    .v-nav-btn {
+      background: var(--band-ink); color: var(--band); border: 0; border-radius: 3px;
+      padding: 6px 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .v-header .theme-toggle-btn { background: transparent; color: var(--band-ink); border: 1px solid rgba(218,241,222,0.35); box-shadow: none; }
+    @media (max-width: 560px) {
+      .v-header { padding: 12px 14px; }
+      .v-header-nav { margin-left: 0; width: 100%; justify-content: flex-start; }
+      .login-card { padding: 24px 18px; }
+    }
+</style>
 </head>
 <body>
 
 <!-- Header -->
 <header class="v-header">
-  <div>
-    <div class="v-header-brand" style="color: var(--warning);">SID Public Verifier</div>
-    <div class="v-header-sub">STUDENTS IDENTIFICATION CARD SYSTEM · TRIPLE J GROUP OF COMPANIES</div>
-  </div>
-  <nav class="v-header-nav">
+  <a href="index.html" class="v-brand">
+    <img src="crest_large.png.jpeg" alt="Ebonyi State University crest" class="v-crest">
+    <span>
+      <span class="v-header-brand">Ebonyi State University</span>
+      <span class="v-header-sub">Card scanner for gates and exam halls</span>
+    </span>
+  </a>
+  <nav class="v-header-nav" aria-label="Scanner">
     <span id="v-user-badge" class="user-badge"></span>
-    <button type="button" onclick="openMobilePairingModal()" style="background: var(--accent); border: none; color: var(--accent-ink); font-weight: 800; cursor: pointer; padding: 6px 12px; border-radius: 6px; font-size: 11px; display: inline-flex; align-items: center; gap: 5px;">
-      📱 Continue on Mobile
-    </button>
-    <button type="button" class="theme-toggle-btn" aria-label="Toggle Theme"></button>
-    <a href="app.html">⚙ Staff Console</a>
-    <a href="index.html">← Student Portal</a>
+    <button type="button" class="v-nav-btn" onclick="openMobilePairingModal()">Scan on a phone</button>
+    <button type="button" class="theme-toggle-btn" aria-label="Switch between light and dark"></button>
+    <a href="app.html">Staff console</a>
   </nav>
 </header>
-
-<!-- INSTITUTIONAL VERIFIER TERMINAL BANNER -->
-<div style="background: var(--sunken); border-bottom: 1px solid var(--line); color: var(--ink); padding: 12px 20px; text-align: center; font-size: 13px; font-weight: 700;">
-  <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--accent);">
-    <span>🛡️ EBSU OFFICIAL GATE &amp; EXAM HALL VERIFIER TERMINAL</span>
-  </div>
-  <p style="font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 3px;">
-    Cryptographic QR &amp; Database Verification for Security Officers and Invigilators
-  </p>
-</div>
 
 <!-- Login Screen -->
 <div class="screen active" id="screen-login">
   <div class="login-card">
-    <div style="border-radius: 10px; overflow: hidden; margin: -20px -20px 20px -20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-      <img src="images/banner_hello_stranger.jpg" alt="Security Terminal" style="width: 100%; display: block;" />
-    </div>
     <div class="login-icon" style="margin-top: 10px;">📷</div>
     <div class="login-title">Security Verifier Portal</div>
     <div style="display: inline-block; background: rgba(74, 144, 217, 0.15); border: 1px solid rgba(74, 144, 217, 0.3); color: var(--accent); font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px;">
@@ -382,7 +385,7 @@
 <script src="qr.js"></script>
 <script src="js/cardTemplate.js"></script>
 <script src="canvas.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="js/vendor/jsQR.js"></script>
 <script>
 'use strict';
 
@@ -711,6 +714,60 @@ async function scanLoop() {
 }
 
 // ── Verification pipeline ──────────────────────────────────────────────────
+// ── Demo verification (presentations only) ────────────────────────────────
+// Runs ONLY on localhost / private Wi-Fi addresses with DEMO_MODE: true (isPrivateDemo).
+// It knows the sample cards the demo pages show, so a presentation works with no
+// internet. Every result is labelled as demo data. Unknown cards are still "not found",
+// a known card with the wrong signature is still "tampered", an old live pass is
+// "expired" and a live pass scanned twice is "replay blocked" — like the real server.
+const DEMO_STUDENTS = {
+  standard: { name: 'NNAJI WILSON SOMTOCHUKWU', matric: 'EBSU/2021/101397', jamb_no: '1234567890', faculty: 'Science', dept: 'Computer Science', level: '400 Level', session: '2024/2025', blood: 'O+', genotype: 'AA', expiry: 2029, photo_url: 'images/demo_user_photo.jpg' },
+  onboarding: { name: 'DEMO STUDENT ONE', matric: 'EBSU/2021/101397', jamb_no: '1234567890', faculty: 'Faculty of Science', dept: 'Computer Science', level: '400 Level', session: '2024/2025', blood: 'N/A', genotype: 'N/A', expiry: 2029, photo_url: 'images/demo_user_photo.jpg' },
+  long: { name: 'OKORONKWO CHINEDUM EMMANUEL NWACHUKWU', matric: 'EBSU/2023/108920', jamb_no: '2023108920', faculty: 'Science', dept: 'Biochemistry', level: '200 Level', session: '2024/2025', blood: 'O+', genotype: 'AA', expiry: 2028, photo_url: 'images/demo_user_photo.jpg' },
+  expired: { name: 'OKEY JUDE CHUKWUDI', matric: 'EBSU/2021/100409', jamb_no: '2021100409', faculty: 'Science', dept: 'Applied Biology', level: '400 Level', session: '2024/2025', blood: 'O+', genotype: 'AA', expiry: 2025, photo_url: 'images/demo_user_photo.jpg' },
+};
+const DEMO_CARDS = {
+  'ebsu-student-2021-101397': { 'ED25519_DEMO_SIGNATURE': 'standard', 'ED25519_TEST_SIG_1234567890': 'onboarding' },
+  'ebsu-student-2023-108920': { 'ED25519_DEMO_SIGNATURE': 'long' },
+  'ebsu-student-2021-100409': { 'ED25519_DEMO_SIGNATURE': 'expired' },
+};
+const DEMO_PASS_CARD = '00000000-0000-4000-8000-000000000001';
+
+function demoVerify(parsed) {
+  if (typeof isPrivateDemo === 'undefined' || !isPrivateDemo || !parsed) return null;
+  const now = new Date();
+  const base = { checked_at: now.toISOString(), demo: true };
+
+  // 60-second live pass
+  let pass = null;
+  if (parsed.version === 'LINK_P') {
+    const p = String(parsed.token || '').split(':');
+    if (p.length === 4 && p[0] === 'EBSU2') pass = { cardId: p[1], expiryUnix: Number(p[2]), token: parsed.token };
+  } else if (parsed.version === 'EBSU2') {
+    pass = { cardId: parsed.cardId, expiryUnix: parsed.expiryUnix, token: parsed.raw };
+  }
+  if (pass) {
+    if (pass.cardId !== DEMO_PASS_CARD) return null;
+    const student = DEMO_STUDENTS.onboarding;
+    if (pass.expiryUnix * 1000 < now.getTime()) return Object.assign(base, { status: 'pass_expired', student });
+    let used = [];
+    try { used = JSON.parse(sessionStorage.getItem('ebsu_demo_used_passes') || '[]'); } catch (e) {}
+    if (used.includes(pass.token)) return Object.assign(base, { status: 'replayed', student });
+    used.push(pass.token);
+    try { sessionStorage.setItem('ebsu_demo_used_passes', JSON.stringify(used.slice(-200))); } catch (e) {}
+    return Object.assign(base, { status: 'valid', pass_mode: 'rotating_60s', student });
+  }
+
+  // Printed / digital card
+  const sigs = DEMO_CARDS[parsed.cardId];
+  if (!sigs) return null;               // not a demo card: let the real server decide
+  const key = sigs[parsed.sig];
+  if (!key) return Object.assign(base, { status: 'tampered' });
+  const student = DEMO_STUDENTS[key];
+  const status = Number(student.expiry) < now.getFullYear() ? 'expired' : 'valid';
+  return Object.assign(base, { status, student });
+}
+
 async function handleQRData(raw) {
   const statusEl = document.getElementById('scanner-status');
   if (statusEl) statusEl.textContent = 'Verifying card identity…';
@@ -727,6 +784,14 @@ async function handleQRData(raw) {
       status:     'not_ebsu_card',
       checked_at: new Date().toISOString(),
     });
+    return;
+  }
+
+  // Presentation demo (private host + DEMO_MODE only): sample cards are checked here, offline.
+  const demoResult = demoVerify(parsed);
+  if (demoResult) {
+    if (statusEl) statusEl.textContent = 'Demo check complete';
+    showResult(demoResult);
     return;
   }
 
@@ -855,6 +920,19 @@ function showResult(result) {
 
   verdictBox.textContent = verdictText;
   verdictBox.className   = 'verdict ' + verdictClass;
+
+  // Demo results are always labelled so nobody mistakes sample data for a real check.
+  let demoNote = document.getElementById('demo-verdict-note');
+  if (!demoNote) {
+    demoNote = document.createElement('p');
+    demoNote.id = 'demo-verdict-note';
+    demoNote.style.cssText = 'margin:8px 0 0;padding:8px 10px;border-left:4px solid var(--warning);background:var(--badge-warning-bg);color:var(--ink);font-size:13px;line-height:1.4;text-align:left;';
+    verdictBox.insertAdjacentElement('afterend', demoNote);
+  }
+  demoNote.textContent = result.demo
+    ? 'Demo check on this computer, using sample student data. On the live system every scan is checked by the university server.'
+    : '';
+  demoNote.style.display = result.demo ? 'block' : 'none';
 
   // Student photo (displayed so guard can compare face to cardholder)
   const photoArea = document.getElementById('student-photo-area');

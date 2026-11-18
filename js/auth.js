@@ -52,13 +52,41 @@ const AuthManager = (() => {
   }
 
   // ── Initialise Supabase client ─────────────────────────────────
+  // Demo mode only (private host + DEMO_MODE): when the venue has no internet,
+  // fail fast instead of letting the library retry for minutes. Once a request
+  // fails, further requests fail at once for 60 seconds, then it tries again.
+  let _offlineUntil = 0;
+  function abortError(msg) {
+    try { return new DOMException(msg, 'AbortError'); }
+    catch (e) { const err = new Error(msg); err.name = 'AbortError'; return err; }
+  }
+  async function demoFetch(input, init) {
+    if (Date.now() < _offlineUntil) throw abortError('Offline (demo mode)');
+    const ctrl = new AbortController();
+    const outer = init && init.signal;
+    if (outer) {
+      if (outer.aborted) ctrl.abort();
+      else outer.addEventListener('abort', () => ctrl.abort(), { once: true });
+    }
+    const timer = setTimeout(() => ctrl.abort(), 6000);
+    try {
+      return await fetch(input, Object.assign({}, init, { signal: ctrl.signal }));
+    } catch (e) {
+      if (!(outer && outer.aborted)) _offlineUntil = Date.now() + 60000;
+      throw abortError('Network unavailable (demo mode)');
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   function init() {
     if (window.ebsuSupabase) {
       _client = window.ebsuSupabase;
       return _client;
     }
     if (typeof supabase !== 'undefined' && typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.SUPABASE_URL) {
-      _client = supabase.createClient(EBSU_CONFIG.SUPABASE_URL, EBSU_CONFIG.SUPABASE_ANON_KEY);
+      const opts = isPrivateDemoHost() ? { global: { fetch: demoFetch } } : undefined;
+      _client = supabase.createClient(EBSU_CONFIG.SUPABASE_URL, EBSU_CONFIG.SUPABASE_ANON_KEY, opts);
       window.ebsuSupabase = _client;
     }
     return _client;

@@ -192,6 +192,15 @@
       banner.setAttribute('role', 'status');
       banner.style.cssText = 'position:fixed; right:12px; bottom:12px; z-index:9999999; background:#7A5200; color:#FFFFFF; font-family:"Source Sans 3",-apple-system,"Segoe UI",sans-serif; font-size:12px; font-weight:700; line-height:1.3; padding:6px 10px; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.25); pointer-events:none; max-width:calc(100vw - 24px);';
       banner.textContent = 'Demo mode, this computer only';
+      // On phones keep it small so it doesn't cover buttons.
+      if (window.innerWidth < 640) {
+        banner.textContent = 'Demo';
+        banner.style.fontSize = '11px';
+        banner.style.padding = '3px 7px';
+        banner.style.right = '6px';
+        banner.style.bottom = '6px';
+        banner.style.opacity = '0.9';
+      }
       if (document.body) {
         document.body.insertBefore(banner, document.body.firstChild);
       }
