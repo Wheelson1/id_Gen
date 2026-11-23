@@ -56,12 +56,96 @@ const CardLab = (() => {
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  // ── Per-part style helpers (stored in layout.fx[id]) ───────────
+  function fxOf(L, id) { if (!L.fx) L.fx = {}; if (!L.fx[id]) L.fx[id] = {}; return L.fx[id]; }
+  function fxv(L, id, k, d) {
+    const f = L && L.fx && L.fx[id];
+    return (f && f[k] !== undefined && f[k] !== null) ? f[k] : (d === undefined ? 0 : d);
+  }
+  function setFx(L, id, k, v) {
+    const f = fxOf(L, id);
+    const zeroDefault = ['dx', 'dy', 'letterSpacing', 'rotate', 'radius', 'blur', 'gray'].includes(k) && v === 0;
+    const oneDefault = ['opacity', 'bright'].includes(k) && v === 1;
+    if (v === '' || v === undefined || v === null || v === false || zeroDefault || oneDefault) delete f[k]; else f[k] = v;
+    if (!Object.keys(f).length) delete L.fx[id];
+  }
+  const TEXT_CAPS = ['opacity', 'rotate', 'color', 'font', 'weight', 'italic', 'spacing'];
+  const ROW_CAPS = ['opacity', 'rotate', 'color', 'labelColor', 'font', 'weight', 'labelWeight', 'italic', 'spacing'];
+
+  function rowEl(id, label, idx, required) {
+    const size = L => fxv(L, id, 'size', 0) || L.fieldFontSize;
+    return {
+      id, label, required: !!required, caps: ROW_CAPS, colorKey: 'valueColor', labelColorKey: 'labelColor',
+      box: L => {
+        const sz = size(L);
+        return { x: L.fieldLabelX + fxv(L, id, 'dx'), y: L.fieldsStartY + idx * L.fieldSpacing - sz * 0.86 + fxv(L, id, 'dy'), w: L.fieldsW, h: sz * 1.1 };
+      },
+      move: (L, s, dx, dy) => { const f = fxOf(L, id); f.dx = R(fxv(s, id, 'dx') + dx); f.dy = R(fxv(s, id, 'dy') + dy); },
+      resize: (L, s, dx, dy, sb) => {
+        const ratio = (sb.h + dy) / sb.h;
+        setFx(L, id, 'size', clamp(R((fxv(s, id, 'size', 0) || s.fieldFontSize) * ratio), 8, 70));
+      },
+      fields: [
+        { fx: true, k: 'dx', label: 'Nudge across', min: -500, max: 500, def: () => 0 },
+        { fx: true, k: 'dy', label: 'Nudge down', min: -300, max: 300, def: () => 0 },
+        { fx: true, k: 'size', label: 'Text size', min: 8, max: 70, def: L => L.fieldFontSize },
+      ],
+      groupTitle: 'All four detail lines together',
+      groupFields: [
+        { k: 'fieldLabelX', label: 'Across', min: 0, max: W },
+        { k: 'fieldsStartY', label: 'Down', min: 0, max: H },
+        { k: 'fieldsW', label: 'Width', min: 160, max: W },
+        { k: 'fieldFontSize', label: 'Standard text size', min: 12, max: 44 },
+        { k: 'fieldSpacing', label: 'Space between lines', min: 24, max: 150 },
+      ],
+      keys: [],
+    };
+  }
+
+  function vitalEl(id, label, isBlood) {
+    const yk = isBlood ? 'bloodY' : 'genoY';
+    const xk = isBlood ? 'bloodX' : 'genoX';
+    const size = L => fxv(L, id, 'size', 0) || L.bloodFontSize;
+    return {
+      id, label, caps: ROW_CAPS, colorKey: 'valueColor', labelColorKey: 'labelColor',
+      box: L => ({
+        x: L[xk] + fxv(L, id, 'dx'), y: L[yk] - size(L) * 0.86 + fxv(L, id, 'dy'),
+        w: (L.bloodValueX - L[xk]) + textW('AB+', size(L), false) + 10, h: size(L) * 1.1,
+      }),
+      move: (L, s, dx, dy) => { const f = fxOf(L, id); f.dx = R(fxv(s, id, 'dx') + dx); f.dy = R(fxv(s, id, 'dy') + dy); },
+      resize: (L, s, dx, dy, sb) => {
+        const ratio = (sb.h + dy) / sb.h;
+        setFx(L, id, 'size', clamp(R((fxv(s, id, 'size', 0) || s.bloodFontSize) * ratio), 8, 44));
+      },
+      fields: [
+        { fx: true, k: 'dx', label: 'Nudge across', min: -500, max: 500, def: () => 0 },
+        { fx: true, k: 'dy', label: 'Nudge down', min: -300, max: 300, def: () => 0 },
+        { fx: true, k: 'size', label: 'Text size', min: 8, max: 44, def: L => L.bloodFontSize },
+      ],
+      groupTitle: 'Blood group and genotype together',
+      groupFields: [
+        { k: 'bloodX', label: 'Across', min: 0, max: W, link: L => { L.genoX = L.bloodX; } },
+        { k: 'bloodValueX', label: 'Answer starts at', min: 40, max: 500 },
+        { k: 'bloodY', label: 'Blood group down', min: 0, max: H },
+        { k: 'genoY', label: 'Genotype down', min: 0, max: H },
+        { k: 'bloodFontSize', label: 'Standard text size', min: 10, max: 40 },
+      ],
+      keys: [],
+    };
+  }
+
   // ── Elements on the front of the card ──────────────────────────
   // box(L, TX): where it sits, in card pixels. move/resize work from a snapshot (s)
   // taken when the drag started, so dragging never drifts.
+  // caps: which look controls this part offers. colorKey: the standard colour it uses.
   const ELEMENTS = [
     {
-      id: 'header', label: 'Header band', required: true,
+      id: 'border', label: 'Card border', noBox: true, caps: ['opacity', 'color', 'width'], colorKey: 'borderColor',
+      box: () => ({ x: 0, y: 0, w: W, h: H }), move: () => {}, resize: () => {},
+      fields: [], keys: [],
+    },
+    {
+      id: 'header', label: 'Header band', required: true, caps: ['opacity', 'color', 'font', 'weight', 'italic', 'spacing'], colorKey: 'headerText',
       box: L => ({ x: 0, y: 0, w: W, h: L.headerH }),
       move: () => {},
       resize: (L, s, dx, dy) => { L.headerH = clamp(R(s.headerH + dy), 40, 180); },
@@ -72,7 +156,7 @@ const CardLab = (() => {
       keys: ['headerH', 'headerFontSize'],
     },
     {
-      id: 'title', label: 'Card title', toggle: 'showTitle',
+      id: 'title', label: 'Card title', caps: TEXT_CAPS, colorKey: 'titleColor',
       box: (L, TX) => {
         const w = Math.min(971, textW(TX.cardTitle, L.titleFontSize));
         return { x: L.titleX - w / 2, y: L.titleY - L.titleFontSize * 0.82, w, h: L.titleFontSize * 1.02 };
@@ -90,7 +174,7 @@ const CardLab = (() => {
       keys: ['titleX', 'titleY', 'titleFontSize'],
     },
     {
-      id: 'matric', label: 'Reg number', required: true,
+      id: 'matric', label: 'Reg number', required: true, caps: ROW_CAPS, colorKey: 'matricValue', labelColorKey: 'matricLabel',
       box: L => ({ x: L.matricLabelX, y: L.matricY - L.matricFontSize * 0.86, w: L.matricW, h: L.matricFontSize * 1.1 }),
       move: (L, s, dx, dy) => { L.matricLabelX = R(s.matricLabelX + dx); L.matricY = R(s.matricY + dy); },
       resize: (L, s, dx, dy, sb) => {
@@ -110,7 +194,7 @@ const CardLab = (() => {
       keys: ['matricLabelX', 'matricY', 'matricW', 'matricFontSize', 'matricLabelFontSize', 'showMatricLines'],
     },
     {
-      id: 'photo', label: 'Passport photo', required: true,
+      id: 'photo', label: 'Passport photo', required: true, caps: ['radius'],
       box: L => ({ x: L.photoX, y: L.photoY, w: L.photoW, h: L.photoH }),
       move: (L, s, dx, dy) => { L.photoX = R(s.photoX + dx); L.photoY = R(s.photoY + dy); },
       resize: (L, s, dx, dy) => {
@@ -125,51 +209,14 @@ const CardLab = (() => {
       ],
       keys: ['photoX', 'photoY', 'photoW', 'photoH'],
     },
+    rowEl('name', 'Name', 0, true),
+    rowEl('faculty', 'Faculty', 1),
+    rowEl('dept', 'Department', 2),
+    rowEl('expiry', 'Expiry year', 3),
+    vitalEl('blood', 'Blood group', true),
+    vitalEl('geno', 'Genotype', false),
     {
-      id: 'details', label: 'Name, faculty, department, expiry', required: true,
-      box: L => ({ x: L.fieldLabelX, y: L.fieldsStartY - L.fieldFontSize * 0.86, w: L.fieldsW, h: 3 * L.fieldSpacing + L.fieldFontSize * 1.1 }),
-      move: (L, s, dx, dy) => { L.fieldLabelX = R(s.fieldLabelX + dx); L.fieldsStartY = R(s.fieldsStartY + dy); },
-      resize: (L, s, dx, dy, sb) => {
-        L.fieldsW = clamp(R(s.fieldsW + dx), 160, W - s.fieldLabelX);
-        const ratio = (sb.h + dy) / sb.h;
-        L.fieldFontSize = clamp(R(s.fieldFontSize * ratio), 12, 44);
-        L.fieldSpacing = clamp(R(s.fieldSpacing * ratio), 24, 150);
-      },
-      fields: [
-        { k: 'fieldLabelX', label: 'Across', min: 0, max: W },
-        { k: 'fieldsStartY', label: 'Down', min: 0, max: H },
-        { k: 'fieldsW', label: 'Width', min: 160, max: W },
-        { k: 'fieldFontSize', label: 'Text size', min: 12, max: 44 },
-        { k: 'fieldSpacing', label: 'Space between lines', min: 24, max: 150 },
-      ],
-      keys: ['fieldLabelX', 'fieldsStartY', 'fieldsW', 'fieldFontSize', 'fieldSpacing'],
-    },
-    {
-      id: 'vitals', label: 'Blood group and genotype', toggle: 'showVitals',
-      box: L => ({
-        x: L.bloodX, y: L.bloodY - L.bloodFontSize * 0.86,
-        w: (L.bloodValueX - L.bloodX) + textW('AB+', L.bloodFontSize, false) + 10,
-        h: (L.genoY - L.bloodY) + L.bloodFontSize * 1.1,
-      }),
-      move: (L, s, dx, dy) => {
-        L.bloodX = R(s.bloodX + dx); L.genoX = L.bloodX; L.bloodValueX = R(s.bloodValueX + dx);
-        L.bloodY = R(s.bloodY + dy); L.genoY = R(s.genoY + dy);
-      },
-      resize: (L, s, dx, dy, sb) => {
-        const ratio = clamp((sb.h + dy) / sb.h, 0.4, 3);
-        L.bloodFontSize = clamp(R(s.bloodFontSize * ratio), 10, 40);
-        L.genoY = R(s.bloodY + (s.genoY - s.bloodY) * ratio);
-        L.bloodValueX = R(s.bloodX + (s.bloodValueX - s.bloodX) * ratio);
-      },
-      fields: [
-        { k: 'bloodX', label: 'Across', min: 0, max: W, link: L => { L.genoX = L.bloodX; } },
-        { k: 'bloodY', label: 'Down', min: 0, max: H },
-        { k: 'bloodFontSize', label: 'Text size', min: 10, max: 40 },
-      ],
-      keys: ['bloodX', 'bloodY', 'genoX', 'genoY', 'bloodValueX', 'bloodFontSize'],
-    },
-    {
-      id: 'logo', label: 'School crest', toggle: 'showLogo',
+      id: 'logo', label: 'School crest', caps: ['opacity', 'rotate', 'radius', 'filter'],
       box: L => ({ x: L.logoX, y: L.logoY, w: L.logoW, h: L.logoH }),
       move: (L, s, dx, dy) => { L.logoX = R(s.logoX + dx); L.logoY = R(s.logoY + dy); },
       resize: (L, s, dx, dy) => {
@@ -186,7 +233,7 @@ const CardLab = (() => {
       keys: ['logoX', 'logoY', 'logoW', 'logoH'],
     },
     {
-      id: 'qr', label: 'QR code', required: true,
+      id: 'qr', label: 'QR code', required: true, caps: [],
       box: L => ({ x: L.qrX, y: L.qrY, w: L.qrSize, h: L.qrSize }),
       move: (L, s, dx, dy) => { L.qrX = R(s.qrX + dx); L.qrY = R(s.qrY + dy); },
       resize: (L, s, dx, dy) => { L.qrSize = clamp(R(s.qrSize + Math.max(dx, dy)), 120, 340); },
@@ -195,33 +242,42 @@ const CardLab = (() => {
         { k: 'qrY', label: 'Down', min: 0, max: H },
         { k: 'qrSize', label: 'Size', min: 120, max: 340 },
       ],
+      note: 'The QR code stays fully solid so it always scans. You can move it, resize it and change its layer.',
       keys: ['qrX', 'qrY', 'qrSize'],
     },
     {
-      id: 'signature', label: 'Signature', toggle: 'showSignature',
-      box: L => {
-        const top = L.sigLabelY - L.sigLabelFontSize;
-        return { x: L.sigBoxX, y: top, w: L.sigBoxW, h: (L.sigBoxY + L.sigBoxH) - top };
+      id: 'sigLabel', label: 'Signature word', caps: TEXT_CAPS, colorKey: 'labelColor',
+      box: (L, TX) => ({ x: L.sigLabelX, y: L.sigLabelY - L.sigLabelFontSize * 0.86, w: textW(TX.signatureLabel, L.sigLabelFontSize) + 8, h: L.sigLabelFontSize * 1.1 }),
+      move: (L, s, dx, dy) => { L.sigLabelX = R(s.sigLabelX + dx); L.sigLabelY = R(s.sigLabelY + dy); },
+      resize: (L, s, dx, dy, sb) => {
+        const ratio = (sb.h + dy) / sb.h;
+        L.sigLabelFontSize = clamp(R(s.sigLabelFontSize * ratio), 10, 36);
       },
-      move: (L, s, dx, dy) => {
-        L.sigBoxX = R(s.sigBoxX + dx); L.sigLabelX = R(s.sigLabelX + dx);
-        L.sigBoxY = R(s.sigBoxY + dy); L.sigLabelY = R(s.sigLabelY + dy);
-      },
+      fields: [
+        { k: 'sigLabelX', label: 'Across', min: 0, max: W },
+        { k: 'sigLabelY', label: 'Down', min: 20, max: H },
+        { k: 'sigLabelFontSize', label: 'Text size', min: 10, max: 36 },
+      ],
+      keys: ['sigLabelX', 'sigLabelY', 'sigLabelFontSize'],
+    },
+    {
+      id: 'signature', label: 'Signature and line', caps: ['opacity'],
+      box: L => ({ x: L.sigBoxX, y: L.sigBoxY, w: L.sigBoxW, h: L.sigBoxH }),
+      move: (L, s, dx, dy) => { L.sigBoxX = R(s.sigBoxX + dx); L.sigBoxY = R(s.sigBoxY + dy); },
       resize: (L, s, dx, dy) => {
         L.sigBoxW = clamp(R(s.sigBoxW + dx), 100, 900);
         L.sigBoxH = clamp(R(s.sigBoxH + dy), 30, 320);
       },
       fields: [
-        { k: 'sigBoxX', label: 'Across', min: 0, max: W, link: L => { L.sigLabelX = L.sigBoxX; } },
-        { k: 'sigBoxY', label: 'Down', min: 20, max: H, link: L => { L.sigLabelY = L.sigBoxY - 8; } },
+        { k: 'sigBoxX', label: 'Across', min: 0, max: W },
+        { k: 'sigBoxY', label: 'Down', min: 20, max: H },
         { k: 'sigBoxW', label: 'Width', min: 100, max: 900 },
         { k: 'sigBoxH', label: 'Height', min: 30, max: 320 },
-        { k: 'sigLabelFontSize', label: 'Label size', min: 10, max: 36 },
       ],
-      keys: ['sigBoxX', 'sigBoxY', 'sigBoxW', 'sigBoxH', 'sigLabelX', 'sigLabelY', 'sigLabelFontSize'],
+      keys: ['sigBoxX', 'sigBoxY', 'sigBoxW', 'sigBoxH'],
     },
     {
-      id: 'watermark', label: 'Crest watermark', toggle: 'showWatermark',
+      id: 'watermark', label: 'Crest watermark', caps: ['rotate', 'filter'], opacityKey: 'watermarkAlpha',
       box: L => ({ x: L.watermarkX - L.watermarkSize / 2, y: L.watermarkY - L.watermarkSize / 2, w: L.watermarkSize, h: L.watermarkSize }),
       move: (L, s, dx, dy) => { L.watermarkX = R(s.watermarkX + dx); L.watermarkY = R(s.watermarkY + dy); },
       resize: (L, s, dx, dy) => { L.watermarkSize = clamp(R(s.watermarkSize + Math.max(dx, dy) * 2), 60, 900); },
@@ -229,7 +285,6 @@ const CardLab = (() => {
         { k: 'watermarkX', label: 'Across (centre)', min: 0, max: W },
         { k: 'watermarkY', label: 'Down (centre)', min: 0, max: H },
         { k: 'watermarkSize', label: 'Size', min: 60, max: 900 },
-        { k: 'watermarkAlpha', label: 'Strength (0.02 to 0.4)', min: 0.02, max: 0.4, step: 0.01 },
       ],
       keys: ['watermarkX', 'watermarkY', 'watermarkSize', 'watermarkAlpha'],
     },
@@ -249,7 +304,9 @@ const CardLab = (() => {
   function fullDraft(tpl, school) {
     const d = JSON.parse(JSON.stringify(tpl || {}));
     d.layout = Object.assign(defaultsLayout(), d.layout || {});
-    d.layout.layoutVersion = 2;
+    d.layout.layoutVersion = 3;
+    d.layout.fx = d.layout.fx || {};
+    d.layout.order = CardCanvas.layerOrder(d.layout.order);
     d.colors = Object.assign({}, CardTemplate.getDefault().colors, d.colors || {});
     d.text = Object.assign(defaultsText(), d.text || {});
     if (!Array.isArray(d.text.terms) || !d.text.terms.length) d.text.terms = defaultsText().terms;
@@ -347,9 +404,11 @@ const CardLab = (() => {
     });
   }
 
-  function visible(def) {
-    return !def.toggle || S.draft.layout[def.toggle] !== false;
+  function isShown(id) {
+    return CardCanvas.elementShown(S.draft.layout, id);
   }
+  function visible(def) { return isShown(def.id); }
+  function isLocked(id) { return fxv(S.draft.layout, id, 'locked', false) === true; }
 
   function renderBoxes() {
     const overlay = S.el.querySelector('#lab-overlay');
@@ -357,15 +416,18 @@ const CardLab = (() => {
     if (S.side === 'back') { overlay.innerHTML = ''; return; }
     const L = S.draft.layout;
     const TX = S.draft.text;
+    const order = CardCanvas.layerOrder(L.order);
     let html = '';
     ELEMENTS.forEach(def => {
-      if (!visible(def)) return;
+      if (def.noBox || !visible(def)) return;
       const b = def.box(L, TX);
+      const locked = isLocked(def.id);
       const sel = S.selected === def.id ? ' is-selected' : '';
-      html += `<div class="lab-box${sel}" data-el="${def.id}" role="button" tabindex="-1" aria-label="${esc(def.label)}"
-        style="left:${(b.x / W) * 100}%;top:${(b.y / H) * 100}%;width:${(b.w / W) * 100}%;height:${(b.h / H) * 100}%;">
-        <span class="lab-box-tag">${esc(def.label)}</span>
-        <span class="lab-handle" data-handle="se" aria-hidden="true"></span>
+      const z = S.selected === def.id ? 1000 : order.indexOf(def.id) + 1;
+      html += `<div class="lab-box${sel}${locked ? ' is-locked' : ''}" data-el="${def.id}" role="button" tabindex="-1" aria-label="${esc(def.label)}${locked ? ' (locked)' : ''}"
+        style="left:${(b.x / W) * 100}%;top:${(b.y / H) * 100}%;width:${(b.w / W) * 100}%;height:${(b.h / H) * 100}%;z-index:${z};">
+        <span class="lab-box-tag">${esc(def.label)}${locked ? ' (locked)' : ''}</span>
+        ${locked ? '' : '<span class="lab-handle" data-handle="se" aria-hidden="true"></span>'}
       </div>`;
     });
     overlay.innerHTML = html;
@@ -376,39 +438,55 @@ const CardLab = (() => {
   }
 
   // Problems that would make a card fail at the gate block saving; the rest are advice.
+  const TEXT_PARTS = ['matric', 'name', 'faculty', 'dept', 'expiry', 'blood', 'geno', 'sigLabel', 'title'];
   function computeChecks() {
     const L = S.draft.layout;
     const TX = S.draft.text;
     const errors = [];
     const warnings = [];
     const boxes = {};
-    ELEMENTS.forEach(def => { if (visible(def)) boxes[def.id] = def.box(L, TX); });
+    ELEMENTS.forEach(def => { if (!def.noBox && visible(def)) boxes[def.id] = def.box(L, TX); });
+    const nameOf = id => BY_ID[id].label;
 
     if (L.qrSize < 160) errors.push('The QR code is too small to scan reliably. Make it at least 160.');
     if (L.matricFontSize < 20) errors.push('The reg number is too small to read. Make it at least 20.');
+    if (fxv(L, 'matric', 'opacity', 1) < 0.7) errors.push('The reg number is too faint. Keep its strength at 70% or more.');
+    if (fxv(L, 'name', 'opacity', 1) < 0.7) errors.push('The name is too faint. Keep its strength at 70% or more.');
+    if (fxv(L, 'matric', 'rotate', 0) || fxv(L, 'name', 'rotate', 0)) warnings.push('A tilted reg number or name is harder to read at the gate. Keep them straight.');
 
-    ['qr', 'photo', 'matric', 'details'].forEach(id => {
+    ['qr', 'photo', 'matric', 'name'].forEach(id => {
       const b = boxes[id];
       if (b && (b.x < 0 || b.y < 0 || b.x + b.w > W + 1 || b.y + b.h > H + 1)) {
-        errors.push(`${BY_ID[id].label} goes off the edge of the card.`);
+        errors.push(`${nameOf(id)} goes off the edge of the card.`);
       }
     });
-    ['title', 'vitals', 'logo', 'signature'].forEach(id => {
+    ['title', 'faculty', 'dept', 'expiry', 'blood', 'geno', 'logo', 'signature', 'sigLabel'].forEach(id => {
       const b = boxes[id];
       if (b && (b.x < -1 || b.y < -1 || b.x + b.w > W + 1 || b.y + b.h > H + 1)) {
-        warnings.push(`${BY_ID[id].label} goes off the edge of the card.`);
+        warnings.push(`${nameOf(id)} goes off the edge of the card.`);
       }
     });
 
     if (boxes.qr) {
-      ['photo', 'details', 'signature', 'logo', 'matric', 'vitals'].forEach(id => {
-        if (boxes[id] && intersects(boxes.qr, boxes[id])) errors.push(`The QR code overlaps the ${BY_ID[id].label.toLowerCase()}. Anything on top of a QR code can stop it scanning.`);
+      ['photo', 'name', 'faculty', 'dept', 'expiry', 'signature', 'sigLabel', 'logo', 'matric', 'blood', 'geno'].forEach(id => {
+        if (boxes[id] && intersects(boxes.qr, boxes[id])) errors.push(`The QR code overlaps the ${nameOf(id).toLowerCase()}. Anything on top of a QR code can stop it scanning.`);
       });
     }
     if (boxes.photo && (L.photoW < 150 || L.photoH < 180)) warnings.push('The passport photo is small. Security staff compare it with the student\'s face.');
-    if (boxes.photo && boxes.details && intersects(boxes.photo, boxes.details)) warnings.push('The photo overlaps the name and details.');
-    if (boxes.signature && boxes.details && intersects(boxes.signature, boxes.details)) warnings.push('The signature overlaps the name and details.');
-    if (L.watermarkAlpha > 0.25 && L.showWatermark !== false) warnings.push('A strong watermark can make the details harder to read.');
+    ['name', 'faculty', 'dept', 'expiry', 'matric', 'blood', 'geno'].forEach(id => {
+      if (boxes.photo && boxes[id] && intersects(boxes.photo, boxes[id])) warnings.push(`The photo overlaps the ${nameOf(id).toLowerCase()}.`);
+    });
+    for (let i = 0; i < TEXT_PARTS.length; i++) {
+      for (let j = i + 1; j < TEXT_PARTS.length; j++) {
+        const a = TEXT_PARTS[i], b = TEXT_PARTS[j];
+        if (boxes[a] && boxes[b] && intersects(boxes[a], boxes[b])) {
+          const w = `${nameOf(a)} and ${nameOf(b).toLowerCase()} overlap.`;
+          if (!warnings.includes(w)) warnings.push(w);
+        }
+      }
+    }
+    if (boxes.signature && boxes.name && intersects(boxes.signature, boxes.name)) warnings.push('The signature overlaps the name.');
+    if (L.watermarkAlpha > 0.25 && isShown('watermark')) warnings.push('A strong watermark can make the details harder to read.');
     return { errors, warnings };
   }
 
@@ -436,27 +514,103 @@ const CardLab = (() => {
       return;
     }
     const L = S.draft.layout;
-    list.innerHTML = ELEMENTS.map(def => {
+    const order = CardCanvas.layerOrder(L.order);          // bottom to top
+    const topFirst = order.slice().reverse();
+    const dis = S.canEdit ? '' : ' disabled';
+    list.innerHTML = '<li class="lab-layer-note">Top of the list is the front of the card.</li>' + topFirst.map((id, i) => {
+      const def = BY_ID[id];
       const on = visible(def);
-      const sel = S.selected === def.id ? ' is-selected' : '';
-      const toggle = def.toggle
-        ? `<label class="lab-switch" title="Show on card"><input type="checkbox" data-toggle="${def.toggle}" ${on ? 'checked' : ''} aria-label="Show ${esc(def.label)} on the card"><span>Show</span></label>`
-        : '<span class="lab-required">Always shown</span>';
-      return `<li class="lab-el${sel}${on ? '' : ' is-hidden'}">
-        <button type="button" class="lab-el-name" data-select="${def.id}">${esc(def.label)}</button>${toggle}
+      const locked = isLocked(id);
+      const sel = S.selected === id ? ' is-selected' : '';
+      const showBox = def.required
+        ? '<span class="lab-required">Always shown</span>'
+        : `<label class="lab-switch" title="Show on card"><input type="checkbox" data-showel="${id}" ${on ? 'checked' : ''}${dis} aria-label="Show ${esc(def.label)} on the card"><span>Show</span></label>`;
+      return `<li class="lab-el${sel}${on ? '' : ' is-hidden'}${locked ? ' is-locked' : ''}">
+        <button type="button" class="lab-el-name" data-select="${id}">${esc(def.label)}${locked ? ' <span class="lab-lock-tag">locked</span>' : ''}</button>
+        <span class="lab-el-tools">
+          <button type="button" class="lab-mini" data-act="fwd" data-id="${id}" ${i === 0 || !S.canEdit ? 'disabled' : ''} aria-label="Bring ${esc(def.label)} forward" title="Bring forward">&#9650;</button>
+          <button type="button" class="lab-mini" data-act="bwd" data-id="${id}" ${i === topFirst.length - 1 || !S.canEdit ? 'disabled' : ''} aria-label="Send ${esc(def.label)} backward" title="Send backward">&#9660;</button>
+          <button type="button" class="lab-mini lab-mini-lock${locked ? ' is-on' : ''}" data-act="lock" data-id="${id}" ${S.canEdit ? '' : 'disabled'} aria-pressed="${locked}" title="${locked ? 'Unlock' : 'Lock so it cannot be moved by accident'}">${locked ? 'Unlock' : 'Lock'}</button>
+          ${showBox}
+        </span>
       </li>`;
-    }).join('') + `<li class="lab-el">
-        <span class="lab-el-name lab-el-static">Card border</span>
-        <label class="lab-switch"><input type="checkbox" data-toggle="showBorder" ${L.showBorder !== false ? 'checked' : ''} aria-label="Show card border"><span>Show</span></label>
-      </li>`;
+    }).join('');
   }
 
-  function numberField(f, val) {
+  function numberField(f, def) {
+    const L = S.draft.layout;
     const step = f.step || 1;
+    const lockedAttr = def && isLocked(def.id) ? ' disabled' : '';
+    if (f.fx) {
+      const val = fxv(L, def.id, f.k, f.def ? f.def(L) : 0);
+      return `<label class="lab-field">
+        <span>${esc(f.label)}</span>
+        <input type="number" class="sh-input" data-fxnum="${f.k}" value="${esc(val)}" min="${f.min}" max="${f.max}" step="${step}"${lockedAttr}>
+      </label>`;
+    }
     return `<label class="lab-field">
       <span>${esc(f.label)}</span>
-      <input type="number" class="sh-input" data-key="${f.k}" value="${esc(val)}" min="${f.min}" max="${f.max}" step="${step}">
+      <input type="number" class="sh-input" data-key="${f.k}" value="${esc(L[f.k])}" min="${f.min}" max="${f.max}" step="${step}"${lockedAttr}>
     </label>`;
+  }
+
+  const WEIGHTS = [['', 'Standard'], ['bold', 'Bold'], ['normal', 'Regular'], ['light', 'Light']];
+  const FONT_NAMES = {
+    arial: 'Arial', verdana: 'Verdana', trebuchet: 'Trebuchet', tahoma: 'Tahoma', georgia: 'Georgia',
+    times: 'Times New Roman', garamond: 'Garamond', courier: 'Courier', impact: 'Impact',
+  };
+
+  function rangeField(label, attr, val, min, max, step, unit, scale, dis) {
+    return `<label class="lab-field lab-field-wide lab-range">
+      <span>${esc(label)}: <b>${esc(Math.round(val * 100) / 100)}${unit}</b></span>
+      <input type="range" ${attr} data-scale="${scale}" data-unit="${unit}" min="${min}" max="${max}" step="${step}" value="${esc(val)}"${dis}>
+    </label>`;
+  }
+  function colourField(label, k, f, std, dis) {
+    const custom = f[k] ? true : false;
+    return `<div class="lab-colour-row">
+      <label class="lab-colour"><input type="color" data-fxc="${k}" value="${esc(f[k] || std || '#000000')}"${dis}><span>${esc(label)}</span></label>
+      ${custom ? `<button type="button" class="lab-link" data-fxclear="${k}"${dis}>Use standard</button>` : '<span class="lab-muted lab-inline-note">standard</span>'}
+    </div>`;
+  }
+  function selectField(label, k, f, options, dis) {
+    return `<label class="lab-field"><span>${esc(label)}</span>
+      <select class="sh-input" data-fxs="${k}"${dis}>${options.map(([v, t]) => `<option value="${esc(v)}" ${String(f[k] || '') === v ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></label>`;
+  }
+
+  function styleHtml(def) {
+    const caps = def.caps || [];
+    if (!caps.length && !def.opacityKey) return '';
+    const L = S.draft.layout;
+    const C = S.draft.colors;
+    const f = (L.fx && L.fx[def.id]) || {};
+    const dis = isLocked(def.id) ? ' disabled' : '';
+    let h = '';
+    if (def.opacityKey) {
+      h += rangeField('Strength (see-through)', `data-kr="${def.opacityKey}"`, Math.round(L[def.opacityKey] * 100), 0, 100, 1, '%', 100, dis);
+    } else if (caps.includes('opacity')) {
+      h += rangeField('Strength (see-through)', 'data-fxr="opacity"', Math.round(fxv(L, def.id, 'opacity', 1) * 100), 0, 100, 1, '%', 100, dis);
+    }
+    if (caps.includes('rotate')) h += rangeField('Tilt', 'data-fxr="rotate"', fxv(L, def.id, 'rotate', 0), -180, 180, 1, '°', 1, dis);
+    if (caps.includes('color')) h += colourField(def.labelColorKey ? 'Value colour' : (def.id === 'border' ? 'Border colour' : 'Text colour'), 'color', f, C[def.colorKey], dis);
+    if (caps.includes('labelColor')) h += colourField('Label colour', 'labelColor', f, C[def.labelColorKey], dis);
+    if (caps.includes('font') || caps.includes('weight') || caps.includes('italic')) {
+      h += '<div class="lab-fields">';
+      if (caps.includes('font')) h += selectField('Font', 'font', f, [['', 'Standard']].concat(Object.keys(FONT_NAMES).map(k => [k, FONT_NAMES[k]])), dis);
+      if (caps.includes('weight')) h += selectField(caps.includes('labelWeight') ? 'Value weight' : 'Weight', 'weight', f, WEIGHTS, dis);
+      if (caps.includes('labelWeight')) h += selectField('Label weight', 'labelWeight', f, WEIGHTS, dis);
+      if (caps.includes('spacing')) h += `<label class="lab-field"><span>Letter spacing</span><input type="number" class="sh-input" data-fxnum="letterSpacing" value="${esc(fxv(L, def.id, 'letterSpacing', 0))}" min="-3" max="20" step="0.5"${dis}></label>`;
+      h += '</div>';
+      if (caps.includes('italic')) h += `<label class="lab-switch lab-field-wide"><input type="checkbox" data-fxb="italic" ${f.italic ? 'checked' : ''}${dis}><span>Slanted (italic)</span></label>`;
+    }
+    if (caps.includes('width')) h += `<div class="lab-fields">${numberField({ fx: true, k: 'width', label: 'Border thickness', min: 1, max: 14, def: () => 2 }, def)}</div>`;
+    if (caps.includes('radius')) h += `<div class="lab-fields">${numberField({ fx: true, k: 'radius', label: 'Rounded corners', min: 0, max: 120, def: () => 0 }, def)}</div>`;
+    if (caps.includes('filter')) {
+      h += rangeField('Black and white', 'data-fxr="gray"', Math.round(fxv(L, def.id, 'gray', 0) * 100), 0, 100, 1, '%', 100, dis);
+      h += rangeField('Soft blur', 'data-fxr="blur"', fxv(L, def.id, 'blur', 0), 0, 12, 0.5, ' px', 1, dis);
+      h += rangeField('Brightness', 'data-fxr="bright"', Math.round(fxv(L, def.id, 'bright', 1) * 100), 40, 160, 1, '%', 100, dis);
+    }
+    return `<details class="lab-group" ${S.openGroups.look ? 'open' : ''} data-group="look"><summary>Look of this part</summary>${h}</details>`;
   }
 
   function renderProps() {
@@ -469,7 +623,7 @@ const CardLab = (() => {
 
     if (S.side === 'back') {
       html += `<h3 class="lab-h">Back of the card</h3>
-        <div class="lab-fields">${BACK_FIELDS.map(f => numberField(f, L[f.k])).join('')}</div>
+        <div class="lab-fields">${BACK_FIELDS.map(f => numberField(f, null)).join('')}</div>
         <label class="lab-field lab-field-wide"><span>Terms heading</span>
           <input type="text" class="sh-input" data-text="termsTitle" value="${esc(TX.termsTitle)}" maxlength="80"></label>
         <label class="lab-field lab-field-wide"><span>Terms, one per line</span>
@@ -478,27 +632,44 @@ const CardLab = (() => {
           <input type="text" class="sh-input" data-text="backFooterRight" value="${esc(TX.backFooterRight)}" maxlength="80"></label>`;
     } else if (S.selected && BY_ID[S.selected]) {
       const def = BY_ID[S.selected];
+      const locked = isLocked(def.id);
+      const dis = locked ? ' disabled' : '';
       html += `<h3 class="lab-h">${esc(def.label)}</h3>
-        <p class="lab-muted">Drag it on the card to move it. Drag the corner to resize it. Arrow keys nudge it (hold Shift for bigger steps).</p>
+        <div class="lab-toolrow">
+          <button type="button" class="sh-btn sh-btn-secondary lab-small" data-act="lock" data-id="${def.id}" ${S.canEdit ? '' : 'disabled'}>${locked ? 'Unlock' : 'Lock in place'}</button>
+          <button type="button" class="sh-btn sh-btn-secondary lab-small" data-act="front" data-id="${def.id}" ${S.canEdit ? '' : 'disabled'}>To front</button>
+          <button type="button" class="sh-btn sh-btn-secondary lab-small" data-act="back" data-id="${def.id}" ${S.canEdit ? '' : 'disabled'}>To back</button>
+        </div>
+        ${locked ? '<p class="lab-muted">This part is locked. Unlock it to move or change it.</p>'
+                 : '<p class="lab-muted">Drag it on the card to move it. Drag the corner to resize it. Arrow keys nudge it (hold Shift for bigger steps).</p>'}
+        ${def.note ? `<p class="lab-muted">${esc(def.note)}</p>` : ''}
         <div class="lab-fields">${def.fields.map(f => f.type === 'bool'
-          ? `<label class="lab-switch lab-field-wide"><input type="checkbox" data-toggle="${f.k}" ${L[f.k] !== false ? 'checked' : ''}><span>${esc(f.label)}</span></label>`
-          : numberField(f, L[f.k])).join('')}</div>
-        <button type="button" class="sh-btn sh-btn-secondary lab-small" data-reset-el="${def.id}">Reset ${esc(def.label.toLowerCase())}</button>`;
+          ? `<label class="lab-switch lab-field-wide"><input type="checkbox" data-toggle="${f.k}" ${L[f.k] !== false ? 'checked' : ''}${dis}><span>${esc(f.label)}</span></label>`
+          : numberField(f, def)).join('')}</div>
+        ${styleHtml(def)}
+        ${def.groupFields ? `<details class="lab-group" ${S.openGroups.group ? 'open' : ''} data-group="group"><summary>${esc(def.groupTitle)}</summary>
+          <div class="lab-fields">${def.groupFields.map(f => numberField(f, def)).join('')}</div></details>` : ''}
+        <button type="button" class="sh-btn sh-btn-secondary lab-small" data-reset-el="${def.id}"${dis}>Reset ${esc(def.label.toLowerCase())}</button>`;
     } else {
       html += `<h3 class="lab-h">Pick something to change</h3>
-        <p class="lab-muted">Click any part of the card, or pick it from the list on the left.</p>`;
+        <p class="lab-muted">Click any part of the card, or pick it from the list on the left. Every part can be locked, hidden and moved forward or backward.</p>`;
     }
 
+    const textInput = (k, label, max) => `<label class="lab-field lab-field-wide"><span>${esc(label)}</span>
+          <input type="text" class="sh-input" data-text="${k}" value="${esc(TX[k])}" maxlength="${max || 40}"></label>`;
     html += `<details class="lab-group" ${S.openGroups.words ? 'open' : ''} data-group="words">
         <summary>Words on the card</summary>
         <label class="lab-field lab-field-wide"><span>School name (header)</span>
           <input type="text" class="sh-input" data-inst="name" value="${esc(S.draft.institution.name)}" maxlength="80"></label>
-        <label class="lab-field lab-field-wide"><span>Card title</span>
-          <input type="text" class="sh-input" data-text="cardTitle" value="${esc(TX.cardTitle)}" maxlength="60"></label>
-        <label class="lab-field lab-field-wide"><span>Reg number label</span>
-          <input type="text" class="sh-input" data-text="matricLabel" value="${esc(TX.matricLabel)}" maxlength="30"></label>
-        <label class="lab-field lab-field-wide"><span>Signature label</span>
-          <input type="text" class="sh-input" data-text="signatureLabel" value="${esc(TX.signatureLabel)}" maxlength="30"></label>
+        ${textInput('cardTitle', 'Card title', 60)}
+        ${textInput('matricLabel', 'Reg number label', 30)}
+        ${textInput('nameLabel', 'Name label', 30)}
+        ${textInput('facultyLabel', 'Faculty label', 30)}
+        ${textInput('deptLabel', 'Department label', 30)}
+        ${textInput('expiryLabel', 'Expiry label', 30)}
+        ${textInput('bloodLabel', 'Blood group label', 30)}
+        ${textInput('genoLabel', 'Genotype label', 30)}
+        ${textInput('signatureLabel', 'Signature label', 30)}
       </details>
       <details class="lab-group" ${S.openGroups.colours ? 'open' : ''} data-group="colours">
         <summary>Colours</summary>
@@ -520,8 +691,15 @@ const CardLab = (() => {
     // Update numbers in place during a drag without rebuilding the panel (keeps focus).
     const panel = S.el.querySelector('#lab-props');
     if (!panel) return;
+    const L = S.draft.layout;
+    const def = BY_ID[S.selected];
     panel.querySelectorAll('input[data-key]').forEach(inp => {
-      if (document.activeElement !== inp) inp.value = S.draft.layout[inp.dataset.key];
+      if (document.activeElement !== inp) inp.value = L[inp.dataset.key];
+    });
+    panel.querySelectorAll('input[data-fxnum]').forEach(inp => {
+      if (document.activeElement === inp || !def) return;
+      const field = def.fields.find(f => f.fx && f.k === inp.dataset.fxnum);
+      inp.value = fxv(L, def.id, inp.dataset.fxnum, field && field.def ? field.def(L) : 0);
     });
   }
 
@@ -574,6 +752,7 @@ const CardLab = (() => {
     const def = BY_ID[boxEl.dataset.el];
     if (!def) return;
     ev.preventDefault();
+    if (isLocked(def.id)) { select(def.id); return; }
     select(def.id, { keepPanel: S.selected === def.id });
     const isResize = Boolean(ev.target.closest('.lab-handle'));
     const { k } = cardUnits(ev);
@@ -618,7 +797,7 @@ const CardLab = (() => {
 
   function nudge(dx, dy) {
     const def = BY_ID[S.selected];
-    if (!def || S.side === 'back' || !S.canEdit) return;
+    if (!def || S.side === 'back' || !S.canEdit || isLocked(def.id)) return;
     const snap = JSON.parse(JSON.stringify(S.draft.layout));
     def.move(S.draft.layout, snap, dx, dy);
     syncPropValues();
@@ -647,19 +826,45 @@ const CardLab = (() => {
   }
 
   let inputTimer = null;
+  function selectedDef() { return S.selected ? BY_ID[S.selected] : null; }
+  function selectedLocked() { return Boolean(S.selected && S.side === 'front' && isLocked(S.selected)); }
+
   function onInput(ev) {
     const t = ev.target;
     if (!S.canEdit) return;
+    const L = S.draft.layout;
+    const def = selectedDef();
     let changed = false;
     if (t.dataset.key) {
+      if (selectedLocked()) return;
       const v = parseFloat(t.value);
       if (!Number.isFinite(v)) return;
-      const def = BY_ID[S.selected];
-      const field = (def ? def.fields : BACK_FIELDS).find(f => f.k === t.dataset.key) || BACK_FIELDS.find(f => f.k === t.dataset.key);
+      const key = t.dataset.key;
+      const field = (def ? (def.fields || []).concat(def.groupFields || []) : []).find(f => f.k === key) || BACK_FIELDS.find(f => f.k === key);
       const val = field ? clamp(v, field.min, field.max) : v;
-      S.draft.layout[t.dataset.key] = field && field.step && field.step < 1 ? Math.round(val * 100) / 100 : Math.round(val);
-      if (field && field.link) field.link(S.draft.layout);
-      if (t.dataset.key === 'logoW' || t.dataset.key === 'logoH') { /* free sizes allowed here */ }
+      L[key] = field && field.step && field.step < 1 ? Math.round(val * 100) / 100 : Math.round(val);
+      if (field && field.link) field.link(L);
+      changed = true;
+    } else if (t.dataset.fxnum) {
+      if (!def || selectedLocked()) return;
+      const v = parseFloat(t.value);
+      if (!Number.isFinite(v)) return;
+      const field = def.fields.find(f => f.fx && f.k === t.dataset.fxnum);
+      const lo = field ? field.min : -3, hi = field ? field.max : 20;
+      setFx(L, def.id, t.dataset.fxnum, clamp(t.dataset.fxnum === 'letterSpacing' ? Math.round(v * 2) / 2 : Math.round(v), lo, hi));
+      changed = true;
+    } else if (t.dataset.fxr || t.dataset.kr) {
+      if (!def || selectedLocked()) return;
+      const v = parseFloat(t.value);
+      const scale = parseFloat(t.dataset.scale || '1') || 1;
+      if (t.dataset.kr) L[t.dataset.kr] = Math.round(v) / scale;
+      else setFx(L, def.id, t.dataset.fxr, v / scale);
+      const out = t.closest('label') && t.closest('label').querySelector('b');
+      if (out) out.textContent = v + (t.dataset.unit || '');
+      changed = true;
+    } else if (t.dataset.fxc) {
+      if (!def || selectedLocked()) return;
+      setFx(L, def.id, t.dataset.fxc, t.value);
       changed = true;
     } else if (t.dataset.color) {
       S.draft.colors[t.dataset.color] = t.value; changed = true;
@@ -677,13 +882,76 @@ const CardLab = (() => {
     inputTimer = setTimeout(() => afterChange(), 350);
   }
 
+  const LEGACY_SHOW = { border: 'showBorder', title: 'showTitle', logo: 'showLogo', signature: 'showSignature',
+    sigLabel: 'showSignature', watermark: 'showWatermark', blood: 'showVitals', geno: 'showVitals' };
+
+  function setShown(id, on) {
+    const L = S.draft.layout;
+    if (on) {
+      setFx(L, id, 'hidden', false);
+      if (LEGACY_SHOW[id]) L[LEGACY_SHOW[id]] = true;
+    } else {
+      setFx(L, id, 'hidden', true);
+    }
+  }
+
+  function toggleLock(id) {
+    const L = S.draft.layout;
+    setFx(L, id, 'locked', !isLocked(id));
+    afterChange();
+    renderList(); renderProps(); renderBoxes();
+  }
+
+  // Layers: order[0] is the back of the card, the last one is the front.
+  function moveLayer(id, how) {
+    const L = S.draft.layout;
+    const order = CardCanvas.layerOrder(L.order);
+    const i = order.indexOf(id);
+    if (i < 0) return;
+    order.splice(i, 1);
+    let j = i;
+    if (how === 'fwd') j = Math.min(order.length, i + 1);
+    else if (how === 'bwd') j = Math.max(0, i - 1);
+    else if (how === 'front') j = order.length;
+    else if (how === 'back') j = 0;
+    order.splice(j, 0, id);
+    L.order = order;
+    afterChange();
+    renderList(); renderBoxes();
+  }
+
   function onChange(ev) {
     const t = ev.target;
-    if (t.dataset.toggle && S.canEdit) {
-      S.draft.layout[t.dataset.toggle] = t.checked;
-      afterChange();
-      renderList();
-      return;
+    if (S.canEdit) {
+      if (t.dataset.toggle) {
+        if (selectedLocked()) return;
+        S.draft.layout[t.dataset.toggle] = t.checked;
+        afterChange();
+        renderList();
+        return;
+      }
+      if (t.dataset.showel) {
+        setShown(t.dataset.showel, t.checked);
+        afterChange();
+        renderList(); renderBoxes();
+        return;
+      }
+      if (t.dataset.fxs && S.selected) {
+        setFx(S.draft.layout, S.selected, t.dataset.fxs, t.value);
+        afterChange();
+        return;
+      }
+      if (t.dataset.fxb && S.selected) {
+        setFx(S.draft.layout, S.selected, t.dataset.fxb, t.checked);
+        afterChange();
+        return;
+      }
+      if (t.dataset.fxc && S.selected) {
+        // colour picker finished: show the "Use standard" button
+        renderProps();
+        return;
+      }
+      if (t.dataset.fxr || t.dataset.kr) { renderProps(); return; }
     }
     if (t.id === 'lab-crest-file' && t.files && t.files[0]) loadCrest(t.files[0]);
     if (t.id === 'lab-school' ) switchSchool(t.value);
@@ -701,6 +969,17 @@ const CardLab = (() => {
     if (t.dataset.select) { select(t.dataset.select); return; }
     if (t.dataset.side) { setSide(t.dataset.side); return; }
     if (t.dataset.resetEl) { resetElement(t.dataset.resetEl); return; }
+    if (t.dataset.act && S.canEdit) {
+      const id = t.dataset.id;
+      if (t.dataset.act === 'lock') toggleLock(id);
+      else moveLayer(id, t.dataset.act);
+      return;
+    }
+    if (t.dataset.fxclear && S.selected && S.canEdit) {
+      setFx(S.draft.layout, S.selected, t.dataset.fxclear, '');
+      afterChange(); renderProps();
+      return;
+    }
     switch (t.id) {
       case 'lab-undo': undo(); break;
       case 'lab-redo': redo(); break;
@@ -722,10 +1001,15 @@ const CardLab = (() => {
 
   function resetElement(id) {
     const def = BY_ID[id];
-    if (!def) return;
+    if (!def || isLocked(id)) return;
     const D = defaultsLayout();
-    def.keys.forEach(k => { S.draft.layout[k] = D[k]; });
-    if (def.toggle) S.draft.layout[def.toggle] = true;
+    (def.keys || []).forEach(k => { S.draft.layout[k] = D[k]; });
+    if (S.draft.layout.fx) {
+      const keepLock = fxv(S.draft.layout, id, 'locked', false);
+      delete S.draft.layout.fx[id];
+      if (keepLock) setFx(S.draft.layout, id, 'locked', true);
+    }
+    if (LEGACY_SHOW[id]) S.draft.layout[LEGACY_SHOW[id]] = true;
     afterChange();
     renderProps();
     renderList();
@@ -734,6 +1018,8 @@ const CardLab = (() => {
   function resetAll() {
     if (!window.confirm('Put every part of the card back to the standard design? Your school name and crest stay. You can undo this.')) return;
     S.draft.layout = defaultsLayout();
+    S.draft.layout.fx = {};
+    S.draft.layout.order = CardCanvas.layerOrder(null);
     S.draft.colors = Object.assign({}, CardTemplate.getDefault().colors);
     const name = S.draft.institution.name;
     const crest = S.draft.institution.crestUrl;
@@ -876,7 +1162,7 @@ const CardLab = (() => {
       el, ctx: ctx || {}, canEdit, schoolId, schoolName: '',
       draft: null, savedSnap: '', history: [], future: [], dirty: false,
       selected: null, side: 'front', sample: 'standard', saving: false,
-      openGroups: { words: false, colours: false, crest: false },
+      openGroups: { words: false, colours: false, crest: false, look: true, group: false },
       sampleSig: makeSampleSignature(), lastChecks: null,
     };
 

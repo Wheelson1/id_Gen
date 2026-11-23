@@ -224,23 +224,32 @@
                         <div class="onb-two">
                             <div>
                                 <label class="onb-label" for="calc-fee">Card fee (₦)</label>
-                                <input type="number" id="calc-fee" class="onb-input" value="2500" min="500" max="25000" step="100">
+                                <input type="number" id="calc-fee" class="onb-input" value="3000" min="500" max="25000" step="100">
                             </div>
                             <div>
                                 <label class="onb-label" for="calc-campuses">Campuses</label>
                                 <input type="number" id="calc-campuses" class="onb-input" value="1" min="1" max="50" step="1">
                             </div>
                         </div>
-                        <label class="onb-label" for="calc-share">Platform share (%)</label>
-                        <input type="number" id="calc-share" class="onb-input" value="30" min="0" max="95" step="5">
+                        <div class="onb-two">
+                            <div>
+                                <label class="onb-label" for="calc-school">University share per card (₦)</label>
+                                <input type="number" id="calc-school" class="onb-input" value="1000" min="0" max="25000" step="100">
+                            </div>
+                            <div>
+                                <label class="onb-label" for="calc-prod">Design and generating per card (₦)</label>
+                                <input type="number" id="calc-prod" class="onb-input" value="1500" min="0" max="25000" step="100">
+                            </div>
+                        </div>
                     </div>
                     <div class="calc-result" aria-live="polite">
                         <p class="calc-label">Card fees collected per cohort</p>
-                        <p id="calc-gross-total" class="calc-figure">₦25,000,000</p>
-                        <p id="calc-formula-line" class="calc-formula">10,000 students × ₦2,500 × 1 campus</p>
+                        <p id="calc-gross-total" class="calc-figure">₦30,000,000</p>
+                        <p id="calc-formula-line" class="calc-formula">10,000 students × ₦3,000 × 1 campus</p>
                         <dl class="calc-split">
-                            <div><dt>Kept by the university</dt><dd id="calc-uni-share">₦17,500,000</dd></div>
-                            <div><dt>Platform share</dt><dd id="calc-platform-share">₦7,500,000</dd></div>
+                            <div><dt>Kept by the university</dt><dd id="calc-uni-share">₦10,000,000</dd></div>
+                            <div><dt>Design and generating cards</dt><dd id="calc-prod-share">₦15,000,000</dd></div>
+                            <div><dt>Running and maintaining the system</dt><dd id="calc-platform-share">₦5,000,000</dd></div>
                         </dl>
                     </div>
                 </div>
@@ -344,23 +353,28 @@
             var elStudentsLabel = document.getElementById('calc-students-label');
             var elFee = document.getElementById('calc-fee');
             var elCampuses = document.getElementById('calc-campuses');
-            var elShare = document.getElementById('calc-share');
+            var elSchool = document.getElementById('calc-school');
+            var elProd = document.getElementById('calc-prod');
             var naira = function (n) { return '₦' + Math.round(n).toLocaleString('en-NG'); };
             function recalc() {
                 var students = Math.max(0, parseInt(elStudents.value, 10) || 0);
                 var fee = Math.max(0, parseInt(elFee.value, 10) || 0);
                 var campuses = Math.max(1, parseInt(elCampuses.value, 10) || 1);
-                var share = Math.min(100, Math.max(0, parseFloat(elShare.value) || 0));
-                var gross = students * fee * campuses;
-                var platform = gross * share / 100;
+                var perSchool = Math.max(0, parseInt(elSchool.value, 10) || 0);
+                var perProd = Math.max(0, parseInt(elProd.value, 10) || 0);
+                var perCompany = Math.max(0, fee - perSchool - perProd);
+                var cards = students * campuses;
+                var gross = cards * fee;
                 elStudentsLabel.textContent = students.toLocaleString('en-NG');
                 document.getElementById('calc-gross-total').textContent = naira(gross);
                 document.getElementById('calc-formula-line').textContent =
                     students.toLocaleString('en-NG') + ' students × ' + naira(fee) + ' × ' + campuses + (campuses === 1 ? ' campus' : ' campuses');
-                document.getElementById('calc-uni-share').textContent = naira(gross - platform) + ' (' + (100 - share) + '%)';
-                document.getElementById('calc-platform-share').textContent = naira(platform) + ' (' + share + '%)';
+                var pct = function (per) { return fee > 0 ? ' (' + Math.round(per / fee * 100) + '%)' : ''; };
+                document.getElementById('calc-uni-share').textContent = naira(cards * perSchool) + pct(perSchool);
+                document.getElementById('calc-prod-share').textContent = naira(cards * perProd) + pct(perProd);
+                document.getElementById('calc-platform-share').textContent = naira(cards * perCompany) + pct(perCompany);
             }
-            [elStudents, elFee, elCampuses, elShare].forEach(function (i) { i.addEventListener('input', recalc); });
+            [elStudents, elFee, elCampuses, elSchool, elProd].forEach(function (i) { i.addEventListener('input', recalc); });
             recalc();
 
             // Enquiry form -> support-desk (create_ticket)

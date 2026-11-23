@@ -450,18 +450,13 @@ function updateDownloadUI() {
   if (!isActive) {
     reason = `Downloads disabled: Your ID card is currently marked as "${currentStudent?.status || 'inactive'}".`;
   } else if (!isPaid) {
-    reason = 'Downloads locked: The ₦2,500 ID card fee must be confirmed before downloading.';
+    reason = 'Downloads locked: The ₦3,000 ID card fee must be confirmed before downloading.';
   }
 
-  const remaining = Math.max(0, _maxDailyDownloads - _downloadsToday);
-  quotaEl.textContent = `${remaining} of ${_maxDailyDownloads} downloads left today`;
+  quotaEl.style.display = 'none';   // no daily limit any more
 
   if (reason) {
     disabledMsgEl.textContent = reason;
-    disabledMsgEl.style.display = 'block';
-    Array.from(btnGrid.querySelectorAll('button')).forEach(btn => { btn.disabled = true; });
-  } else if (remaining === 0) {
-    disabledMsgEl.textContent = `Daily download limit (${_maxDailyDownloads} per day) reached. Please check back tomorrow.`;
     disabledMsgEl.style.display = 'block';
     Array.from(btnGrid.querySelectorAll('button')).forEach(btn => { btn.disabled = true; });
   } else {
@@ -470,16 +465,31 @@ function updateDownloadUI() {
   }
 }
 
+// Per-browser daily counter. It only makes the screen respond quickly: the server (log_download)
+// is what really enforces the limit for signed-in students. In demo mode this is the only counter.
+function _dlCounterKey(studentKey) {
+  return 'ebsu_dl_' + String(studentKey) + '_' + new Date().toISOString().slice(0, 10);
+}
+function checkDailyDownloadLimit(studentKey) {
+  let used = 0;
+  try { used = parseInt(localStorage.getItem(_dlCounterKey(studentKey)) || '0', 10) || 0; } catch (e) {}
+  return { allowed: true, used };   // no daily limit: a new card or PDF is what costs money, not a download
+}
+function recordDownload(studentKey) {
+  try {
+    const k = _dlCounterKey(studentKey);
+    localStorage.setItem(k, String((parseInt(localStorage.getItem(k) || '0', 10) || 0) + 1));
+  } catch (e) {}
+}
+
 async function requestDownloadPermission(format) {
   const studentKey = currentStudent?.matric || currentStudent?.id || 'STUDENT';
   const limitCheck = checkDailyDownloadLimit(studentKey);
-  if (!limitCheck.allowed) {
-    throw new Error('Daily download limit (3 per day) reached for today.');
-  }
 
   const sessionId = currentStudentSession?.onboarding_session_id || currentStudentSession?.id;
-  if (!sessionId) {
-    if (!isPrivateDemoHost()) {
+  const isFakeDemoSession = !!sessionId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(sessionId));
+  if (!sessionId || (isFakeDemoSession && portalDemoAllowed())) {
+    if (!portalDemoAllowed()) {
       throw new Error('Active verification session required to download card.');
     }
     recordDownload(studentKey);
@@ -503,11 +513,10 @@ async function requestDownloadPermission(format) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.ok) {
-    throw new Error(data.error || 'Daily download limit reached or download rejected by server.');
+    throw new Error(data.error || 'Download could not be recorded. Please try again.');
   }
   recordDownload(studentKey);
   _downloadsToday = data.downloads_today ?? (limitCheck.used + 1);
-  _maxDailyDownloads = data.max_daily_downloads ?? 3;
   updateDownloadUI();
   return true;
 }
@@ -764,8 +773,9 @@ function renderLiveCard() {
 
 document.getElementById('btn-report-lost')?.addEventListener('click', () => {
   triggerHaptic([50, 50, 50]);
-  if (!confirm('Report your physical or digital card as lost/stolen? You will be redirected to the Support Desk to freeze the old card and request a Registrar reissue.')) return;
-  window.location.href = 'app.html#/support';
+  if (!confirm('Report your card as lost? Your old QR code will stop working straight away. A new card costs ₦500.')) return;
+  if (window.ReplacementFlow) { window.ReplacementFlow.reportLost(); }
+  else { window.location.href = 'app.html#/support'; }
 });
 
 // Full-Screen / Modal QR Pass for Camera Scanning
@@ -819,3 +829,19 @@ document.getElementById('btn-quick-dl-png')?.addEventListener('click', handleDow
 document.getElementById('btn-modal-dl-png')?.addEventListener('click', handleDownloadFront);
 
 checkSession();
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FUTURE (OFF): burn-and-rebirth animation when a card is reported lost.
+// To switch on: uncomment <script src="js/lost-card-rebirth.js"> in student-portal.html,
+// then call the lines below after the lost report is accepted and the new card is drawn.
+// The server has already killed the old card by then; this is only the show.
+//
+// // CardRebirth.enable();
+// // CardRebirth.play({
+// //   container: document.getElementById('portal-card-container'),
+// //   oldCard: oldCardCanvas,      // canvas of the old card (draw it before the new one replaces it)
+// //   newCard: newCardCanvas,      // canvas of the new card
+// //   stampText: 'REPORTED LOST',
+// //   onDone: function () { updateDownloadUI(); }
+// // });

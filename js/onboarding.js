@@ -868,14 +868,14 @@ const StudentOnboarding = (() => {
       if (action === 'restore_by_reference') {
         return okRes({ session_id: DEMO_SESSION_ID, step: 'paid', already_paid: true, payment_reference: body.reference, expires_at });
       }
-      return okRes({ session_id: DEMO_SESSION_ID, step: 'verified_dob', already_paid: false, fee_amount: 2500, currency: 'NGN', redacted_svg: demoRedactedSvg(), payment_reference: null, expires_at });
+      return okRes({ session_id: DEMO_SESSION_ID, step: 'verified_dob', already_paid: false, fee_amount: 3000, currency: 'NGN', redacted_svg: demoRedactedSvg(), payment_reference: null, expires_at });
     }
     if (path === 'card-payment') {
       if (action === 'confirm') {
         if (!_state.demoPaid) return { ok: false, status: 402, data: { error: 'No payment found.' } };
-        return okRes({ ok: true, status: 'paid', reference: 'EBSU-CARD-DEMO-0001', amount: 2500, expires_at });
+        return okRes({ ok: true, status: 'paid', reference: 'EBSU-CARD-DEMO-0001', amount: 3000, expires_at });
       }
-      return okRes({ already_paid: false, status: 'pending', reference: 'EBSU-CARD-DEMO-0001', amount: 2500, currency: 'NGN', provider: 'demo', authorization_url: null });
+      return okRes({ already_paid: false, status: 'pending', reference: 'EBSU-CARD-DEMO-0001', amount: 3000, currency: 'NGN', provider: 'demo', authorization_url: null });
     }
     if (path === 'issue-card') {
       return okRes({

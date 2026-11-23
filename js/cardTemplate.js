@@ -63,9 +63,9 @@ const CardTemplate = (() => {
       genoX:  20, genoY:  625,
       logoX: 805, logoY: 205, logoW: 125, logoH: 125, logoAlpha: 1.0,
       qrX: 760, qrY: 360, qrSize: 215,
-      sigLabelX: 340, sigLabelY: 522,
-      sigBoxX: 340, sigBoxY: 530, sigBoxW: 400, sigBoxH: 92,
-      layoutVersion: 2,
+      sigLabelX: 340, sigLabelY: 524,
+      sigBoxX: 340, sigBoxY: 536, sigBoxW: 250, sigBoxH: 58,
+      layoutVersion: 3,
       watermarkAlpha: 0.10, watermarkSize: 340,
       backHeaderFontSize: 28,
       backTermsHeadSize:  20,
@@ -87,7 +87,11 @@ const CardTemplate = (() => {
     if (saved && Number(saved.layoutVersion || 1) < 2) {
       V2_KEYS.forEach(k => { if (k in DEFAULT_TEMPLATE.layout) layout[k] = DEFAULT_TEMPLATE.layout[k]; });
     }
-    layout.layoutVersion = 2;
+    if (saved && Number(saved.layoutVersion || 1) === 2) {
+      // v3: the signature area was too big; saved designs get the smaller one
+      ['sigLabelY', 'sigBoxX', 'sigBoxY', 'sigBoxW', 'sigBoxH'].forEach(k => { layout[k] = DEFAULT_TEMPLATE.layout[k]; });
+    }
+    layout.layoutVersion = 3;
     return layout;
   }
 

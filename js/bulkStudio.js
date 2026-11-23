@@ -261,7 +261,7 @@ const BulkStudio = (() => {
 
       const name = row.name || row.fullname || row.student_name || `Student ${i}`;
       const matric = row.matric || row.reg_no || row.regno || row.jamb_no || `2025${String(i).padStart(8, '0')}`;
-      const faculty = row.faculty || _activeFaculty !== 'ALL' ? _activeFaculty : 'Science';
+      const faculty = row.faculty || (_activeFaculty !== 'ALL' ? _activeFaculty : 'Science');
       const dept = row.dept || row.department || (FACULTY_CATALOG[faculty]?.departments[0] || 'General');
       const level = row.level || '100L';
       const blood = row.blood || row.blood_group || 'O+';
@@ -585,7 +585,7 @@ const BulkStudio = (() => {
       }
 
       // Render cards with real scannable QR data URLs
-      sec.html = renderCardsHtml(sec.students, sec.pageNumber, totalSections);
+      sec.html = await renderCardsHtml(sec.students, sec.pageNumber, totalSections);
       sec.status = 'ready';
 
       // Yield execution to the browser UI thread to prevent lag and enable GC
@@ -594,43 +594,45 @@ const BulkStudio = (() => {
     }
   }
 
-  function renderCardsHtml(studentsList, pageNum, totalPages) {
-    return studentsList.map(s => {
-      const qrDataUrl = generateCardQRDataUrl(s);
-      return `
-        <div class="cr80-print-card">
-          <div class="cr80-header">
-            <img src="crest_small.png.jpeg" class="cr80-crest" />
-            <div class="cr80-inst">EBONYI STATE UNIVERSITY</div>
-          </div>
-          <div class="cr80-sub">STUDENT IDENTITY CARD</div>
-          
-          <div class="cr80-body">
-            <div class="cr80-photo-box">
-              <img src="${s.photo || 'images/demo_user_face.jpg'}" class="cr80-photo" />
-            </div>
-            <div class="cr80-details">
-              <div class="cr80-row cr80-row-name"><span class="k">NAME:</span> <strong class="v">${s.name}</strong></div>
-              <div class="cr80-row"><span class="k">MATRIC:</span> <strong class="v">${s.matric}</strong></div>
-              <div class="cr80-row"><span class="k">FACULTY:</span> <span class="v">${s.faculty}</span></div>
-              <div class="cr80-row"><span class="k">DEPT:</span> <span class="v">${s.dept}</span></div>
-              <div class="cr80-row"><span class="k">LEVEL:</span> <span class="v">${s.level} · BLOOD: ${s.blood}</span></div>
-              <div class="cr80-row"><span class="k">GRADUATION / EXPIRY:</span> <strong class="v" style="color:#0044cc;">${s.expiry}</strong></div>
-            </div>
-            <div class="cr80-qr-box">
-              <div style="background:var(--surface); border:1px solid #1a365d; border-radius:2px; padding:1px; display:inline-block;">
-                <img src="${qrDataUrl}" style="width:14mm; height:14mm; display:block;" alt="Card QR" />
-              </div>
-              <div style="font-size:6.5pt; font-weight:800; margin-top:1.5px; color:#1a365d;">VERIFIED</div>
-            </div>
-          </div>
-          <div class="cr80-footer">
-            <span>ISSUED: 2024/2025</span>
-            <span>SHEET ${pageNum}/${totalPages} · CR80 STANDARD 300 DPI</span>
-          </div>
-        </div>
-      `;
-    }).join('');
+  // Every card on the sheet is drawn by the same engine and the same saved design as the
+  // Card Design Lab and the student download, so the printed sheet always matches.
+  function drawOneCard(s) {
+    return new Promise(resolve => {
+      const cv = document.createElement('canvas');
+      const rec = {
+        name: s.name, matric: s.matric, faculty: s.faculty, dept: s.dept, level: s.level,
+        session: s.session, blood: s.blood, genotype: s.genotype, expiry: s.expiry,
+        photo: s.photo || 'images/demo_user_face.jpg',
+        sig: s.sig || s.signature_url || '',
+        cardId: s.id, card_signature: s.card_signature,
+        qrString: (s.qr_token && /^(EBSU[12]:|https?:)/.test(s.qr_token)) ? s.qr_token : '',
+      };
+      let done = false;
+      const finish = () => {
+        if (done) return; done = true;
+        try { resolve(cv.toDataURL('image/png')); } catch (e) { resolve(''); }
+      };
+      try {
+        const tpl = (typeof CardTemplate !== 'undefined' && CardTemplate.get) ? CardTemplate.get() : null;
+        drawCard(cv, tpl, rec, 1, finish);
+        setTimeout(finish, 4000);
+      } catch (e) {
+        console.warn('Bulk card draw notice:', e);
+        finish();
+      }
+    });
+  }
+
+  async function renderCardsHtml(studentsList, pageNum, totalPages) {
+    const parts = [];
+    for (const s of studentsList) {
+      const img = await drawOneCard(s);
+      parts.push(`
+        <div class="cr80-print-card" style="padding:0; display:block; border:0; border-radius:3mm; background:none;">
+          <img src="${img}" alt="ID card for ${String(s.name || '').replace(/"/g, '&quot;')}" style="width:100%; height:100%; display:block;">
+        </div>`);
+    }
+    return parts.join('');
   }
 
   function showSectionConsole() {

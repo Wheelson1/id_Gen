@@ -171,7 +171,7 @@
 
         <div style="margin-top:14px; text-align:center; display:flex; flex-direction:column; gap:8px;">
           <a href="index.html#generate-section" style="font-size:13px; color:var(--accent); text-decoration:underline; font-weight:800;">
-            ✨ First time or haven't paid yet? Start 6-Step ID Onboarding (₦2,500) →
+            ✨ First time or haven't paid yet? Start 6-Step ID Onboarding (₦3,000) →
           </a>
           <a href="app.html#/support" style="font-size:12px; color:var(--warning); text-decoration:none; font-weight:700;">
             🎧 Need help or wrong details? Open Support Desk →
@@ -244,7 +244,7 @@
           <h4 style="margin:0; font-size:14px; font-weight:800; display:flex; align-items:center; gap:6px;">
             🖨️ Download &amp; Print Card
           </h4>
-          <span id="portal-dl-quota" style="font-size:11px; font-weight:700; color:var(--accent); background:rgba(21,88,192,0.1); padding:3px 8px; border-radius:12px;">
+          <span id="portal-dl-quota" style="display:none; font-size:11px; font-weight:700; color:var(--accent); background:rgba(21,88,192,0.1); padding:3px 8px; border-radius:12px;">
             3 of 3 downloads left today
           </span>
         </div>
@@ -268,7 +268,7 @@
           </button>
         </div>
         <p style="font-size:11px; color:var(--muted); margin:10px 0 0 0; text-align:center;">
-          Generated with high-resolution 300 DPI signed cryptographic QR. Max 3 downloads per day.
+          Generated with high-resolution 300 DPI signed cryptographic QR. Download as often as you need.
         </p>
       </div>
 
@@ -289,14 +289,64 @@
 
       <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);" />
 
+      <div id="sf-block">
+        <h4>School fees <span id="sf-session" style="font-weight:400;"></span></h4>
+        <p id="sf-status" style="font-size:13px; color:var(--muted); margin:0 0 10px;"></p>
+        <button type="button" id="btn-sf-pay" class="btn-primary action-btn" style="display:none;">Pay session fee (<span id="sf-price">₦300</span>, once per session)</button>
+        <p id="sf-pay-info" style="font-size:12px; color:var(--muted); margin:8px 0;"></p>
+        <button type="button" id="btn-sf-paid" class="btn-outline action-btn" style="display:none;">I have paid</button>
+        <div id="sf-rrr-wrap" style="display:none; margin-top:8px;">
+        <form id="sf-form" style="display:grid; gap:8px;">
+          <input id="sf-rrr" type="text" autocomplete="off" placeholder="School fees RRR (type or paste as text)" required style="padding:9px;" />
+          <select id="sf-sem" style="padding:9px;">
+            <option value="first">First semester</option>
+            <option value="second">Second semester</option>
+            <option value="full">Full year</option>
+          </select>
+          <button type="submit" class="btn-primary action-btn">Add RRR</button>
+        </form>
+        </div>
+        <p id="sf-msg" style="font-size:12px; margin:8px 0 0;"></p>
+      </div>
+
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);" />
+
       <h4>Card Security</h4>
       <div id="paystack-mock" style="display:none; background:var(--badge-warning-bg); padding:15px; border:1px solid var(--warning); border-radius:8px; margin-bottom:10px;">
         <h4 style="margin-top:0;color:var(--warning)">Lost Card Reported — Staff Approval Required</h4>
         <p style="margin:0; font-size:13px; color:var(--warning);">Your current card is now marked as <strong>lost_card</strong> and blocked at all verification terminals. Visit the ICT Identity Bureau with your receipt for staff-approved reissue.</p>
       </div>
       <button id="btn-report-lost" class="btn-danger action-btn">🚨 Report Card as Lost/Stolen</button>
+
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);" />
+
+      <div id="lost-next-step" style="display:none; background:var(--badge-warning-bg); padding:12px; border:1px solid var(--warning); border-radius:8px; margin:10px 0; font-size:13px;">
+        Your old card and QR code are dead. Pay for a new card below and a new QR code is made for you.
+      </div>
+      <h4>New card / new PDF</h4>
+      <p style="font-size:13px; color:var(--muted); margin:0 0 10px;">Your ID is a keepsake. If you lose it or need a fresh one, a new card costs <strong id="pdf-price-text">₦500</strong> each time.</p>
+      <button type="button" id="btn-new-pdf" class="btn-primary action-btn">Get a new PDF</button>
+      <p id="pdf-pay-info" style="font-size:12px; color:var(--muted); margin:8px 0;"></p>
+      <button type="button" id="btn-pdf-paid" class="btn-outline action-btn" style="display:none;">I have paid</button>
+      <p style="font-size:12px; margin:12px 0 0;"><a href="#" id="btn-open-report" onclick="return false;">Charged too much for printing? Report it</a></p>
     </div>
 
+  </div>
+
+  <!-- Printing cap notice + overcharge report -->
+  <div id="pdf-cap-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:var(--surface, #fff); color:var(--text, #222); max-width:460px; width:100%; border-radius:12px; padding:20px; max-height:90vh; overflow:auto;">
+      <h3 style="margin-top:0;">Printing your card</h3>
+      <p style="font-size:14px;">Printing your card costs <strong data-cap-text>₦1,500</strong> and should not be more than that. If anyone asks you for more, report it here with evidence (a receipt or a screenshot of the chat). The school will investigate.</p>
+      <form id="oc-form" style="display:grid; gap:8px; margin-top:12px;">
+        <input id="oc-place" type="text" placeholder="Who or where charged you" required maxlength="120" style="padding:9px;" />
+        <input id="oc-amount" type="number" min="1" placeholder="Amount they asked for (₦)" required style="padding:9px;" />
+        <textarea id="oc-note" rows="3" maxlength="1000" placeholder="What happened (optional)" style="padding:9px;"></textarea>
+        <button type="submit" class="btn-danger action-btn">Report overcharge</button>
+      </form>
+      <p id="oc-result" style="font-size:13px; margin:10px 0 0;"></p>
+      <button type="button" id="btn-cap-close" class="btn-outline action-btn" style="margin-top:12px;">Close</button>
+    </div>
   </div>
 
   <!-- Scripts -->
@@ -310,9 +360,13 @@
   <script defer src="qr.js"></script>
   <script defer src="assets.js"></script>
   <script defer src="js/cardTemplate.js"></script>
-  <script defer src="canvas.js"></script>
+  <script defer src="canvas.js?v=20261123d"></script>
   <script defer src="js/card3d.js"></script>
-  <script defer src="student-portal.js"></script>
+  <script defer src="student-portal.js?v=20261123c"></script>
+  <script defer src="js/replacementFlow.js"></script>
+  <!-- FUTURE (OFF): burn-and-rebirth animation when a card is reported lost. See comment at the end of student-portal.js
+  <script defer src="js/lost-card-rebirth.js"></script>
+  -->
   <script defer src="js/theme.js"></script>
   <script>
     if ('serviceWorker' in navigator) {

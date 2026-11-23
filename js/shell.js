@@ -50,6 +50,7 @@ const ShellApp = (() => {
       { id: 'staff', label: 'Staff Management', icon: '👥', group: 'Registry & Admin' },
       { id: 'registrations', label: 'Registrations Review', icon: '📝', group: 'Registry & Admin' },
       { id: 'support', label: 'Support Inbox', icon: '🎧', group: 'Registry & Admin' },
+      { id: 'fees-desk', label: 'Fees & Reports', icon: '🧾', group: 'Registry & Admin' },
       { id: 'audit-log', label: 'Audit Log', icon: '📜', group: 'Registry & Admin' },
       { id: 'reports', label: 'Reports', icon: '📈', group: 'Registry & Admin' },
       { id: 'settings', label: 'Settings', icon: '⚙️', group: 'Registry & Admin' },
@@ -1406,6 +1407,7 @@ const ShellApp = (() => {
               ${st ? `<div style="font-weight:800;font-size:15px;">${esc(st.name)}</div>
                       <div style="font-family:monospace;font-size:12px;color:var(--sh-muted);">${esc(st.matric)} · ${esc(st.dept || '')}</div>
                       <div style="font-size:11px;margin-top:4px;">Expiry: ${esc(st.expiry)} · Card Fee: ${st.card_fee_paid || st.card_fee_paid_at ? 'PAID' : (st.card_fee_exempt ? 'EXEMPT' : 'UNPAID')}</div>
+                      ${st.session_status ? `<div style="font-size:12px;margin-top:4px;font-weight:700;">School fees ${esc(st.session_status.session || '')}: ${esc(({full_year:'Paid, full year',first_semester:'Paid, first semester only',second_semester:'Paid, second semester only',pending_check:'RRR submitted, waiting for check',not_paid:'Not paid',session_not_set:'Session not set',unknown:'Could not check'})[st.session_status.status] || 'Could not check')}</div>` : ''}
                       ${staffCallLink}` : ''}
             `;
             loadRecentActivity();
@@ -1459,6 +1461,112 @@ const ShellApp = (() => {
           _scannerStream = null;
         }
       },
+    },
+
+    // ── FEES DESK: school-fee receipts (RRR) + overcharge reports ─────
+    'fees-desk': {
+      async mount(el, ctx) {
+        el.innerHTML = `
+          <div class="sh-card">
+            <div class="sh-card-title"><span>🧾 Record a school fee receipt</span></div>
+            <p style="font-size:12px;color:var(--sh-muted);margin:0 0 10px;">Check the RRR with the university first, then record it here. One RRR can belong to one student only.</p>
+            <form id="fd-form" style="display:grid;gap:8px;max-width:420px;">
+              <input id="fd-matric" class="sh-input" placeholder="Matric number" required />
+              <input id="fd-rrr" type="text" class="sh-input" placeholder="RRR (type or paste as text)" autocomplete="off" required />
+              <input id="fd-session" type="text" class="sh-input" placeholder="Session e.g. 2025/2026" pattern="[0-9]{4}/[0-9]{4}" required />
+              <select id="fd-sem" class="sh-input"><option value="first">First semester</option><option value="second">Second semester</option><option value="full">Full year</option></select>
+              <button class="sh-btn" type="submit">Save receipt</button>
+              <div id="fd-msg" style="font-size:12px;"></div>
+            </form>
+          </div>
+          <div class="sh-card" style="margin-top:16px;">
+            <div class="sh-card-title"><span>⏳ RRRs waiting for a check</span></div>
+            <p style="font-size:12px;color:var(--sh-muted);margin:0 0 10px;">Students type these in after paying the session fee. Check each RRR with the university, then mark it. Scans update straight away, no new card needed.</p>
+            <div class="sh-table-wrap"><table class="sh-table">
+              <thead><tr><th>Date</th><th>Student</th><th>RRR</th><th>Session</th><th>Semester</th><th></th></tr></thead>
+              <tbody id="rrr-tbody"><tr><td colspan="6">Loading…</td></tr></tbody>
+            </table></div>
+          </div>
+          <div class="sh-card" style="margin-top:16px;">
+            <div class="sh-card-title"><span>🚩 Overcharge reports</span></div>
+            <div class="sh-table-wrap"><table class="sh-table">
+              <thead><tr><th>Date</th><th>Place</th><th>Charged</th><th>Note</th><th>Status</th></tr></thead>
+              <tbody id="oc-tbody"><tr><td colspan="5">Loading…</td></tr></tbody>
+            </table></div>
+          </div>`;
+        const msg = document.getElementById('fd-msg');
+        document.getElementById('fd-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          msg.textContent = 'Saving…';
+          const { error } = await ctx.client.rpc('record_fee_receipt', {
+            p_matric: document.getElementById('fd-matric').value,
+            p_rrr: document.getElementById('fd-rrr').value.trim(),
+            p_session: document.getElementById('fd-session').value.trim(),
+            p_semester: document.getElementById('fd-sem').value,
+          });
+          if (error) {
+            msg.style.color = 'var(--sh-red)';
+            msg.textContent = /duplicate|unique/i.test(error.message) ? 'That RRR is already recorded.'
+              : /student_not_found/.test(error.message) ? 'No student with that matric in your school.'
+              : 'Could not save: ' + error.message;
+          } else {
+            msg.style.color = 'var(--sh-green)';
+            msg.textContent = 'Saved.';
+            e.target.reset();
+          }
+        });
+        const rt = document.getElementById('rrr-tbody');
+        const { data: pend, error: pendErr } = await ctx.client
+          .from('fee_receipts')
+          .select('id,rrr,session,semester,created_at,students(name,matric)')
+          .eq('status', 'pending').order('created_at', { ascending: true }).limit(200);
+        if (pendErr || !pend || !pend.length) {
+          rt.innerHTML = `<tr><td colspan="6" style="color:var(--sh-muted);">${pendErr ? 'Could not load RRRs.' : 'Nothing waiting.'}</td></tr>`;
+        } else {
+          rt.innerHTML = pend.map(r => `
+            <tr>
+              <td>${esc(new Date(r.created_at).toLocaleDateString())}</td>
+              <td>${esc(r.students?.name || '')}<br><span style="font-family:monospace;font-size:11px;">${esc(r.students?.matric || '')}</span></td>
+              <td style="font-family:monospace;">${esc(r.rrr)}</td>
+              <td>${esc(r.session)}</td>
+              <td>${esc(r.semester)}</td>
+              <td>
+                <button class="sh-btn" data-rv="${esc(r.id)}" data-st="verified" style="padding:4px 8px;font-size:11px;">Verify</button>
+                <button class="sh-btn" data-rv="${esc(r.id)}" data-st="rejected" style="padding:4px 8px;font-size:11px;">Reject</button>
+              </td>
+            </tr>`).join('');
+          rt.querySelectorAll('button[data-rv]').forEach(btn => btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            const { error: rvErr } = await ctx.client.rpc('review_fee_receipt', { p_id: btn.dataset.rv, p_status: btn.dataset.st });
+            if (rvErr) { alert('Could not update: ' + rvErr.message); btn.disabled = false; return; }
+            btn.closest('tr').remove();
+          }));
+        }
+        const tb = document.getElementById('oc-tbody');
+        const { data, error } = await ctx.client
+          .from('overcharge_reports')
+          .select('id,place_name,amount_charged,note,status,created_at')
+          .order('created_at', { ascending: false }).limit(100);
+        if (error || !data || !data.length) {
+          tb.innerHTML = `<tr><td colspan="5" style="color:var(--sh-muted);">${error ? 'Could not load reports.' : 'No reports yet.'}</td></tr>`;
+          return;
+        }
+        tb.innerHTML = data.map(r => `
+          <tr>
+            <td>${esc(new Date(r.created_at).toLocaleDateString())}</td>
+            <td>${esc(r.place_name)}</td>
+            <td>₦${esc((r.amount_charged / 100).toLocaleString('en-NG'))}</td>
+            <td>${esc(r.note || '')}</td>
+            <td><select data-oc="${esc(r.id)}" class="sh-input">
+              ${['open','investigating','upheld','dismissed'].map(x => `<option value="${x}" ${x === r.status ? 'selected' : ''}>${x}</option>`).join('')}
+            </select></td>
+          </tr>`).join('');
+        tb.querySelectorAll('select[data-oc]').forEach(sel => sel.addEventListener('change', async () => {
+          const { error: upErr } = await ctx.client.rpc('update_overcharge_report', { p_id: sel.dataset.oc, p_status: sel.value });
+          if (upErr) alert('Could not update: ' + upErr.message);
+        }));
+      },
+      unmount() { },
     },
 
     // ── RECENT SCANS / MY ACTIVITY ─────────────────────────────────
@@ -2412,7 +2520,7 @@ const ShellApp = (() => {
                    <div id="st-dl-panel" style="margin-top:16px;text-align:left;background:var(--sunken);padding:14px;border-radius:10px;border:1px solid var(--sh-border);">
                      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                        <strong style="font-size:13px;">🖨️ Download &amp; Print Card</strong>
-                       <span id="st-dl-quota" style="font-size:11px;font-weight:700;color:var(--sh-blue);background:var(--badge-neutral-bg);padding:3px 8px;border-radius:10px;">3 of 3 downloads left today</span>
+                       <span id="st-dl-quota" style="display:none;font-size:11px;font-weight:700;color:var(--sh-blue);background:var(--badge-neutral-bg);padding:3px 8px;border-radius:10px;">3 of 3 downloads left today</span>
                      </div>
                      <div id="st-dl-err" style="display:none;color:var(--sh-red);font-size:12px;margin-bottom:8px;font-weight:600;"></div>
                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -2498,7 +2606,7 @@ const ShellApp = (() => {
           await mintLivePass();
           document.getElementById('st-rotate-pass-btn')?.addEventListener('click', mintLivePass);
 
-          // Download Panel Action Handlers (Server-enforced limit 3/day per student_id)
+          // Download Panel Action Handlers (no daily limit)
           async function requestDownload(format) {
             const onbId = ctx.studentSession?.onboarding_session_id || ctx.studentSession?.session_id;
             if (!onbId) {
@@ -2517,13 +2625,9 @@ const ShellApp = (() => {
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-              throw new Error(data.error || 'Daily download limit (3 per day) reached for today.');
+              throw new Error(data.error || 'Download could not be recorded. Please try again.');
             }
-            if (data.downloads_today !== undefined) {
-              const left = Math.max(0, 3 - data.downloads_today);
-              const quotaEl = document.getElementById('st-dl-quota');
-              if (quotaEl) quotaEl.textContent = `${left} of 3 downloads left today`;
-            }
+            // No daily limit any more: a new card or PDF is what costs money, not a download.
           }
 
           function getStaticShellCardCanvas(side = 'front') {
