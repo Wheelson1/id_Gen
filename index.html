@@ -108,8 +108,11 @@
 
                                     <button type="submit" id="onb-btn-lookup" class="onb-btn onb-btn-primary">Find my admission record</button>
 
+                                    <div id="onb-waitlist-result" class="onb-hint" role="status" aria-live="polite" style="display:none;"></div>
+
                                     <div class="onb-foot onb-row">
-                                        <a href="support.html">My details are not in the system</a>
+                                        <button type="button" class="onb-linkbtn" id="onb-btn-waitlist">My number is not on the system yet</button>
+                                        <a href="support.html">My details are wrong</a>
                                         <button type="button" class="onb-linkbtn" onclick="StudentOnboarding.openFindPaymentModal()">I already paid</button>
                                     </div>
                                 </form>
@@ -683,6 +686,6 @@
 
     <script src="config.js"></script>
     <script src="js/theme.js"></script>
-    <script src="js/onboarding.js"></script>
+    <script src="js/onboarding.js?v=20261125"></script>
 </body>
 </html>

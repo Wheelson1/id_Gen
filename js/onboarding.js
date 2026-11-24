@@ -364,6 +364,40 @@ const StudentOnboarding = (() => {
     return true;
   }
 
+  // ── Waiting list: new student whose record has not been uploaded yet ──
+  async function handleWaitlist() {
+    setBanner('');
+    const out = $('onb-waitlist-result');
+    const rawJamb = ($('onb-jamb-input')?.value || '').trim().toUpperCase();
+    if (rawJamb.length < 6 || rawJamb.length > 32) {
+      setBanner('Type your JAMB number or matric number above first, then tap "My number is not on the system yet".', 'error', 1);
+      return;
+    }
+    let token;
+    try { token = takeToken('step2'); } catch (err) { setBanner(err.message, 'warn', 1); return; }
+    setBusy('onb-btn-waitlist', true, 'Joining…');
+    try {
+      const { ok, data } = await api('START_VERIFICATION_URL', 'start-verification', {
+        action: 'join_waitlist', school_id: _state.selectedSchoolId, jamb_no: rawJamb, turnstile_token: token,
+      });
+      if (!ok || !data.ok) throw new Error(data.error || 'Could not join the waiting list. Please try again.');
+      const when = data.next_upload_expected_at
+        ? new Date(data.next_upload_expected_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+        : null;
+      const parts = [data.message];
+      if (data.position) parts.push('You are number ' + data.position + ' on the list.');
+      parts.push(when
+        ? 'The next student list is expected around ' + when + (data.next_upload_source === 'pattern' ? ' (an estimate)' : '') + '. Come back after that date and sign in.'
+        : 'The school has not announced the next upload date yet. Check back in a few days.');
+      if (data.note) parts.push(data.note);
+      if (out) { out.textContent = parts.join(' '); out.style.display = 'block'; }
+    } catch (err) {
+      setBanner(err.message, 'error', 1);
+    } finally {
+      setBusy('onb-btn-waitlist', false);
+    }
+  }
+
   // ── STEP 1-2: start verification ───────────────────────────────
   async function handleLookupSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
@@ -862,6 +896,7 @@ const StudentOnboarding = (() => {
     if (path === 'start-verification') {
       if (action === 'confirm_yes') return okRes({ session_id: DEMO_SESSION_ID, step: 'confirmed_name', expires_at });
       if (action === 'not_me') return okRes({ ok: true });
+      if (action === 'join_waitlist' || action === 'waitlist_status') return okRes({ ok: true, on_list: true, position: 19, next_upload_expected_at: new Date(Date.now() + 8 * 86400000).toISOString(), next_upload_source: 'pattern', note: null, message: 'You are on the waiting list. Once the school uploads the new student list your record will appear and you can sign in.' });
       return okRes({ session_id: DEMO_SESSION_ID, step: 'started', masked_name: 'DEM* STU**** O**', department: 'Computer Science', expires_at });
     }
     if (path === 'confirm-identity') {
@@ -949,6 +984,7 @@ const StudentOnboarding = (() => {
     initDobSelectors();
 
     $('onb-form-lookup')?.addEventListener('submit', handleLookupSubmit);
+    $('onb-btn-waitlist')?.addEventListener('click', handleWaitlist);
     $('onb-btn-confirm-yes')?.addEventListener('click', () => handleConfirmIdentity(true));
     $('onb-btn-confirm-no')?.addEventListener('click', () => handleConfirmIdentity(false));
     $('onb-form-dob')?.addEventListener('submit', submitVerifyDob);

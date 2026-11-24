@@ -37,6 +37,7 @@ const ShellApp = (() => {
       { id: 'scanner', label: 'Scanner', icon: '📷', group: 'Operations' },
       { id: 'my-activity', label: 'My Activity', icon: '⚡', group: 'Operations' },
       { id: 'media-reviews', label: 'Photo & Signature Approvals', icon: '🖼️', group: 'Registry & Admin' },
+      { id: 'waiting-room', label: 'Waiting Room', icon: '⏳', group: 'Registry & Admin' },
     ],
     registrar: [
       { id: 'overview', label: 'Overview', icon: '📊', group: 'Operations' },
@@ -53,6 +54,7 @@ const ShellApp = (() => {
       { id: 'support', label: 'Support Inbox', icon: '🎧', group: 'Registry & Admin' },
       { id: 'fees-desk', label: 'Fees & Reports', icon: '🧾', group: 'Registry & Admin' },
       { id: 'media-reviews', label: 'Photo & Signature Approvals', icon: '🖼️', group: 'Registry & Admin' },
+      { id: 'waiting-room', label: 'Waiting Room', icon: '⏳', group: 'Registry & Admin' },
       { id: 'audit-log', label: 'Audit Log', icon: '📜', group: 'Registry & Admin' },
       { id: 'reports', label: 'Reports', icon: '📈', group: 'Registry & Admin' },
       { id: 'settings', label: 'Settings', icon: '⚙️', group: 'Registry & Admin' },
@@ -1558,6 +1560,128 @@ const ShellApp = (() => {
             list.textContent = '';
             msg.style.color = 'var(--sh-red)'; msg.textContent = e.message;
           }
+        }
+        load();
+      },
+      unmount() { },
+    },
+
+    // ── WAITING ROOM: queues, wait-time estimates, new-student waitlist, next upload ──
+    'waiting-room': {
+      async mount(el) {
+        el.innerHTML = `
+          <div class="sh-card">
+            <div class="sh-card-title"><span>⏳ Waiting Room</span></div>
+            <p style="font-size:12px;color:var(--sh-muted);margin:0 0 10px;">Everything that is waiting on the Registry, how long people can expect to wait (worked out from how fast your team really cleared requests in the last 14 days), and when the next student list is expected.</p>
+            <div id="wr-msg" style="font-size:12px;margin-bottom:8px;"></div>
+            <div id="wr-body">Loading…</div>
+          </div>`;
+        const msg = document.getElementById('wr-msg');
+        const body = document.getElementById('wr-body');
+        const url = (EBSU_CONFIG.WAITING_ROOM_URL) || (EBSU_CONFIG.SUPABASE_URL + '/functions/v1/waiting-room');
+
+        const demo = {
+          ok: true, can_set_next_sync: true,
+          queues: [
+            { name: 'Photo and signature changes', waiting: 7, cleared_14d: 42, next_in_line_estimate: { label: 'about 2 hours to 6 hours' }, newest_joiner_estimate: { label: 'about 5 hours to 13 hours', basis: 'history' } },
+            { name: 'School-fee RRR checks', waiting: 23, cleared_14d: 61, next_in_line_estimate: { label: 'about 2 hours to 6 hours' }, newest_joiner_estimate: { label: 'about 13 hours to 35 hours', basis: 'history' } },
+          ],
+          waitlist: { waiting: 18, matched_14d: 64 },
+          roster: { last_sync: { created_at: new Date(Date.now() - 6 * 86400000).toISOString(), kind: 'csv', row_count: 412 },
+                    next_expected_at: new Date(Date.now() + 8 * 86400000).toISOString(), next_source: 'pattern', note: null, recent: [] },
+        };
+
+        function when(iso) { try { return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+        function box(title, big, small) {
+          const d = document.createElement('div');
+          d.style.cssText = 'border:1px solid var(--sh-border,#ccc);border-radius:8px;padding:12px;flex:1;min-width:210px;';
+          const t = document.createElement('div'); t.style.cssText = 'font-size:12px;color:var(--sh-muted);'; t.textContent = title;
+          const b = document.createElement('div'); b.style.cssText = 'font-size:26px;font-weight:700;margin:4px 0;'; b.textContent = big;
+          const s = document.createElement('div'); s.style.cssText = 'font-size:12px;'; s.textContent = small || '';
+          d.append(t, b, s); return d;
+        }
+
+        async function call(payload) {
+          const session = await AuthManager.getSession();
+          const mock = !session || !session.access_token || String(session.access_token).startsWith('MOCK_');
+          if (mock) {
+            if (payload.action === 'overview') return Object.assign({ _demo: true }, demo);
+            if (payload.action === 'list_waitlist') return { ok: true, _demo: true, items: [
+              { id: '1', id_number: '20261234AB', contact: '0803 000 0000', status: 'waiting', created_at: new Date(Date.now() - 86400000).toISOString() },
+              { id: '2', id_number: 'EBSU/CSC/26/044', contact: null, status: 'matched', created_at: new Date(Date.now() - 4 * 86400000).toISOString(), matched_at: new Date().toISOString() } ] };
+            return { ok: true, _demo: true };
+          }
+          const res = await fetch(url, { method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token, apikey: EBSU_CONFIG.SUPABASE_ANON_KEY },
+            body: JSON.stringify(payload) });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'Could not load the waiting room.');
+          return data;
+        }
+
+        async function load() {
+          try {
+            const [o, w] = await Promise.all([call({ action: 'overview' }), call({ action: 'list_waitlist' })]);
+            body.innerHTML = '';
+            if (o._demo) { msg.style.color = 'var(--sh-muted)'; msg.textContent = 'Demo numbers. Sign in with a real staff account to see your school.'; }
+
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;';
+            o.queues.forEach((q) => row.appendChild(box(q.name, q.waiting + ' waiting',
+              q.waiting ? 'Next in line: ' + q.next_in_line_estimate.label + '. A new request now: ' + q.newest_joiner_estimate.label + '.' : 'Nothing waiting.')));
+            row.appendChild(box('New students waiting for their record', o.waitlist.waiting + ' on the list', o.waitlist.matched_14d + ' were matched when records arrived in the last 14 days.'));
+            body.appendChild(row);
+
+            const r = o.roster;
+            const sync = document.createElement('div');
+            sync.style.cssText = 'border:1px solid var(--sh-border,#ccc);border-radius:8px;padding:12px;margin-bottom:14px;';
+            const last = r.last_sync ? when(r.last_sync.created_at) + ' (' + r.last_sync.row_count + ' records, ' + r.last_sync.kind.toUpperCase() + ')' : 'No upload recorded yet';
+            const nxt = r.next_expected_at
+              ? when(r.next_expected_at) + (r.next_source === 'staff' ? ' (set by the Registry)' : ' (guessed from your past uploads)')
+              : 'Not scheduled. Set a date so new students know when to check back.';
+            sync.innerHTML = '<div style="font-weight:700;margin-bottom:6px;">Student list uploads</div>';
+            const l1 = document.createElement('div'); l1.style.fontSize = '13px'; l1.textContent = 'Last upload: ' + last;
+            const l2 = document.createElement('div'); l2.style.cssText = 'font-size:13px;margin-bottom:8px;'; l2.textContent = 'Next expected: ' + nxt;
+            sync.append(l1, l2);
+            if (o.can_set_next_sync) {
+              const inp = document.createElement('input'); inp.type = 'datetime-local'; inp.className = 'sh-input'; inp.style.maxWidth = '230px';
+              const note = document.createElement('input'); note.className = 'sh-input'; note.placeholder = 'Note students will see (optional)'; note.maxLength = 200;
+              note.style.cssText = 'max-width:320px;margin-left:8px;'; note.value = r.note || '';
+              const save = document.createElement('button'); save.className = 'sh-btn'; save.type = 'button'; save.textContent = 'Save date'; save.style.marginLeft = '8px';
+              const clear = document.createElement('button'); clear.className = 'sh-btn sh-btn-secondary'; clear.type = 'button'; clear.textContent = 'Clear'; clear.style.marginLeft = '8px';
+              async function setDate(v) {
+                try {
+                  await call({ action: 'set_next_sync', next_roster_sync_at: v, note: note.value });
+                  msg.style.color = 'var(--sh-green)'; msg.textContent = v ? 'Saved. New students will see this date.' : 'Cleared.'; load();
+                } catch (e) { msg.style.color = 'var(--sh-red)'; msg.textContent = e.message; }
+              }
+              save.addEventListener('click', () => { if (!inp.value) { msg.style.color = 'var(--sh-red)'; msg.textContent = 'Pick a date and time first.'; return; } setDate(new Date(inp.value).toISOString()); });
+              clear.addEventListener('click', () => setDate(null));
+              sync.append(inp, note, save, clear);
+            }
+            body.appendChild(sync);
+
+            const wl = document.createElement('div');
+            wl.style.cssText = 'border:1px solid var(--sh-border,#ccc);border-radius:8px;padding:12px;';
+            wl.innerHTML = '<div style="font-weight:700;margin-bottom:6px;">New-student waitlist</div>';
+            if (!w.items.length) { const n = document.createElement('div'); n.style.fontSize = '13px'; n.textContent = 'Nobody is waiting.'; wl.appendChild(n); }
+            else {
+              const tb = document.createElement('table'); tb.style.cssText = 'width:100%;font-size:12px;border-collapse:collapse;';
+              tb.innerHTML = '<tr style="text-align:left;"><th>Number</th><th>Contact</th><th>Joined</th><th>Status</th></tr>';
+              w.items.forEach((i) => {
+                const tr = document.createElement('tr');
+                [i.id_number, i.contact || '—', when(i.created_at), i.status === 'matched' ? 'Record arrived' : 'Waiting'].forEach((t) => {
+                  const td = document.createElement('td'); td.style.cssText = 'padding:4px 8px 4px 0;'; td.textContent = t; tr.appendChild(td);
+                });
+                tb.appendChild(tr);
+              });
+              wl.appendChild(tb);
+            }
+            const tip = document.createElement('p'); tip.style.cssText = 'font-size:11px;color:var(--sh-muted);margin:8px 0 0;';
+            tip.textContent = 'When you upload the new student list, anyone here whose number appears is moved to "Record arrived" automatically and can sign in.';
+            wl.appendChild(tip);
+            body.appendChild(wl);
+          } catch (e) { body.textContent = ''; msg.style.color = 'var(--sh-red)'; msg.textContent = e.message; }
         }
         load();
       },

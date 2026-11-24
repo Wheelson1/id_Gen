@@ -104,7 +104,25 @@
     post({ action: 'media_status', session_id: sessionId() }).then(function (res) {
       if (!res.ok) { say('mf-msg', (res.data && res.data.error) || 'Could not load your picture settings.', true); return; }
       renderStatus('photo', res.data.photo); renderStatus('signature', res.data.signature);
+      loadQueue();
     });
+  }
+
+  function loadQueue() {
+    var box = $('mf-queue'); if (!box) return;
+    function show(items) {
+      if (!items || !items.length) { box.style.display = 'none'; return; }
+      box.style.display = 'block'; box.textContent = '';
+      var h = document.createElement('strong'); h.style.fontSize = '13px'; h.textContent = 'Your waiting room'; box.appendChild(h);
+      items.forEach(function (i) {
+        var p = document.createElement('p'); p.style.cssText = 'font-size:13px; margin:6px 0 0;';
+        p.textContent = i.what + ': you are number ' + i.position + ' in line (' + i.ahead + ' ahead of you). Expected wait: ' + i.label + '.' +
+          (i.basis === 'default' ? ' (An early estimate. It gets sharper as the Registry clears more requests.)' : '');
+        box.appendChild(p);
+      });
+    }
+    if (!isLive()) { show([]); return; }
+    post({ action: 'queue_status', session_id: sessionId() }).then(function (res) { show(res.ok ? res.data.items : []); });
   }
 
   function submit(kind) {
