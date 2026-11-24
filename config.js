@@ -9,7 +9,7 @@ const EBSU_CONFIG = {
   CARD_PAYMENT_URL:       'https://qsrfvfdojtmsinewxetz.supabase.co/functions/v1/card-payment',
   SUPPORT_DESK_URL:       'https://qsrfvfdojtmsinewxetz.supabase.co/functions/v1/support-desk',
   MINT_PASS_URL:          'https://qsrfvfdojtmsinewxetz.supabase.co/functions/v1/mint-pass',
-  TURNSTILE_SITE_KEY:     '0x4AAAAAAAzX9vW1qP8mK2nL',
+  TURNSTILE_SITE_KEY:     '1x00000000000000000000AA',   // Cloudflare TEST key (always passes). Replace with your real key before launch.
   ED25519_PUBLIC_KEY:     'jYIxfg4nA/8ATCxQ1NMaysjMfhBKgUWVxOt+ambAULs=',
   // Deployment environment identifier: 'demo' | 'staging' | 'production'
   DEPLOY_ENV:             'demo',

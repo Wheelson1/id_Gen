@@ -36,6 +36,7 @@ const ShellApp = (() => {
       { id: 'students', label: 'Students', icon: '🎓', group: 'Operations' },
       { id: 'scanner', label: 'Scanner', icon: '📷', group: 'Operations' },
       { id: 'my-activity', label: 'My Activity', icon: '⚡', group: 'Operations' },
+      { id: 'media-reviews', label: 'Photo & Signature Approvals', icon: '🖼️', group: 'Registry & Admin' },
     ],
     registrar: [
       { id: 'overview', label: 'Overview', icon: '📊', group: 'Operations' },
@@ -51,6 +52,7 @@ const ShellApp = (() => {
       { id: 'registrations', label: 'Registrations Review', icon: '📝', group: 'Registry & Admin' },
       { id: 'support', label: 'Support Inbox', icon: '🎧', group: 'Registry & Admin' },
       { id: 'fees-desk', label: 'Fees & Reports', icon: '🧾', group: 'Registry & Admin' },
+      { id: 'media-reviews', label: 'Photo & Signature Approvals', icon: '🖼️', group: 'Registry & Admin' },
       { id: 'audit-log', label: 'Audit Log', icon: '📜', group: 'Registry & Admin' },
       { id: 'reports', label: 'Reports', icon: '📈', group: 'Registry & Admin' },
       { id: 'settings', label: 'Settings', icon: '⚙️', group: 'Registry & Admin' },
@@ -1461,6 +1463,105 @@ const ShellApp = (() => {
           _scannerStream = null;
         }
       },
+    },
+
+    // ── PHOTO & SIGNATURE APPROVALS: students ask to change a picture ──
+    'media-reviews': {
+      async mount(el) {
+        el.innerHTML = `
+          <div class="sh-card">
+            <div class="sh-card-title"><span>🖼️ Photo and signature approvals</span></div>
+            <p style="font-size:12px;color:var(--sh-muted);margin:0 0 10px;">A student's first photo or signature goes straight onto the card. Any later change waits here. Compare the new picture with the current one, then approve or reject. Approving never changes the QR code.</p>
+            <div id="mr-msg" style="font-size:12px;margin-bottom:8px;"></div>
+            <div id="mr-list">Loading…</div>
+          </div>`;
+        const msg = document.getElementById('mr-msg');
+        const list = document.getElementById('mr-list');
+        const url = (typeof EBSU_CONFIG !== 'undefined' && EBSU_CONFIG.MEDIA_REVIEW_URL) ||
+          (EBSU_CONFIG.SUPABASE_URL + '/functions/v1/media-review');
+
+        async function call(body) {
+          const session = await AuthManager.getSession();
+          if (!session || !session.access_token || String(session.access_token).startsWith('MOCK_')) {
+            throw new Error('Sign in with a real staff account to review pictures. The demo console cannot do this.');
+          }
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token, apikey: EBSU_CONFIG.SUPABASE_ANON_KEY },
+            body: JSON.stringify(body),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'Could not complete that.');
+          return data;
+        }
+
+        function pic(src, label, isSig) {
+          const box = document.createElement('div');
+          box.style.cssText = 'text-align:center;flex:1;min-width:130px;';
+          const cap = document.createElement('div');
+          cap.style.cssText = 'font-size:11px;color:var(--sh-muted);margin-bottom:4px;';
+          cap.textContent = label;
+          box.appendChild(cap);
+          if (src) {
+            const im = document.createElement('img');
+            im.src = src; im.alt = label;
+            im.style.cssText = 'max-width:100%;max-height:' + (isSig ? '90px' : '180px') + ';border:1px solid var(--sh-border,#ccc);border-radius:4px;background:#fff;';
+            box.appendChild(im);
+          } else {
+            const none = document.createElement('div');
+            none.style.cssText = 'font-size:12px;color:var(--sh-muted);padding:20px 0;';
+            none.textContent = 'None on file';
+            box.appendChild(none);
+          }
+          return box;
+        }
+
+        async function load() {
+          list.textContent = 'Loading…';
+          try {
+            const data = await call({ action: 'list', status: 'pending' });
+            list.innerHTML = '';
+            if (!data.items.length) { list.textContent = 'Nothing is waiting for approval.'; return; }
+            data.items.forEach((it) => {
+              const card = document.createElement('div');
+              card.style.cssText = 'border:1px solid var(--sh-border,#ccc);border-radius:8px;padding:12px;margin-bottom:12px;';
+              const head = document.createElement('div');
+              head.style.cssText = 'font-weight:700;margin-bottom:8px;';
+              head.textContent = it.student.name + ' · ' + it.student.matric + ' · ' + (it.kind === 'photo' ? 'Passport photo' : 'Signature') +
+                ' · ' + new Date(it.created_at).toLocaleDateString('en-GB');
+              const row = document.createElement('div');
+              row.style.cssText = 'display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;';
+              row.appendChild(pic(it.current_url, 'Current', it.kind === 'signature'));
+              row.appendChild(pic(it.new_url, 'New (asked for)', it.kind === 'signature'));
+              const reason = document.createElement('input');
+              reason.className = 'sh-input'; reason.placeholder = 'Reason, only needed if you reject'; reason.maxLength = 200;
+              reason.style.cssText = 'margin-bottom:8px;max-width:420px;';
+              const ok = document.createElement('button');
+              ok.className = 'sh-btn'; ok.type = 'button'; ok.textContent = 'Approve';
+              const no = document.createElement('button');
+              no.className = 'sh-btn sh-btn-secondary'; no.type = 'button'; no.textContent = 'Reject'; no.style.marginLeft = '8px';
+              async function act(decision) {
+                ok.disabled = no.disabled = true;
+                try {
+                  await call({ action: 'review', request_id: it.id, decision, reason: reason.value });
+                  msg.style.color = 'var(--sh-green)';
+                  msg.textContent = decision === 'approve' ? 'Approved. The new picture is on the card.' : 'Rejected. The student can see your reason.';
+                  load();
+                } catch (e) { msg.style.color = 'var(--sh-red)'; msg.textContent = e.message; ok.disabled = no.disabled = false; }
+              }
+              ok.addEventListener('click', () => act('approve'));
+              no.addEventListener('click', () => act('reject'));
+              card.append(head, row, reason, document.createElement('br'), ok, no);
+              list.appendChild(card);
+            });
+          } catch (e) {
+            list.textContent = '';
+            msg.style.color = 'var(--sh-red)'; msg.textContent = e.message;
+          }
+        }
+        load();
+      },
+      unmount() { },
     },
 
     // ── FEES DESK: school-fee receipts (RRR) + overcharge reports ─────
