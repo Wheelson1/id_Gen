@@ -1708,9 +1708,21 @@ const ShellApp = (() => {
             <div class="sh-card-title"><span>⏳ RRRs waiting for a check</span></div>
             <p style="font-size:12px;color:var(--sh-muted);margin:0 0 10px;">Students type these in after paying the session fee. Check each RRR with the university, then mark it. Scans update straight away, no new card needed.</p>
             <div class="sh-table-wrap"><table class="sh-table">
-              <thead><tr><th>Date</th><th>Student</th><th>RRR</th><th>Session</th><th>Semester</th><th></th></tr></thead>
-              <tbody id="rrr-tbody"><tr><td colspan="6">Loading…</td></tr></tbody>
+              <thead><tr><th>Date</th><th>Student</th><th>RRR</th><th>Session</th><th>Semester</th><th>Status</th><th>Amount (₦)</th><th></th></tr></thead>
+              <tbody id="rrr-tbody"><tr><td colspan="8">Loading…</td></tr></tbody>
             </table></div>
+          </div>
+          <div class="sh-card" style="margin-top:16px;">
+            <div class="sh-card-title"><span>💰 Fee amounts</span></div>
+            <p style="font-size:12px;color:var(--sh-muted);margin:0 0 10px;">Set what each semester's school fee should be. An RRR that does not reach this amount is held as a part payment until the rest is paid. Without an amount, receipts wait for review.</p>
+            <form id="fa-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;max-width:640px;">
+              <input id="fa-session" class="sh-input" placeholder="Session e.g. 2025/2026" pattern="[0-9]{4}/[0-9]{4}" required />
+              <select id="fa-sem" class="sh-input"><option value="first">First semester</option><option value="second">Second semester</option><option value="full">Full year</option></select>
+              <input id="fa-amt" type="number" min="1" step="1" class="sh-input" placeholder="Amount in naira" required />
+              <button class="sh-btn" type="submit">Save amount</button>
+            </form>
+            <div id="fa-msg" style="font-size:12px;margin:8px 0;"></div>
+            <div class="sh-table-wrap"><table class="sh-table"><thead><tr><th>Session</th><th>Semester</th><th>Amount</th></tr></thead><tbody id="fa-tbody"><tr><td colspan="3">Loading…</td></tr></tbody></table></div>
           </div>
           <div class="sh-card" style="margin-top:16px;">
             <div class="sh-card-title"><span>🚩 Overcharge reports</span></div>
@@ -1743,10 +1755,10 @@ const ShellApp = (() => {
         const rt = document.getElementById('rrr-tbody');
         const { data: pend, error: pendErr } = await ctx.client
           .from('fee_receipts')
-          .select('id,rrr,session,semester,created_at,students(name,matric)')
-          .eq('status', 'pending').order('created_at', { ascending: true }).limit(200);
+          .select('id,rrr,session,semester,created_at,status,amount,review_reason,students(name,matric)')
+          .in('status', ['pending', 'needs_review', 'part_paid']).order('created_at', { ascending: true }).limit(200);
         if (pendErr || !pend || !pend.length) {
-          rt.innerHTML = `<tr><td colspan="6" style="color:var(--sh-muted);">${pendErr ? 'Could not load RRRs.' : 'Nothing waiting.'}</td></tr>`;
+          rt.innerHTML = `<tr><td colspan="8" style="color:var(--sh-muted);">${pendErr ? 'Could not load RRRs.' : 'Nothing waiting.'}</td></tr>`;
         } else {
           rt.innerHTML = pend.map(r => `
             <tr>
@@ -1755,6 +1767,8 @@ const ShellApp = (() => {
               <td style="font-family:monospace;">${esc(r.rrr)}</td>
               <td>${esc(r.session)}</td>
               <td>${esc(r.semester)}</td>
+              <td>${esc(r.status === 'needs_review' ? 'Needs review' : r.status === 'part_paid' ? 'Part paid' : 'Waiting')}${r.review_reason ? '<br><span style="font-size:11px;color:var(--sh-muted);">' + esc(r.review_reason) + '</span>' : ''}</td>
+              <td><input class="sh-input" data-amt="${esc(r.id)}" type="number" min="1" step="1" value="${r.amount ? esc(String(r.amount / 100)) : ''}" placeholder="from Remita" style="width:110px;" /></td>
               <td>
                 <button class="sh-btn" data-rv="${esc(r.id)}" data-st="verified" style="padding:4px 8px;font-size:11px;">Verify</button>
                 <button class="sh-btn" data-rv="${esc(r.id)}" data-st="rejected" style="padding:4px 8px;font-size:11px;">Reject</button>
@@ -1762,11 +1776,38 @@ const ShellApp = (() => {
             </tr>`).join('');
           rt.querySelectorAll('button[data-rv]').forEach(btn => btn.addEventListener('click', async () => {
             btn.disabled = true;
-            const { error: rvErr } = await ctx.client.rpc('review_fee_receipt', { p_id: btn.dataset.rv, p_status: btn.dataset.st });
+            const amtEl = rt.querySelector('input[data-amt="' + btn.dataset.rv + '"]');
+            const amt = amtEl && amtEl.value ? parseInt(amtEl.value, 10) : null;
+            const { data: outcome, error: rvErr } = await ctx.client.rpc('review_fee_receipt', { p_id: btn.dataset.rv, p_status: btn.dataset.st, p_amount_naira: amt });
             if (rvErr) { alert('Could not update: ' + rvErr.message); btn.disabled = false; return; }
+            if (outcome === 'needs_review' || outcome === 'part_paid') {
+              msg.style.color = 'var(--sh-muted)';
+              msg.textContent = outcome === 'part_paid' ? 'Part payment saved. It becomes confirmed when the rest arrives.' : 'Still needs review: enter the amount from the Remita receipt, or set the fee amount below.';
+              btn.disabled = false; return;
+            }
             btn.closest('tr').remove();
           }));
         }
+        const faMsg = document.getElementById('fa-msg');
+        async function loadFeeAmounts() {
+          const ft = document.getElementById('fa-tbody');
+          const { data: fs } = await ctx.client.from('fee_schedule').select('session,semester,amount').order('session', { ascending: false });
+          ft.innerHTML = (fs && fs.length) ? fs.map(f => `<tr><td>${esc(f.session)}</td><td>${esc(f.semester)}</td><td>₦${esc((f.amount / 100).toLocaleString('en-NG'))}</td></tr>`).join('')
+            : '<tr><td colspan="3" style="color:var(--sh-muted);">No amounts set yet.</td></tr>';
+        }
+        document.getElementById('fa-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const { data: n, error: faErr } = await ctx.client.rpc('set_fee_amount', {
+            p_session: document.getElementById('fa-session').value.trim(),
+            p_semester: document.getElementById('fa-sem').value,
+            p_amount_naira: parseInt(document.getElementById('fa-amt').value, 10),
+          });
+          if (faErr) { faMsg.style.color = 'var(--sh-red)'; faMsg.textContent = /forbidden/.test(faErr.message) ? 'Only a registrar or admin can set amounts.' : 'Could not save: ' + faErr.message; return; }
+          faMsg.style.color = 'var(--sh-green)';
+          faMsg.textContent = 'Saved.' + (n ? ' ' + n + ' waiting receipt(s) re-checked. Reload to see them.' : '');
+          loadFeeAmounts();
+        });
+        loadFeeAmounts();
         const tb = document.getElementById('oc-tbody');
         const { data, error } = await ctx.client
           .from('overcharge_reports')

@@ -114,7 +114,12 @@
       show('btn-sf-pay', !d.session_fee_paid);
       show('sf-rrr-wrap', d.session_fee_paid);
       var lines = (d.receipts || []).map(function (r) {
-        return (SEM_TEXT[r.semester] || r.semester) + ': ' + (r.status === 'verified' ? 'confirmed' : r.status === 'pending' ? 'waiting for the school to check' : r.status);
+        var txt = r.status === 'verified' ? 'confirmed'
+          : r.status === 'pending' ? 'waiting for the school to check'
+          : r.status === 'needs_review' ? 'needs a check by the Bursary' + (r.review_reason ? ' (' + r.review_reason + ')' : '')
+          : r.status === 'part_paid' ? (r.review_reason || 'part payment received, add the next RRR')
+          : r.status === 'rejected' ? 'not accepted, please check the RRR and try again' : r.status;
+        return (SEM_TEXT[r.semester] || r.semester) + ': ' + txt;
       });
       setText('sf-status', d.session_fee_paid
         ? (lines.length ? lines.join(' · ') : 'Session fee paid. Add your school fees RRR below.')
@@ -127,7 +132,7 @@
       action: 'submit_rrr', session_id: sessionId(),
       rrr: ($('sf-rrr') || {}).value || '', semester: ($('sf-sem') || {}).value || ''
     }).then(function (res) {
-      setText('sf-msg', res.ok ? 'Saved. The school will check your RRR. You do not need a new card.' : ((res.data && res.data.error) || 'Could not save.'));
+      setText('sf-msg', res.ok ? 'Saved. The school will check your RRR. If you paid in two parts, add each RRR one after the other. You do not need a new card.' : ((res.data && res.data.error) || 'Could not save.'));
       if (res.ok) { if ($('sf-form')) $('sf-form').reset(); loadFeeStatus(); }
     });
   }
