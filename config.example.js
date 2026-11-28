@@ -24,6 +24,7 @@ const EBSU_CONFIG = {
   START_VERIFICATION_URL: 'https://qsrfvfdojtmsinewxetz.supabase.co/functions/v1/start-verification',
   CONFIRM_IDENTITY_URL:   'https://qsrfvfdojtmsinewxetz.supabase.co/functions/v1/confirm-identity',
   CARD_PAYMENT_URL:       'https://qsrfvfdojtmsinewxetz.supabase.co/functions/v1/card-payment',
+  STUDENT_ACCOUNT_URL:    'https://qsrfvfdojtmsinewxetz.supabase.co/functions/v1/student-account',
   SUPPORT_DESK_URL:       'https://qsrfvfdojtmsinewxetz.supabase.co/functions/v1/support-desk',
   MINT_PASS_URL:          'https://qsrfvfdojtmsinewxetz.supabase.co/functions/v1/mint-pass',
 

@@ -68,7 +68,7 @@ const StudentOnboarding = (() => {
     alreadyPaid: false,
     demoPaid: false,
     issuedCard: null,     // { card_id, signature, qr_string, student }
-    tokens: { step2: null, step4: null, restore: null },
+    tokens: { step2: null, step4: null, step7: null, step9: null, restore: null },
   };
 
   // ── Small helpers ──────────────────────────────────────────────
@@ -137,6 +137,7 @@ const StudentOnboarding = (() => {
   const ALERT_IDS = {
     1: 'onb-alert-step12', 2: 'onb-alert-step12', 3: 'onb-alert-step3',
     4: 'onb-alert-step4', 5: 'onb-alert-step5', 6: 'onb-alert-step6',
+    7: 'onb-alert-step7', 8: 'onb-alert-step8', 9: 'onb-alert-step9',
   };
 
   function setBanner(msg, type = 'error', step = _state.step) {
@@ -240,8 +241,8 @@ const StudentOnboarding = (() => {
   // ── Cloudflare Turnstile ───────────────────────────────────────
   // A token can be used once, so each server call that needs one takes it
   // and the widget is reset for the next attempt.
-  const TS_BOX = { step2: 'onb-turnstile-step2', step4: 'onb-turnstile-step4', restore: 'onb-turnstile-restore' };
-  const _widgetIds = { step2: null, step4: null, restore: null };
+  const TS_BOX = { step2: 'onb-turnstile-step2', step4: 'onb-turnstile-step4', step7: 'onb-turnstile-step7', step9: 'onb-turnstile-step9', restore: 'onb-turnstile-restore' };
+  const _widgetIds = { step2: null, step4: null, step7: null, step9: null, restore: null };
 
   function renderTurnstile(which, attempt = 0) {
     if (DEMO) return;
@@ -302,9 +303,9 @@ const StudentOnboarding = (() => {
       else if (i === pillStep) pill.classList.add('active');
     }
 
-    const _n = {1:1,2:1,3:1,30:1,4:2,5:3,6:4}[stepNum] || 1;
-    const _lab = $('onb-step-label'); if (_lab) _lab.textContent = 'Step ' + _n + ' of 4';
-    const _fill = $('onb-bar-fill'); if (_fill) _fill.style.width = (_n * 25) + '%';
+    const _n = {1:1,2:1,3:1,30:1,9:1,4:2,7:3,8:3,5:4,6:5}[stepNum] || 1;
+    const _lab = $('onb-step-label'); if (_lab) _lab.textContent = 'Step ' + _n + ' of 5';
+    const _fill = $('onb-bar-fill'); if (_fill) _fill.style.width = (_n * 20) + '%';
 
     const panels = {
       'onb-panel-1-2': stepNum === 1 || stepNum === 2,
@@ -313,6 +314,9 @@ const StudentOnboarding = (() => {
       'onb-panel-4': stepNum === 4,
       'onb-panel-5': stepNum === 5,
       'onb-panel-6': stepNum === 6,
+      'onb-panel-7': stepNum === 7,
+      'onb-panel-8': stepNum === 8,
+      'onb-panel-9': stepNum === 9,
     };
     Object.entries(panels).forEach(([id, visible]) => {
       const el = $(id);
@@ -321,6 +325,8 @@ const StudentOnboarding = (() => {
 
     if (stepNum === 1 || stepNum === 2) renderTurnstile('step2');
     if (stepNum === 4) renderTurnstile('step4');
+    if (stepNum === 7) renderTurnstile('step7');
+    if (stepNum === 9) renderTurnstile('step9');
     if (stepNum !== 6) stopLivePass();
   }
 
@@ -527,16 +533,15 @@ const StudentOnboarding = (() => {
       _state.paymentReference = data.payment_reference || '';
       _state.expiresAt = data.expires_at || _state.expiresAt;
 
-      saveProgress();
-      showPaymentPanel();
-
       if (_state.alreadyPaid) {
         // Fee already settled earlier: go straight to the signed card.
+        saveProgress();
+        showPaymentPanel();
         await unlockAndIssueCard();
         return;
       }
-      goToStep(5);
-      await initializeCardPayment();
+      // New order: email and password come before payment.
+      goToStep(7);
     } catch (err) {
       // _state.step tells us which panel is showing when the error happened.
       setBanner(err.message || 'Verification failed.', 'error');
@@ -864,6 +869,126 @@ const StudentOnboarding = (() => {
     }
   }
 
+  // ── Email link, password and sign-in (student-account) ─────────
+  async function continueToPayment() {
+    saveProgress();
+    showPaymentPanel();
+    goToStep(5);
+    await initializeCardPayment();
+  }
+
+  async function handleSendLink(ev) {
+    ev.preventDefault();
+    setBanner('');
+    const email = ($('onb-email-input')?.value || '').trim();
+    if (!email) { setBanner('Enter your email.', 'error', 7); return; }
+    let token;
+    try { token = takeToken('step7'); } catch (err) { setBanner(err.message, 'warn', 7); return; }
+    setBusy('onb-btn-email', true, 'Sending…');
+    try {
+      const { ok, status, data } = await api('STUDENT_ACCOUNT_URL', 'student-account', {
+        action: 'send_link', session_id: _state.sessionId, email, turnstile_token: token,
+      });
+      if (!ok) {
+        if (sessionGone(status)) { resetFlow(); setBanner(data.error || 'Your session expired. Please start again.', 'warn', 1); return; }
+        throw new Error(data.error || 'Could not send the email.');
+      }
+      const note = $('onb-email-sent');
+      if (note) {
+        note.hidden = false;
+        note.textContent = 'Check your email for the link, then tap it. You can close this page; the link brings you back.' +
+          (data.dev_link ? ' (Test link: ' + data.dev_link + ')' : '');
+      }
+      if (DEMO) { setTimeout(() => { _state.emailMasked = 'de***@demo.test'; showPasswordPanel(); }, 600); }
+    } catch (err) {
+      setBanner(err.message || 'Could not send the email.', 'error', 7);
+      renderTurnstile('step7');
+    } finally {
+      setBusy('onb-btn-email', false);
+    }
+  }
+
+  function showPasswordPanel() {
+    const ok = $('onb-email-ok');
+    if (ok) ok.textContent = 'Email confirmed' + (_state.emailMasked ? ' (' + _state.emailMasked + ')' : '') + '.';
+    goToStep(8);
+  }
+
+  // Runs on load when the page was opened from the emailed link.
+  async function handleMagicLanding() {
+    let token = '', sid = '';
+    try {
+      const q = new URLSearchParams(window.location.search);
+      token = q.get('magic') || ''; sid = q.get('sid') || '';
+    } catch (e) {}
+    if (!token || !sid) return false;
+    try { history.replaceState(null, '', window.location.pathname); } catch (e) {}
+    try {
+      const { ok, data } = await api('STUDENT_ACCOUNT_URL', 'student-account', { action: 'confirm_link', session_id: sid, token });
+      if (!ok) { goToStep(1); setBanner(data.error || 'This link has expired. Please start again.', 'warn', 1); return true; }
+      _state.sessionId = sid;
+      _state.emailMasked = data.email_masked || '';
+      showPasswordPanel();
+    } catch (err) {
+      goToStep(1); setBanner(err.message, 'error', 1);
+    }
+    return true;
+  }
+
+  async function handlePassword(ev) {
+    ev.preventDefault();
+    setBanner('');
+    const pw = $('onb-pw-input')?.value || '';
+    const pw2 = $('onb-pw-input2')?.value || '';
+    if (pw.length < 8) { setBanner('Use at least 8 characters.', 'error', 8); return; }
+    if (pw !== pw2) { setBanner('The two passwords do not match.', 'error', 8); return; }
+    setBusy('onb-btn-password', true, 'Saving…');
+    try {
+      const { ok, status, data } = await api('STUDENT_ACCOUNT_URL', 'student-account', {
+        action: 'set_password', session_id: _state.sessionId, password: pw,
+      });
+      if (!ok) {
+        if (sessionGone(status)) { resetFlow(); setBanner(data.error || 'Your session expired. Please start again.', 'warn', 1); return; }
+        throw new Error(data.error || 'Could not save the password.');
+      }
+      $('onb-pw-input').value = ''; $('onb-pw-input2').value = '';
+      await continueToPayment();
+    } catch (err) {
+      setBanner(err.message || 'Could not save the password.', 'error', 8);
+    } finally {
+      setBusy('onb-btn-password', false);
+    }
+  }
+
+  async function handleSignIn(ev) {
+    ev.preventDefault();
+    setBanner('');
+    const number = ($('onb-si-number')?.value || '').trim();
+    const password = $('onb-si-pw')?.value || '';
+    let token;
+    try { token = takeToken('step9'); } catch (err) { setBanner(err.message, 'warn', 9); return; }
+    setBusy('onb-btn-signin', true, 'Signing in…');
+    try {
+      const { ok, data } = await api('STUDENT_ACCOUNT_URL', 'student-account', {
+        action: 'sign_in', school_id: _state.selectedSchoolId, number, password, turnstile_token: token,
+      });
+      if (!ok || !data.session_id) throw new Error(data.error || 'Could not sign in.');
+      $('onb-si-pw').value = '';
+      _state.sessionId = data.session_id;
+      _state.jambNo = number;
+      _state.expiresAt = data.expires_at;
+      _state.paymentReference = data.payment_reference || '';
+      _state.alreadyPaid = Boolean(data.already_paid);
+      if (_state.alreadyPaid) { await unlockAndIssueCard(); return; }
+      await continueToPayment();
+    } catch (err) {
+      setBanner(err.message || 'Could not sign in.', 'error', 9);
+      renderTurnstile('step9');
+    } finally {
+      setBusy('onb-btn-signin', false);
+    }
+  }
+
   function resetFlow() {
     stopLivePass();
     clearProgress();
@@ -909,6 +1034,11 @@ const StudentOnboarding = (() => {
         return okRes({ session_id: DEMO_SESSION_ID, step: 'paid', already_paid: true, payment_reference: body.reference, expires_at });
       }
       return okRes({ session_id: DEMO_SESSION_ID, step: 'verified_dob', already_paid: false, fee_amount: 3000, currency: 'NGN', redacted_svg: demoRedactedSvg(), payment_reference: null, expires_at });
+    }
+    if (path === 'student-account') {
+      if (action === 'confirm_link') return okRes({ ok: true, email_masked: 'de***@demo.test' });
+      if (action === 'sign_in') return okRes({ session_id: DEMO_SESSION_ID, step: 'verified_dob', already_paid: false, payment_reference: null, expires_at });
+      return okRes({ ok: true });
     }
     if (path === 'card-payment') {
       if (action === 'confirm') {
@@ -993,6 +1123,9 @@ const StudentOnboarding = (() => {
     $('onb-btn-confirm-yes')?.addEventListener('click', () => handleConfirmIdentity(true));
     $('onb-btn-confirm-no')?.addEventListener('click', () => handleConfirmIdentity(false));
     $('onb-form-dob')?.addEventListener('submit', submitVerifyDob);
+    $('onb-form-email')?.addEventListener('submit', handleSendLink);
+    $('onb-form-password')?.addEventListener('submit', handlePassword);
+    $('onb-form-signin')?.addEventListener('submit', handleSignIn);
     $('onb-btn-pay-now')?.addEventListener('click', handlePayNow);
     $('onb-btn-pay-confirm')?.addEventListener('click', handleConfirmPaymentClick);
     $('onb-btn-copy-ref')?.addEventListener('click', ev => copyPaymentReference(ev.currentTarget));
@@ -1008,7 +1141,7 @@ const StudentOnboarding = (() => {
     }
 
     goToStep(1);
-    restoreProgress();
+    handleMagicLanding().then(handled => { if (!handled) restoreProgress(); });
   }
 
   if (document.readyState === 'loading') {
