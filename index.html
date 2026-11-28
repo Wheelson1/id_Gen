@@ -225,7 +225,27 @@
                                     </div>
                                     <div id="onb-turnstile-step9" class="onb-turnstile"></div>
                                     <button type="submit" id="onb-btn-signin" class="onb-btn onb-btn-primary">Sign in</button>
+                                    <button type="button" class="onb-linkbtn" onclick="StudentOnboarding.goToStep(10)">Forgot password?</button>
                                     <button type="button" class="onb-linkbtn" onclick="StudentOnboarding.resetFlow()">Back</button>
+                                </form>
+                            </div>
+
+                            <!-- ============ PANEL 10: FORGOT PASSWORD ============ -->
+                            <div id="onb-panel-10" class="onb-panel">
+                                <div id="onb-alert-step10" class="onb-alert" role="alert"></div>
+                                <form id="onb-form-forgot" class="onb-form">
+                                    <div>
+                                        <label class="onb-label" for="onb-fg-number">Your JAMB or matric number</label>
+                                        <input type="text" id="onb-fg-number" class="onb-input onb-input--code" required maxlength="32">
+                                    </div>
+                                    <div>
+                                        <label class="onb-label" for="onb-fg-email">The email you signed up with</label>
+                                        <input type="email" id="onb-fg-email" class="onb-input" autocomplete="email" required maxlength="254">
+                                    </div>
+                                    <div id="onb-turnstile-step10" class="onb-turnstile"></div>
+                                    <button type="submit" id="onb-btn-forgot" class="onb-btn onb-btn-primary">Send me a link</button>
+                                    <div id="onb-forgot-sent" class="onb-hint" role="status" aria-live="polite" hidden></div>
+                                    <button type="button" class="onb-linkbtn" onclick="StudentOnboarding.goToStep(9)">Back to sign in</button>
                                 </form>
                             </div>
 

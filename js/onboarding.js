@@ -68,7 +68,7 @@ const StudentOnboarding = (() => {
     alreadyPaid: false,
     demoPaid: false,
     issuedCard: null,     // { card_id, signature, qr_string, student }
-    tokens: { step2: null, step4: null, step7: null, step9: null, restore: null },
+    tokens: { step2: null, step4: null, step7: null, step9: null, step10: null, restore: null },
   };
 
   // ── Small helpers ──────────────────────────────────────────────
@@ -137,7 +137,7 @@ const StudentOnboarding = (() => {
   const ALERT_IDS = {
     1: 'onb-alert-step12', 2: 'onb-alert-step12', 3: 'onb-alert-step3',
     4: 'onb-alert-step4', 5: 'onb-alert-step5', 6: 'onb-alert-step6',
-    7: 'onb-alert-step7', 8: 'onb-alert-step8', 9: 'onb-alert-step9',
+    7: 'onb-alert-step7', 8: 'onb-alert-step8', 9: 'onb-alert-step9', 10: 'onb-alert-step10',
   };
 
   function setBanner(msg, type = 'error', step = _state.step) {
@@ -241,8 +241,8 @@ const StudentOnboarding = (() => {
   // ── Cloudflare Turnstile ───────────────────────────────────────
   // A token can be used once, so each server call that needs one takes it
   // and the widget is reset for the next attempt.
-  const TS_BOX = { step2: 'onb-turnstile-step2', step4: 'onb-turnstile-step4', step7: 'onb-turnstile-step7', step9: 'onb-turnstile-step9', restore: 'onb-turnstile-restore' };
-  const _widgetIds = { step2: null, step4: null, step7: null, step9: null, restore: null };
+  const TS_BOX = { step2: 'onb-turnstile-step2', step4: 'onb-turnstile-step4', step7: 'onb-turnstile-step7', step9: 'onb-turnstile-step9', step10: 'onb-turnstile-step10', restore: 'onb-turnstile-restore' };
+  const _widgetIds = { step2: null, step4: null, step7: null, step9: null, step10: null, restore: null };
 
   function renderTurnstile(which, attempt = 0) {
     if (DEMO) return;
@@ -303,7 +303,7 @@ const StudentOnboarding = (() => {
       else if (i === pillStep) pill.classList.add('active');
     }
 
-    const _n = {1:1,2:1,3:1,30:1,9:1,4:2,7:3,8:3,5:4,6:5}[stepNum] || 1;
+    const _n = {1:1,2:1,3:1,30:1,9:1,10:1,4:2,7:3,8:3,5:4,6:5}[stepNum] || 1;
     const _lab = $('onb-step-label'); if (_lab) _lab.textContent = 'Step ' + _n + ' of 5';
     const _fill = $('onb-bar-fill'); if (_fill) _fill.style.width = (_n * 20) + '%';
 
@@ -317,6 +317,7 @@ const StudentOnboarding = (() => {
       'onb-panel-7': stepNum === 7,
       'onb-panel-8': stepNum === 8,
       'onb-panel-9': stepNum === 9,
+      'onb-panel-10': stepNum === 10,
     };
     Object.entries(panels).forEach(([id, visible]) => {
       const el = $(id);
@@ -327,6 +328,7 @@ const StudentOnboarding = (() => {
     if (stepNum === 4) renderTurnstile('step4');
     if (stepNum === 7) renderTurnstile('step7');
     if (stepNum === 9) renderTurnstile('step9');
+    if (stepNum === 10) renderTurnstile('step10');
     if (stepNum !== 6) stopLivePass();
   }
 
@@ -916,15 +918,22 @@ const StudentOnboarding = (() => {
 
   // Runs on load when the page was opened from the emailed link.
   async function handleMagicLanding() {
-    let token = '', sid = '';
+    let accessToken = '', sid = '';
     try {
+      const h = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
       const q = new URLSearchParams(window.location.search);
-      token = q.get('magic') || ''; sid = q.get('sid') || '';
+      accessToken = h.get('access_token') || ''; sid = q.get('sid') || '';
+      if (!accessToken && h.get('error_description') && sid) {
+        history.replaceState(null, '', window.location.pathname);
+        goToStep(1);
+        setBanner('This link has expired or was already used. Please start again.', 'warn', 1);
+        return true;
+      }
     } catch (e) {}
-    if (!token || !sid) return false;
+    if (!accessToken || !sid) return false;
     try { history.replaceState(null, '', window.location.pathname); } catch (e) {}
     try {
-      const { ok, data } = await api('STUDENT_ACCOUNT_URL', 'student-account', { action: 'confirm_link', session_id: sid, token });
+      const { ok, data } = await api('STUDENT_ACCOUNT_URL', 'student-account', { action: 'confirm_link', session_id: sid, access_token: accessToken });
       if (!ok) { goToStep(1); setBanner(data.error || 'This link has expired. Please start again.', 'warn', 1); return true; }
       _state.sessionId = sid;
       _state.emailMasked = data.email_masked || '';
@@ -933,6 +942,29 @@ const StudentOnboarding = (() => {
       goToStep(1); setBanner(err.message, 'error', 1);
     }
     return true;
+  }
+
+  async function handleForgot(ev) {
+    ev.preventDefault();
+    setBanner('');
+    const number = ($('onb-fg-number')?.value || '').trim();
+    const email = ($('onb-fg-email')?.value || '').trim();
+    let token;
+    try { token = takeToken('step10'); } catch (err) { setBanner(err.message, 'warn', 10); return; }
+    setBusy('onb-btn-forgot', true, 'Sending…');
+    try {
+      const { ok, data } = await api('STUDENT_ACCOUNT_URL', 'student-account', {
+        action: 'forgot_start', school_id: _state.selectedSchoolId, number, email, turnstile_token: token,
+      });
+      if (!ok) throw new Error(data.error || 'Could not send the link.');
+      const note = $('onb-forgot-sent');
+      if (note) { note.hidden = false; note.textContent = data.message || 'If those details match an account, we sent a link to that email.'; }
+    } catch (err) {
+      setBanner(err.message, 'error', 10);
+      renderTurnstile('step10');
+    } finally {
+      setBusy('onb-btn-forgot', false);
+    }
   }
 
   async function handlePassword(ev) {
@@ -952,6 +984,12 @@ const StudentOnboarding = (() => {
         throw new Error(data.error || 'Could not save the password.');
       }
       $('onb-pw-input').value = ''; $('onb-pw-input2').value = '';
+      if (data.already_paid) {
+        _state.alreadyPaid = true;
+        _state.paymentReference = data.payment_reference || '';
+        await unlockAndIssueCard();
+        return;
+      }
       await continueToPayment();
     } catch (err) {
       setBanner(err.message || 'Could not save the password.', 'error', 8);
@@ -1126,6 +1164,7 @@ const StudentOnboarding = (() => {
     $('onb-form-email')?.addEventListener('submit', handleSendLink);
     $('onb-form-password')?.addEventListener('submit', handlePassword);
     $('onb-form-signin')?.addEventListener('submit', handleSignIn);
+    $('onb-form-forgot')?.addEventListener('submit', handleForgot);
     $('onb-btn-pay-now')?.addEventListener('click', handlePayNow);
     $('onb-btn-pay-confirm')?.addEventListener('click', handleConfirmPaymentClick);
     $('onb-btn-copy-ref')?.addEventListener('click', ev => copyPaymentReference(ev.currentTarget));
