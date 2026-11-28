@@ -27,6 +27,15 @@
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
     <!-- QR code drawing for the card and the live pass -->
     <script src="js/vendor/qrcode.min.js" defer></script>
+<style>
+.onb-bar{height:4px;background:rgba(127,127,127,.25);border-radius:4px;margin:0 0 18px;overflow:hidden}
+.onb-bar i{display:block;height:100%;width:25%;background:var(--accent,#0B6B4D);transition:width .3s}
+.hero-title{font-size:clamp(2.4rem,7vw,4rem);line-height:1.05}
+.hero-lede{font-size:1.25rem}
+#onb-btn-lookup{font-size:1.15rem;padding:16px 20px;width:100%}
+#onb-jamb-input{font-size:1.4rem;padding:16px;text-align:center}
+.more{margin-top:24px}.more>summary{cursor:pointer;text-align:center;padding:14px;font-weight:600}
+</style>
 </head>
 <body class="print-body">
 
@@ -41,10 +50,7 @@
             </a>
 
             <nav class="site-nav" aria-label="Main">
-                <a href="#how-it-works">How it works</a>
-                <a href="#how-cards-are-checked">How cards are checked</a>
-                <a href="#help">Help</a>
-                <a href="login.html">Staff sign-in</a>
+                <a href="#more">Help</a>
                 <button type="button" class="theme-toggle-btn" aria-label="Switch between light and dark"></button>
             </nav>
         </div>
@@ -56,22 +62,18 @@
 
                 <!-- LEFT: what this page is for, then the application itself -->
                 <div>
-                    <h1 id="hero-headline" class="hero-title">Get your student ID card</h1>
-                    <p class="hero-lede">
-                        Find your admission record, confirm it is you, pay the ID card fee, and your signed card is ready to use.
-                    </p>
-                    <p class="hero-need">
-                        You need your JAMB or matric number and your date of birth.
-                    </p>
+                    <h1 id="hero-headline" class="hero-title">Your student ID.</h1>
+                    <p class="hero-lede">Type your number. We do the rest.</p>
 
                     <section id="student-onboarding-portal" class="apply" aria-labelledby="apply-title">
                         <div class="apply-head">
-                            <h2 id="apply-title" class="apply-title">Student ID application</h2>
-                            <span class="apply-time">Takes about two minutes</span>
+                            <h2 id="apply-title" class="apply-title">Get my ID</h2>
+                            <span class="apply-time" id="onb-step-label">Step 1 of 4</span>
                         </div>
 
                         <div class="apply-body">
-                            <ol class="onb-stepper" aria-label="Steps">
+                            <div class="onb-bar" aria-hidden="true"><i id="onb-bar-fill"></i></div>
+                            <ol class="onb-stepper" aria-label="Steps" hidden>
                                 <li id="onb-step-pill-1" class="onb-step-pill active">School</li>
                                 <li id="onb-step-pill-2" class="onb-step-pill">Number</li>
                                 <li id="onb-step-pill-3" class="onb-step-pill">Confirm</li>
@@ -91,7 +93,7 @@
                                 </div>
 
                                 <form id="onb-form-lookup" class="onb-form">
-                                    <div>
+                                    <div hidden>
                                         <label class="onb-label" for="onb-school-select">Your school</label>
                                         <select id="onb-school-select" class="onb-select" required>
                                             <option value="00000000-0000-4000-8000-000000000001" selected>Ebonyi State University, Abakaliki (EBSU)</option>
@@ -99,20 +101,19 @@
                                     </div>
 
                                     <div>
-                                        <label class="onb-label" for="onb-jamb-input">JAMB registration number or matric number</label>
+                                        <label class="onb-label" for="onb-jamb-input">Your JAMB or matric number</label>
                                         <input type="text" id="onb-jamb-input" class="onb-input onb-input--code" autocomplete="off" required minlength="6" maxlength="32" aria-describedby="onb-jamb-hint">
-                                        <p id="onb-jamb-hint" class="onb-hint">Type it exactly as it appears on your admission letter.</p>
+                                        <p id="onb-jamb-hint" class="onb-hint">As on your admission letter.</p>
                                     </div>
 
                                     <div id="onb-turnstile-step2" class="onb-turnstile"></div>
 
-                                    <button type="submit" id="onb-btn-lookup" class="onb-btn onb-btn-primary">Find my admission record</button>
+                                    <button type="submit" id="onb-btn-lookup" class="onb-btn onb-btn-primary">Get my ID</button>
 
                                     <div id="onb-waitlist-result" class="onb-hint" role="status" aria-live="polite" style="display:none;"></div>
 
                                     <div class="onb-foot onb-row">
-                                        <button type="button" class="onb-linkbtn" id="onb-btn-waitlist">My number is not on the system yet</button>
-                                        <a href="support.html">My details are wrong</a>
+                                        <button type="button" class="onb-linkbtn" id="onb-btn-waitlist" hidden>Not on the system yet? Tell us when your record is uploaded</button>
                                         <button type="button" class="onb-linkbtn" onclick="StudentOnboarding.openFindPaymentModal()">I already paid</button>
                                     </div>
                                 </form>
@@ -302,7 +303,9 @@
             <div class="guilloche-band" aria-hidden="true"></div>
         </section>
 
-        <!-- ==================== HOW IT WORKS ==================== -->
+        <details id="more" class="more">
+<summary>Help and how it works</summary>
+<!-- ==================== HOW IT WORKS ==================== -->
         <section id="how-it-works" class="section section--sheet">
             <div class="wrap">
                 <h2 class="section-title">How it works</h2>
@@ -379,6 +382,7 @@
                 </div>
             </div>
         </section>
+    </details>
     </main>
 
     <footer class="site-foot">
@@ -391,7 +395,7 @@
                 <p>© 2026 Ebonyi State University, Abakaliki.</p>
             </div>
             <nav class="foot-links" aria-label="More pages">
-                <a href="verify.html">Check a card (staff scanner)</a>
+                <a href="verify.html">Scan a card (guards)</a>
                 <a href="support.html">Support Desk</a>
                 <a href="invest.html">For institutions</a>
                 <a href="login.html">Staff sign-in</a>

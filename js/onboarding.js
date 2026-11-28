@@ -302,6 +302,10 @@ const StudentOnboarding = (() => {
       else if (i === pillStep) pill.classList.add('active');
     }
 
+    const _n = {1:1,2:1,3:1,30:1,4:2,5:3,6:4}[stepNum] || 1;
+    const _lab = $('onb-step-label'); if (_lab) _lab.textContent = 'Step ' + _n + ' of 4';
+    const _fill = $('onb-bar-fill'); if (_fill) _fill.style.width = (_n * 25) + '%';
+
     const panels = {
       'onb-panel-1-2': stepNum === 1 || stepNum === 2,
       'onb-panel-3': stepNum === 3,
@@ -443,6 +447,7 @@ const StudentOnboarding = (() => {
     } catch (err) {
       setBanner(err.message || 'Could not start verification.', 'error', 1);
       renderTurnstile('step2');
+      const _wl = $('onb-btn-waitlist'); if (_wl) _wl.hidden = false;
     } finally {
       setBusy('onb-btn-lookup', false);
     }
